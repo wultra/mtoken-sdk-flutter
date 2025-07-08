@@ -1,7 +1,7 @@
 name: mtoken_sdk_flutter
-description: "A new Flutter package project."
+description: "PowerAuth based Mobile Token SDK for Flutter (Android and iOS)"
 version: 0.0.1-dev
-homepage:
+homepage: https://www.wultra.com/products/mobile-first-authentication
 
 environment:
   sdk: ^3.7.2
