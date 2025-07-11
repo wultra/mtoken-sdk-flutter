@@ -1,0 +1,24 @@
+name: example
+description: "Flutter mtoken Test App"
+publish_to: 'none' # Example
+version: 0.0.1-dev
+
+environment:
+  sdk: ^3.8.1
+dependencies:
+  flutter:
+    sdk: flutter
+  # Local symlink of our SDK
+  mtoken_sdk_flutter:
+    path: ../
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
