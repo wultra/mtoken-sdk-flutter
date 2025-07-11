@@ -2,14 +2,29 @@
 /// Data shall be assigned to the operation when obtained.
 class WMTOperationProximityCheck {
 
-  // TODO: implement + add test for serialization
+  // TODO: add test for serialization
     
-    // /// The actual Time-based one time password.
-    // final String totp;
+    /// The actual Time-based one time password.
+    final String totp;
 
-    // /** Type of the Proximity check. */
-    // type: "QR_CODE" | "DEEPLINK"
+    /// Type of the Proximity check.
+    final WMTProximityCheckType type;
 
-    // /** Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink). */
-    // timestampReceived: Date
+    /// Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink).
+    final DateTime timestampReceived;
+
+    WMTOperationProximityCheck({
+      required this.totp,
+      required this.type,
+      required this.timestampReceived,
+    });
 }
+
+enum WMTProximityCheckType {
+    qrCode("QR_CODE"),
+    deeplink("DEEPLINK");
+
+  final String serialized;
+  const WMTProximityCheckType(this.serialized);
+}
+

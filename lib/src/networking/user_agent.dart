@@ -30,4 +30,14 @@ class WMTUserAgent {
     }
     return null;
   }
+
+  String get description {
+    if (_custom != null) {
+      return "WMTUserAgent(custom: $_custom)";
+    }
+    if (_libraryDefault) {
+      return "WMTUserAgent(libraryDefault)";
+    }
+    return "WMTUserAgent(systemDefault)";
+  }
 }
