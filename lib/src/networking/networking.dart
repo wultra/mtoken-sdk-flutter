@@ -7,7 +7,7 @@ import 'package:mtoken_sdk_flutter/src/core/logger.dart';
 import 'package:mtoken_sdk_flutter/src/networking/known_rest_api_error.dart';
 import 'package:mtoken_sdk_flutter/src/networking/user_agent.dart';
 
-typedef WMTRequestProcessor = HttpClientRequest Function(HttpClientRequest);
+typedef WMTRequestProcessor = void Function(HttpHeaders);
 
 class WMTNetworking {
   
@@ -30,15 +30,32 @@ class WMTNetworking {
         : _baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
 
   @internal
+  Future<dynamic> postSigned(
+    Object requestData,
+    PowerAuthAuthentication auth,
+    String endpoindPath,
+    String uriId,
+    { WMTRequestProcessor? requestProcessor }
+  ) async {
+
+    final body = jsonEncode(requestData);
+    final paHeader = await powerAuth.requestSignature(auth, "POST", uriId, body);
+
+    final headers = {
+      paHeader.key: paHeader.value
+    };
+
+    return await post(body, endpoindPath, headers, requestProcessor);
+  }
+
+  @internal
   Future<dynamic> postSignedWithToken(
-        Object requestData,
-        PowerAuthAuthentication auth,
-        String endpoindPath,
-        String tokenName,
-        // TODO: add missing features
-        // requestProcessor?: WMTRequestProcessor,
-        // jsonConfig?: WMTJsonConfig,
-    ) async {
+    Object requestData,
+    PowerAuthAuthentication auth,
+    String endpoindPath,
+    String tokenName,
+    { WMTRequestProcessor? requestProcessor }
+  ) async {
 
         final body = jsonEncode(requestData);
         final token = await powerAuth.tokenStore.requestAccessToken(tokenName, auth);
@@ -48,17 +65,15 @@ class WMTNetworking {
           paHeader.key: paHeader.value
         };
 
-        return await post(body, endpoindPath, headers);
+        return await post(body, endpoindPath, headers, requestProcessor);
     }
 
   @internal
   Future<dynamic> post(
-    String requestSerialized,
+    String paylodeSerialized,
     String endpointPath,
-    Map<String, String> headers
-    // TODO: add missing features
-    // requestProcessor
-    // jsonConfig
+    Map<String, String> headers,
+    WMTRequestProcessor? requestProcessor
   ) async {
 
     final client = HttpClient();
@@ -79,17 +94,26 @@ class WMTNetworking {
         request.headers.set(HttpHeaders.userAgentHeader, userAgentValue);
       }
 
-      request.write(requestSerialized);
+      headers.forEach((key, value) {
+        request.headers.set(key, value);
+      });
 
-      WMTLogger.info(" -> POST ${url}");
+      request.write(paylodeSerialized);
+
+      if (requestProcessor != null) {
+        requestProcessor(request.headers);
+      }
+
+      WMTLogger.info(" -> OUTGOING POST ${url}");
       if (WMTLogger.verbosity.level >= WMTLoggerVerbosity.verbose.level) {
         WMTLogger.verbose(_getHeadersString(request.headers));
-        WMTLogger.verbose(requestSerialized);
+        WMTLogger.verbose(paylodeSerialized);
       }
 
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();
 
+      WMTLogger.info(" <-- INCOMMING POST ${url}");
       if (WMTLogger.verbosity.level >= WMTLoggerVerbosity.verbose.level) {
         WMTLogger.verbose(_getHeadersString(response.headers));
         WMTLogger.verbose(responseBody);

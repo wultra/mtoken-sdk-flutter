@@ -10,6 +10,8 @@
 analyzer:
   errors:
     depend_on_referenced_packages: ignore
+    avoid_print: ignore
+    unnecessary_brace_in_string_interps: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:

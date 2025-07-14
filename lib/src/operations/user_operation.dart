@@ -1,4 +1,5 @@
 import 'package:mtoken_sdk_flutter/src/operations/online_operation.dart';
+import 'package:mtoken_sdk_flutter/src/operations/operation_proximity_check.dart';
 import 'package:mtoken_sdk_flutter/src/operations/user_operation_attribute.dart';
 import 'package:mtoken_sdk_flutter/src/operations/user_operation_ui_data.dart';
 
@@ -60,7 +61,7 @@ class WMTUserOperation extends WMTOnlineOperation {
     /// 
     /// This data is not retrieved from the server but is set by the application.
     @override
-    String? proximityCheck;
+    WMTOperationProximityCheck? proximityCheck;
 
     /// Additional mobile token data for authorization (available with PowerAuth server 1.10+)
     /// 
