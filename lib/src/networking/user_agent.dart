@@ -3,6 +3,7 @@ import '../utils/default_user_agent.dart';
 class WMTUserAgent {
 
   bool _libraryDefault;
+  // ignore: unused_field
   bool _systemDefault;
   String? _custom;
 

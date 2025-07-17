@@ -80,7 +80,7 @@ class WMTQROperationParser {
 
   static String _parseAttributeText(String text) {
     if (text.contains("\\")) {
-        return text.replaceAll("\\n", "\n").replaceAll("\\\\", "\\").replaceAll("\\*", "\*");
+        return text.replaceAll("\\n", "\n").replaceAll("\\\\", "\\").replaceAll("\\*", "*");
     }
     return text;
   }
