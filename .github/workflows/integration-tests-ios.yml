@@ -19,6 +19,6 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Start iOS Simulator
-        run: sh ./scripts/start_ios_simulator.sh
+        run: sh ./scripts/boot-iphone-sim.sh
       - name: Run Integration on iOS
         run: pushd example && flutter test integration_test/integration_test.dart -d iPhone && popd
