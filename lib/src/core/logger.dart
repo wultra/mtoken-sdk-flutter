@@ -14,7 +14,7 @@
 // and limitations under the License.
 //
 
-import 'package:mtoken_sdk_flutter/src/core/exception.dart';
+import '../core/exception.dart';
 
 /// How much should Mobile Token library log into the console.
 enum WMTLoggerVerbosity {

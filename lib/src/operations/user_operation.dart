@@ -1,7 +1,7 @@
-import 'package:mtoken_sdk_flutter/src/operations/online_operation.dart';
-import 'package:mtoken_sdk_flutter/src/operations/operation_proximity_check.dart';
-import 'package:mtoken_sdk_flutter/src/operations/user_operation_attribute.dart';
-import 'package:mtoken_sdk_flutter/src/operations/user_operation_ui_data.dart';
+import 'online_operation.dart';
+import 'operation_proximity_check.dart';
+import 'user_operation_attribute.dart';
+import 'user_operation_ui_data.dart';
 
 /// `UserOperation` is object returned from the backend that can be either approved or rejected.
 /// It is usually visually presented to the user as a non-editable form with information about

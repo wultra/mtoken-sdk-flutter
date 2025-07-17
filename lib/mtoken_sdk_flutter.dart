@@ -8,6 +8,8 @@ export 'src/operations/rejection_reason.dart';
 export 'src/operations/user_operation.dart';
 export 'src/operations/online_operation.dart';
 export 'src/operations/operation_proximity_check.dart';
+export 'src/operations/qr_operation.dart';
+export 'src/operations/qr_operation_parser.dart';
 
 // Logging
 export 'src/core/logger.dart';

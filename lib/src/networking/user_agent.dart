@@ -1,4 +1,4 @@
-import 'package:mtoken_sdk_flutter/src/utils/default_user_agent.dart';
+import '../utils/default_user_agent.dart';
 
 class WMTUserAgent {
 

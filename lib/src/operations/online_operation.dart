@@ -1,5 +1,5 @@
 
-import 'package:mtoken_sdk_flutter/src/operations/operation_proximity_check.dart';
+import 'operation_proximity_check.dart';
 
 /// An abstract class that defines minimum data needed for calculating the operation signature
 /// and sending it to confirmation endpoint.

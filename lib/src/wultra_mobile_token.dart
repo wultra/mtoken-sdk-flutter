@@ -1,8 +1,8 @@
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'package:mtoken_sdk_flutter/src/core/logger.dart';
-import 'package:mtoken_sdk_flutter/src/networking/user_agent.dart';
-import 'package:mtoken_sdk_flutter/src/operations/operations.dart';
+import 'core/logger.dart';
+import 'networking/user_agent.dart';
+import 'operations/operations.dart';
 
 /// MobileToken class exposes APIs that enable:
 ///  - Fetching, authorizing or rejecting basic

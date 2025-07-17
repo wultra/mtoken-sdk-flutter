@@ -1,4 +1,4 @@
-import 'package:mtoken_sdk_flutter/src/core/version.dart';
+import '../core/version.dart';
 
 class WMTDefaultUserAgent {
   

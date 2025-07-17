@@ -14,7 +14,7 @@
 // and limitations under the License.
 //
 
-import 'package:mtoken_sdk_flutter/src/core/logger.dart';
+import '../core/logger.dart';
 
 /// Known PowerAuth server error codes.
 enum WMTKnownRestApiError {

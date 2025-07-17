@@ -141,6 +141,23 @@ class IntegrationHelper {
     return OperationObject.fromJson(resp);
   }
 
+  Future<QROperationObject> getQROperation(String operationId) async {
+    final resp = await _makeCall("", "${AppConfig.cloudUrl}/v2/operations/${operationId}/offline/qr?registrationId=${createdActivation?.registrationId}", method: HtptMethod.get);
+    return QROperationObject.fromJson(resp);
+  }
+
+  Future<QROperationObjectVerify> verifyQROperation(String operationId, QROperationObject qrOperation, String otp) async {
+    final body = jsonEncode(
+      {
+        "otp": otp,
+        "registrationId": createdActivation?.registrationId,
+        "nonce": qrOperation.nonce
+      }
+    );
+    final resp = await _makeCall(body, "${AppConfig.cloudUrl}/v2/operations/${operationId}/offline/otp");
+    return QROperationObjectVerify.fromJson(resp);
+  }
+
   // --- HELPER FUNCTIONS ---
 
   Future<Map<String, dynamic>> callSDKEndpoint(String endpoint, String body, Map<String, String>? headers) async {
@@ -364,6 +381,53 @@ class OperationObject {
         additionalData: json['additionalData']
       );
     }
+}
+
+class QROperationObject {
+  String operationQrCodeData;
+  String nonce;
+
+  QROperationObject({
+    required this.operationQrCodeData,
+    required this.nonce
+  });
+
+  factory QROperationObject.fromJson(Map<String, dynamic> json) {
+    return QROperationObject(
+      operationQrCodeData: json['operationQrCodeData'],
+      nonce: json['nonce']
+    );
+  }
+}
+
+class QROperationObjectVerify {
+  bool otpValid;
+  String userId;
+  String registrationId;
+  String registrationStatus;
+  String signatureType;
+  int remainingAttempts;
+
+  QROperationObjectVerify({
+    required this.otpValid,
+    required this.userId,
+    required this.registrationId,
+    required this.registrationStatus,
+    required this.signatureType,
+    required this.remainingAttempts
+  });
+
+  factory QROperationObjectVerify.fromJson(Map<String, dynamic> json) {
+    return QROperationObjectVerify(
+      otpValid: json['otpValid'],
+      userId: json['userId'],
+      registrationId: json['registrationId'],
+      registrationStatus: json['registrationStatus'],
+      signatureType: json['signatureType'],
+      remainingAttempts: json['remainingAttempts']
+    );
+  }
+
 }
 
 class ActivationCredentials {

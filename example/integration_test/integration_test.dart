@@ -81,7 +81,7 @@ void main() {
     });
 
     test("testMobileTokenData", () async {
-      
+
       final op = await helper.createOperation();
       final detail = await wmt.operations.getDetail(op.operationId);
 
@@ -108,6 +108,49 @@ void main() {
       expect(mobileTokenData["test2"], 2.3);
       expect(mobileTokenData["test3"], "string");
       expect(mobileTokenData["test4"]["nested"], isTrue);
+    });
+
+    test("testHistory", () async {
+      // cerate 2 operations in history
+      final op1 = await helper.createOperation();
+      final op2 = await helper.createOperation();
+
+      final detailOp1 = await wmt.operations.getDetail(op1.operationId);
+
+      // authorize with correct password
+      await wmt.operations.auhtorize(detailOp1, PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+
+      final history = await wmt.operations.getHistory(PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+      expect(history.length, 2);
+      history.sort((a, b) => a.operationCreated.compareTo(b.operationCreated));
+      expect(history[0].id, op1.operationId);
+      expect(history[1].id, op2.operationId);
+      expect(history[0].status, WMTUserOperationStatus.approved);
+      expect(history[1].status, WMTUserOperationStatus.pending);
+    });
+
+    test("testQROperation", () async {
+
+      // create regular operation
+      final op = await helper.createOperation();
+
+      // get QR data for the operation
+      final qrData = await helper.getQROperation(op.operationId);
+
+      // parse the QR data
+      final qrOperation = WMTQROperation.fromQRString(qrData.operationQrCodeData);
+
+      // verify the parsed data
+      final verified = await sdk.verifyServerSignedData(qrOperation.signedData, qrOperation.signature.signatureString, qrOperation.signature.signingKey == WMTSigningKey.master);
+      expect(verified, isTrue);
+
+      // get the OTP via the offline signing
+      final auth = PowerAuthAuthentication.password(await credentials.validPasswordObject());
+      final otp = await wmt.operations.authorizeOffline(qrOperation, auth);
+
+      final verifiedResult = await helper.verifyQROperation(op.operationId, qrData, otp);
+
+      expect(verifiedResult.otpValid, isTrue);
     });
   });
 }

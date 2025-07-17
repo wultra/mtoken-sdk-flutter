@@ -1,4 +1,4 @@
-import 'package:mtoken_sdk_flutter/src/operations/user_operation_attribute.dart';
+import 'user_operation_attribute.dart';
 
 /// Operation UI model that contains data for screens for pre and/or post approved operation.
 class WMTUserOperationUIData {

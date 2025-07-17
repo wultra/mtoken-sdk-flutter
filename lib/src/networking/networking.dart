@@ -3,9 +3,9 @@ import 'dart:io';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
-import 'package:mtoken_sdk_flutter/src/core/logger.dart';
-import 'package:mtoken_sdk_flutter/src/networking/known_rest_api_error.dart';
-import 'package:mtoken_sdk_flutter/src/networking/user_agent.dart';
+import '../core/logger.dart';
+import 'known_rest_api_error.dart';
+import '../networking/user_agent.dart';
 
 typedef WMTRequestProcessor = void Function(HttpHeaders);
 
@@ -23,6 +23,7 @@ class WMTNetworking {
 
   WMTUserAgent userAgent = WMTUserAgent.libraryDefault();
 
+  @protected
   final PowerAuth powerAuth;
   final String _baseUrl;
 
