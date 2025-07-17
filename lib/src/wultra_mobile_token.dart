@@ -54,6 +54,22 @@ class WultraMobileToken {
 
     return WultraMobileToken._(operations);
   }
+
+  /// Sets accept language for the outgoing requests headers for [operations], [push] and [inbox] objects.
+  ///
+  /// The value can be further modified in the each object individualy.
+  ///
+  /// Default value is "en".
+  ///
+  /// Standard RFC "Accept-Language" https://tools.ietf.org/html/rfc7231#section-5.3.5
+  /// Response texts are based on this setting. For example when "de" is set, server
+  /// will return operation texts in german (if available).
+  setAcceptLanguage(String lang) {
+      operations.acceptLanguage = lang;
+      // push.acceptLanguage = lang;
+      // inbox.acceptLanguage = lang;
+      WMTLogger.info("Accept language set to ${lang} for all services.");
+  }
 }
 
 extension PowerAuthExtension on PowerAuth {

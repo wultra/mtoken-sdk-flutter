@@ -64,9 +64,7 @@ class IntegrationHelper {
 
     await sdk.persistActivation(setupBiometry ? PowerAuthAuthentication.persistWithPasswordAndBiometry(password: password, biometricPrompt: PowerAuthBiometricPrompt(promptMessage: biometryPrompt)) : PowerAuthAuthentication.persistWithPassword(password));
 
-    // COMMIT ACTIVATION ON THE SERVER
-
-    await _makeCall('{ "externalUserId": "test" }', "${AppConfig.cloudUrl}/v2/registrations/${resp.registrationId}/commit");
+    // no need to commit the activation, it is done automatically
   }
 
   Future<void> configure() async {
@@ -124,7 +122,7 @@ class IntegrationHelper {
       "userId": anonymous ? null : userId,
       "operationType": "LOGIN",
       "proximityCheckEnabled": proximityCheckEnabled,
-      "template": "login",
+      "template": proximityCheckEnabled ? "login_preApproval" : "login",
       "parameters": {
         "party.id": "666",
         "party.name": "Datová schránka",
@@ -134,6 +132,10 @@ class IntegrationHelper {
     });
     final resp = await _makeCall(body, "${AppConfig.cloudUrl}/v2/operations");
     return OperationObject.fromJson(resp);
+  }
+
+  Future<void> cancelOperation(String operationId, String reason) async {
+    await _makeCall("", "${AppConfig.cloudUrl}/v2/operations/${operationId}?statusReason=${reason}", method: HtptMethod.delete);
   }
 
   Future<OperationObject> getOperation(String operationId) async {

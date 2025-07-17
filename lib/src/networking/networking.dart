@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
+import 'package:mtoken_sdk_flutter/src/core/exception.dart';
 import '../core/logger.dart';
 import 'known_rest_api_error.dart';
 import '../networking/user_agent.dart';
@@ -126,8 +127,7 @@ class WMTNetworking {
 
       if (data["status"] != "OK") {
         final error = WMTResponseError.fromJson(responseObject as Map<String, dynamic>);
-        // TODO: custom exception (WMTException)
-        throw Exception("Error response: ${error.message} (code: ${error.code})");
+        throw WMTException(description: "Error response: ${error.message} (code: ${error.code})");
       }
 
       return responseObject;

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:example/test_utils/integration_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
@@ -58,15 +56,14 @@ void main() {
 
       // try to authorize with invalid password
       try {
-        await wmt.operations.auhtorize(detail, PowerAuthAuthentication.password(await credentials.invalidPasswordObject()));
+        await wmt.operations.auhtorize(detail, await credentials.invalidKnowledge());
         fail("Authorization should fail with invalid password");
       } catch (e) {
-        // TODO: better exception
-        expect(e, isA<Exception>());
+        expect(e, isA<WMTException>());
       }
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detail, PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+      await wmt.operations.auhtorize(detail, await credentials.knowledge());
     });
 
     test("testReject", () async {
@@ -99,7 +96,7 @@ void main() {
       expect(detail.mobileTokenData, isNotNull);
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detail, PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+      await wmt.operations.auhtorize(detail, await credentials.knowledge());
 
       final opAfterApproval = await helper.getOperation(detail.id);
       final mobileTokenData = opAfterApproval.additionalData["mobileTokenData"];
@@ -118,15 +115,18 @@ void main() {
       final detailOp1 = await wmt.operations.getDetail(op1.operationId);
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detailOp1, PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+      await wmt.operations.auhtorize(detailOp1, await credentials.knowledge());
 
-      final history = await wmt.operations.getHistory(PowerAuthAuthentication.password(await credentials.validPasswordObject()));
+      final history = await wmt.operations.getHistory(await credentials.knowledge());
       expect(history.length, 2);
-      history.sort((a, b) => a.operationCreated.compareTo(b.operationCreated));
-      expect(history[0].id, op1.operationId);
-      expect(history[1].id, op2.operationId);
-      expect(history[0].status, WMTUserOperationStatus.approved);
-      expect(history[1].status, WMTUserOperationStatus.pending);
+      
+      final historyOp1 = history.firstWhere((element) => element.id == op1.operationId);
+      final historyOp2 = history.firstWhere((element) => element.id == op2.operationId);
+
+      expect(historyOp1.id, op1.operationId);
+      expect(historyOp2.id, op2.operationId);
+      expect(historyOp1.status, WMTUserOperationStatus.approved);
+      expect(historyOp2.status, WMTUserOperationStatus.pending);
     });
 
     test("testQROperation", () async {
@@ -145,12 +145,118 @@ void main() {
       expect(verified, isTrue);
 
       // get the OTP via the offline signing
-      final auth = PowerAuthAuthentication.password(await credentials.validPasswordObject());
-      final otp = await wmt.operations.authorizeOffline(qrOperation, auth);
+      final otp = await wmt.operations.authorizeOffline(qrOperation, await credentials.knowledge());
 
       final verifiedResult = await helper.verifyQROperation(op.operationId, qrData, otp);
 
       expect(verifiedResult.otpValid, isTrue);
     });
+
+    test("testDetail", () async {
+      final op = await helper.createOperation();
+
+      // get detail of the operation
+      final detail = await wmt.operations.getDetail(op.operationId);
+
+      // verify the detail
+      expect(detail.id, op.operationId);
+      expect(detail.name, op.operationType);
+      expect(detail.status, WMTUserOperationStatus.pending);
+    });
+
+    test("testClaim", () async {
+      final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: true);
+
+      // claim the operation
+      final claimed = await wmt.operations.claim(op.operationId);
+
+      expect(claimed.ui?.preApprovalScreen?.type, "QR_SCAN");
+
+      final totp = (await helper.getOperation(op.operationId)).proximityOtp;
+      expect(totp, isNotNull);
+
+      claimed.proximityCheck = WMTOperationProximityCheck(
+        totp: totp!,
+        type: WMTProximityCheckType.qrCode,
+        timestampReceived: DateTime.now(),
+      );
+
+      await wmt.operations.auhtorize(claimed, await credentials.knowledge());
+    });
+
+    test("cancelWithReason", () async {
+
+      final op = await helper.createOperation();
+      const reason = "PREARRANGED_REASON";
+
+      // cancel the operation with a reason
+      await helper.cancelOperation(op.operationId, reason);
+
+      // verify the operation is canceled
+      final history = await wmt.operations.getHistory(await credentials.knowledge());
+      final opRecord = history.firstWhere((element) => element.id == op.operationId);
+      expect(opRecord.status, WMTUserOperationStatus.canceled);
+      expect(opRecord.statusReason, reason);
+    });
+
+    test("testUserAgent", () async {
+
+      late WultraMobileToken tempMtoken;
+      const expectedDefaultUserAgentProductName = "MobileTokenFlutter";
+      const testUserAgent = "test-agent";
+      final envInfo = EnvironmentInfo();
+
+      // Test default behavior (libraryDefault)
+
+      tempMtoken = sdk.createMobileToken();
+
+      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
+        final userAgent = headers.value("user-agent")!;
+        expect(userAgent.startsWith(expectedDefaultUserAgentProductName), isTrue);
+        expect(userAgent.contains(envInfo.systemVersion), isTrue);
+        expect(userAgent.contains(envInfo.systemName), isTrue);
+        expect(userAgent.contains(envInfo.deviceId), isTrue);
+        expect(userAgent.contains(envInfo.deviceManufacturer), isTrue);
+        expect(userAgent.contains(envInfo.applicationIdentifier), isTrue);
+        expect(userAgent.contains(envInfo.applicationVersion), isTrue);
+      });
+
+      // Test custom user agent
+      tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.custom(testUserAgent));
+
+      // TODO: try different endpoint
+      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
+        expect(headers.value("user-agent"), testUserAgent);
+      });
+
+      // Test system default (should be undefined in the request)
+
+      tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
+
+      // TODO: try different endpoint
+      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
+        expect(headers.value("user-agent")?.startsWith("Dart"), isTrue); // default user agent is something like "Dart/2.14 (dart:io)"
+      });
+    });
+
+
+
+  test("testAcceptLanguage", () async {
+    const en = "en";
+    const cs = "cs";
+
+    // set czech lang
+    wmt.setAcceptLanguage(cs);
+    await wmt.operations.getOperations(requestProcessor: (headers) {
+      expect(headers.value("accept-language"), cs);
+    });
+
+    // set eng lang
+    wmt.setAcceptLanguage(en);
+    // TODO: try different endpoint
+    await wmt.operations.getOperations(requestProcessor: (headers) {
+      expect(headers.value("accept-language"), en);
+    });
+  });
   });
 }

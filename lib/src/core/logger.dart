@@ -39,43 +39,42 @@ enum WMTLoggerVerbosity {
 /// Mobile Token logging utility.
 class WMTLogger {
 
-    /// Which level of logs (and lower) should be logged into the console. Default value is `warn`.
-    static WMTLoggerVerbosity verbosity = WMTLoggerVerbosity.warn;
+  /// Which level of logs (and lower) should be logged into the console. Default value is `warn`.
+  static WMTLoggerVerbosity verbosity = WMTLoggerVerbosity.warn;
 
-    /// Include time in the logs?
-    static bool includeTime = true;
+  /// Include time in the logs?
+  static bool includeTime = true;
 
-    // TODO: Make this internal!
+  // TODO: Make this internal!
 
-    static void debug(String message) {
-        _log(message, WMTLoggerVerbosity.debug);
+  static void debug(String message) {
+    _log(message, WMTLoggerVerbosity.debug);
+  }
+
+  static void info(String message) {
+    _log(message, WMTLoggerVerbosity.info);
+  }
+
+  static void warn(String message) {
+    _log(message, WMTLoggerVerbosity.warn);
+  }
+
+  static void verbose(String message) {
+    _log(message, WMTLoggerVerbosity.verbose);
+  }
+
+  static void error(String message) {
+    _log(message, WMTLoggerVerbosity.error);
+  }
+
+  static WMTException errorAndException(String message) {
+    _log(message, WMTLoggerVerbosity.error);
+    return WMTException(description: message);
+  }
+
+  static void _log(String message, WMTLoggerVerbosity logVerbosity) {
+    if (verbosity.level >= logVerbosity.level) {
+        print("[WMT:${logVerbosity.tag}${includeTime ? " - ${DateTime.now().toIso8601String()}" : ""}] ${message}");
     }
-
-    static void info(String message) {
-        _log(message, WMTLoggerVerbosity.info);
-    }
-
-    static void warn(String message) {
-        _log(message, WMTLoggerVerbosity.warn);
-    }
-
-    static void verbose(String message) {
-        _log(message, WMTLoggerVerbosity.verbose);
-    }
-
-    static void error(String message) {
-        _log(message, WMTLoggerVerbosity.error);
-    }
-
-    static WMTException errorAndException(String message) {
-        _log(message, WMTLoggerVerbosity.error);
-        return WMTException(description: message);
-    }
-
-    static void _log(String message, WMTLoggerVerbosity logVerbosity) {
-
-        if (verbosity.level >= logVerbosity.level) {
-            print("[WMT:${logVerbosity.tag}${includeTime ? " - ${DateTime.now().toIso8601String()}" : ""}] ${message}");
-        }
-    }
+  }
 }

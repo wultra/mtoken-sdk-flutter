@@ -78,7 +78,7 @@ class WMTOperations extends WMTNetworking {
     final opProxyCheck = operation.proximityCheck;
     Object? proximityRequest;
     if (opProxyCheck != null) {
-        proximityRequest = { "otp": opProxyCheck.totp, "type": opProxyCheck.type.serialized, "timestampReceived": opProxyCheck.timestampReceived, "timestampSent": DateTime.now() };
+        proximityRequest = { "otp": opProxyCheck.totp, "type": opProxyCheck.type.serialized, "timestampReceived": opProxyCheck.timestampReceived.millisecondsSinceEpoch, "timestampSent": DateTime.now().millisecondsSinceEpoch };
     }
 
     await postSigned(
@@ -120,5 +120,24 @@ class WMTOperations extends WMTNetworking {
   /// Returns OTP code to display to the user
   Future<String> authorizeOffline(WMTQROperation operation, PowerAuthAuthentication authentication, {String uriId = "/operation/authorize/offline"}) async {
     return await powerAuth.offlineSignature(authentication, uriId, operation.nonce, operation.dataForOfflineSining);
+  }
+
+  /// Assigns the 'non-personalized' operation to the user.
+  /// 
+  /// Params:
+  ///  - [operationId] ID of the operation which will be claimed to belong to the user.
+  ///  - [requestProcessor] You may modify the request via this processor. It's highly recommended to only modify HTTP headers.
+  /// 
+  /// Returns operation detail
+  Future<WMTUserOperation> claim(String operationId, { WMTRequestProcessor? requestProcessor }) async {
+    final response = await postSignedWithToken(
+      { "requestObject": { "id": operationId } },
+      PowerAuthAuthentication.possession(),
+      "/api/auth/token/app/operation/detail/claim",
+      "possession_universal",
+      requestProcessor: requestProcessor,
+    );
+
+    return WMTUserOperation.fromJson(response);
   }
 }

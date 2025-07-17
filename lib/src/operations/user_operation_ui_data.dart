@@ -54,14 +54,14 @@ class WMTPreApprovalScreen {
   final List<String>? items;
 
   /// Type of the approval button ('SLIDER' or 'BUTTON')
-  final String approvalType;
+  final String? approvalType;
 
   WMTPreApprovalScreen({
     required this.type,
     required this.heading,
     required this.message,
     this.items,
-    required this.approvalType,
+    this.approvalType,
   });
 
   /// Creates a [WMTPreApprovalScreen] from a JSON map.
@@ -71,7 +71,7 @@ class WMTPreApprovalScreen {
       heading: json['heading'] as String,
       message: json['message'] as String,
       items: (json['items'] as List<dynamic>?)?.map((item) => item as String).toList(),
-      approvalType: json['approvalType'] as String,
+      approvalType: json['approvalType'] as String?,
     );
   }  
 }

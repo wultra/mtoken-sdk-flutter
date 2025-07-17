@@ -5,7 +5,7 @@ class WMTDefaultUserAgent {
   static String get userAgent {
     final product = "MobileTokenFlutter";
     final sdkVer = wmtSdkVersion;
-    final envInfo = EnvironmenInfo();
+    final envInfo = EnvironmentInfo();
     final appVer = envInfo.applicationVersion;
     final appId = envInfo.applicationIdentifier;
     final maker = envInfo.deviceManufacturer;
@@ -18,7 +18,7 @@ class WMTDefaultUserAgent {
 }
 
 // TODO: replace with actual environment info retrieval from the PowerAuth SDK (https://github.com/wultra/flutter-powerauth-mobile-sdk/issues/45)
-class EnvironmenInfo {
+class EnvironmentInfo {
   final String applicationVersion = "1.0.0";
   final String applicationIdentifier = "com.example.mtoken";
   final String deviceManufacturer = "ExampleManufacturer";
