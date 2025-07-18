@@ -1,5 +1,4 @@
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'package:mtoken_sdk_flutter/src/core/exception.dart';
 import 'package:mtoken_sdk_flutter/src/inbox/inbox_message.dart';
 import 'package:mtoken_sdk_flutter/src/utils/response_processor.dart';
 

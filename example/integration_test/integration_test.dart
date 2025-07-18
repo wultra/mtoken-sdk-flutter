@@ -280,12 +280,12 @@ void main() {
       }
     });
 
-    Future<int> _fetchUnreadMessagesCount() async {
+    Future<int> fetchUnreadMessagesCount() async {
       final resp = await wmt.inbox.getUnreadCount();
       return resp.countUnread;
     }
 
-    _compareMessages(List<NewInboxMessage> expected, List<WMTInboxMessage> received) {
+    compareMessages(List<NewInboxMessage> expected, List<WMTInboxMessage> received) {
       expect(expected.length, received.length);
       for (var detail in expected) {
         final message = received.where( (it) => it.id == detail.id ).firstOrNull;
@@ -302,16 +302,16 @@ void main() {
 
     test("testInboxMessages", () async {
       const messagesToTest = 5;
-      expect(await _fetchUnreadMessagesCount(), 0);
+      expect(await fetchUnreadMessagesCount(), 0);
 
       // Now prepare messages
       final messages = await helper.createInboxMessages(messagesToTest);
-      expect(await _fetchUnreadMessagesCount(), messagesToTest);
+      expect(await fetchUnreadMessagesCount(), messagesToTest);
 
       // Read first page
       final messagesList = await wmt.inbox.getMessageList(0, 50, false);
       expect(messagesList, isNotNull);
-      _compareMessages(messages, messagesList);
+      compareMessages(messages, messagesList);
 
       // Now read first message's detail
       final firstMessage = messages[0];
@@ -330,7 +330,7 @@ void main() {
       final messages = await helper.createInboxMessages(count);
       final receivedMessages = await wmt.inbox.getMessageList(0, 50, false);
 
-      _compareMessages(messages, receivedMessages);
+      compareMessages(messages, receivedMessages);
 
       // Mark first as read and receive its detail
       final messageId = receivedMessages[0].id;
