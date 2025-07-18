@@ -5,8 +5,14 @@ import 'qr_operation.dart';
 import 'rejection_reason.dart';
 import 'user_operation.dart';
 
+/// Operations networking layer for Wultra Mobile Token API.
 class WMTOperations extends WMTNetworking {
 
+  /// Constructor that initializes the operations networking layer.
+  /// 
+  /// Params:
+  /// - [powerAuth] is the PowerAuth instance used for signing requests.
+  /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
   WMTOperations(super.powerAuth, super.baseUrl);
 
   /// Retrieves user operations that are pending for approval or rejection.

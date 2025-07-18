@@ -11,6 +11,9 @@ export 'src/operations/operation_proximity_check.dart';
 export 'src/operations/qr_operation.dart';
 export 'src/operations/qr_operation_parser.dart';
 
+// Push notifications
+export 'src/push/push.dart';
+
 // Logging
 export 'src/core/logger.dart';
 

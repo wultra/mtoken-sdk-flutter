@@ -6,7 +6,7 @@ import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 
 void main() {
 
-  group("operation tests", () {
+  group("integration tests", () {
 
     @protected late IntegrationHelper helper;
     @protected late PowerAuth sdk;
@@ -239,24 +239,45 @@ void main() {
       });
     });
 
+    test("testAcceptLanguage", () async {
+      const en = "en";
+      const cs = "cs";
 
+      // set czech lang
+      wmt.setAcceptLanguage(cs);
+      await wmt.operations.getOperations(requestProcessor: (headers) {
+        expect(headers.value("accept-language"), cs);
+      });
 
-  test("testAcceptLanguage", () async {
-    const en = "en";
-    const cs = "cs";
-
-    // set czech lang
-    wmt.setAcceptLanguage(cs);
-    await wmt.operations.getOperations(requestProcessor: (headers) {
-      expect(headers.value("accept-language"), cs);
+      // set eng lang
+      wmt.setAcceptLanguage(en);
+      // TODO: try different endpoint
+      await wmt.operations.getOperations(requestProcessor: (headers) {
+        expect(headers.value("accept-language"), en);
+      });
     });
 
-    // set eng lang
-    wmt.setAcceptLanguage(en);
-    // TODO: try different endpoint
-    await wmt.operations.getOperations(requestProcessor: (headers) {
-      expect(headers.value("accept-language"), en);
+    test("testPushRegistration", () async {
+      final List<WMTPushPlatform>  platforms = [  
+        /// apns testing
+        WMTPushPlatform.apns("token", environment: WMTPushApnsEnvironment.development),
+        WMTPushPlatform.apns("token", environment: WMTPushApnsEnvironment.production),
+        WMTPushPlatform.apns("token"),
+        WMTPushPlatform.apns("token").supportLegacyServer(),
+
+        // fcm testing
+        WMTPushPlatform.fcm("token"),
+        WMTPushPlatform.fcm("token").supportLegacyServer(),
+
+        // hms testing
+        WMTPushPlatform.hms("token"),
+        WMTPushPlatform.hms("token").supportLegacyServer(),
+      ];
+
+      for (final platform in platforms) {
+        // we just expect not to throw here
+        await wmt.push.register(platform);
+      }
     });
-  });
   });
 }
