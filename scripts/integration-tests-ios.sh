@@ -18,5 +18,5 @@ xcrun simctl boot "$SIM_ID"
 # we dont need to wait for the simulator to be fully booted, just run the tests (the compilation takes time anyway)
 
 pushd "$SCRIPT_FOLDER/../example"
-flutter test integration_test/integration_test.dart -d "$SIM_ID"
+flutter test integration_test/integration_test.dart -d "$SIM_ID" --timeout none # long timeout to avoid issue with the slow pod install etc...
 popd
