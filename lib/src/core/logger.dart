@@ -67,9 +67,9 @@ class WMTLogger {
     _log(message, WMTLoggerVerbosity.error);
   }
 
-  static WMTException errorAndException(String message) {
+  static WMTException errorAndException(String message, { Object? additionalData }) {
     _log(message, WMTLoggerVerbosity.error);
-    return WMTException(description: message);
+    return WMTException(description: message, additionalData: additionalData);
   }
 
   static void _log(String message, WMTLoggerVerbosity logVerbosity) {

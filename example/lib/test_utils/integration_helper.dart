@@ -160,6 +160,27 @@ class IntegrationHelper {
     return QROperationObjectVerify.fromJson(resp);
   }
 
+  Future<List<NewInboxMessage>> createInboxMessages(int count, { String type = "text" }) async {
+    final List<NewInboxMessage> result = [];
+    for (int i = 0; i < count; i++) {
+      final body = """
+        {
+          "userId":"${userId}",
+          "subject":"Message #${i}",
+          "summary":"This is body for message ${i}",
+          "body":"This is body for message ${i}",
+          "type":"${type}",
+          "silent":true
+        }""";
+      
+      final resp = await _makeCall(body, "${AppConfig.cloudUrl}/v2/inbox/messages");
+      final message = NewInboxMessage.fromJson(resp);
+      result.add(message);
+
+    }
+    return result;
+  }
+
   // --- HELPER FUNCTIONS ---
 
   Future<Map<String, dynamic>> callSDKEndpoint(String endpoint, String body, Map<String, String>? headers) async {
@@ -429,7 +450,39 @@ class QROperationObjectVerify {
       remainingAttempts: json['remainingAttempts']
     );
   }
+}
 
+
+class NewInboxMessage {
+  String id;
+  String subject;
+  String summary;
+  String body;
+  bool read;
+  String type;
+  int timestamp;
+
+  NewInboxMessage({
+    required this.id,
+    required this.subject,
+    required this.summary,
+    required this.body,
+    required this.read,
+    required this.type,
+    required this.timestamp
+  });
+
+  factory NewInboxMessage.fromJson(Map<String, dynamic> json) {
+    return NewInboxMessage(
+      id: json['id'],
+      subject: json['subject'],
+      summary: json['summary'],
+      body: json['body'],
+      read: json['read'],
+      type: json['type'],
+      timestamp: json['timestamp']
+    );
+  }
 }
 
 class ActivationCredentials {

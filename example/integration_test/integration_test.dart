@@ -279,5 +279,66 @@ void main() {
         await wmt.push.register(platform);
       }
     });
+
+    Future<int> _fetchUnreadMessagesCount() async {
+      final resp = await wmt.inbox.getUnreadCount();
+      return resp.countUnread;
+    }
+
+    _compareMessages(List<NewInboxMessage> expected, List<WMTInboxMessage> received) {
+      expect(expected.length, received.length);
+      for (var detail in expected) {
+        final message = received.where( (it) => it.id == detail.id ).firstOrNull;
+        if (message == null) {
+            throw Exception("Message with ID ${detail.id} not found");
+        }
+
+        expect(detail.subject, message.subject);
+        expect(detail.read, message.read);
+        expect(detail.summary, message.summary);
+        expect(detail.type, message.type.value);
+      }
+    }
+
+    test("testInboxMessages", () async {
+      const messagesToTest = 5;
+      expect(await _fetchUnreadMessagesCount(), 0);
+
+      // Now prepare messages
+      final messages = await helper.createInboxMessages(messagesToTest);
+      expect(await _fetchUnreadMessagesCount(), messagesToTest);
+
+      // Read first page
+      final messagesList = await wmt.inbox.getMessageList(0, 50, false);
+      expect(messagesList, isNotNull);
+      _compareMessages(messages, messagesList);
+
+      // Now read first message's detail
+      final firstMessage = messages[0];
+      final detail = await wmt.inbox.getMessageDetail(firstMessage.id);
+
+      expect(firstMessage.id, detail.id);
+      expect(firstMessage.subject, detail.subject);
+      expect(firstMessage.summary, detail.summary);
+      expect(firstMessage.body, detail.body);
+      expect(firstMessage.read, detail.read);
+      expect(firstMessage.type, detail.type.value);
+    });
+
+    test("testMarkMessageRead", () async {
+      const count = 4;
+      final messages = await helper.createInboxMessages(count);
+      final receivedMessages = await wmt.inbox.getMessageList(0, 50, false);
+
+      _compareMessages(messages, receivedMessages);
+
+      // Mark first as read and receive its detail
+      final messageId = receivedMessages[0].id;
+      await wmt.inbox.markRead(messageId); // expect no exception here
+
+      // Now get message detail
+      final messageDetail = await wmt.inbox.getMessageDetail(messageId);
+      expect(messageDetail.read, isTrue);
+    });
   });
 }

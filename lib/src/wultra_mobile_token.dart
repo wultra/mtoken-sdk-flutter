@@ -1,9 +1,10 @@
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 import 'core/logger.dart';
 import 'networking/user_agent.dart';
 import 'operations/operations.dart';
+import 'push/push.dart';
+import 'inbox/inbox.dart';
 
 /// MobileToken class exposes APIs that enable:
 ///  - Fetching, authorizing or rejecting basic
@@ -18,8 +19,11 @@ class WultraMobileToken {
   /// Push networking layer for Wultra Mobile Token API.
   final WMTPush push;
 
+  /// Inbox networking layer for Wultra Mobile Token API.
+  final WMTInbox inbox;
+
   // Private constructor to enforce the use of the factory method.
-  WultraMobileToken._(this.operations, this.push);
+  WultraMobileToken._(this.operations, this.push, this.inbox);
 
   /// 
   /// [powerAuth] PowerAuth instance. Needs to be activated when calling any method of this class - othewise error will be thrown.
@@ -46,22 +50,25 @@ class WultraMobileToken {
 
     final operations = WMTOperations(powerAuth, baseURL);
     final push = WMTPush(powerAuth, baseURL);
+    final inbox = WMTInbox(powerAuth, baseURL);
 
     // set default accept language and user agent
     final lang = acceptLanguage ?? "en";
     operations.acceptLanguage = lang;
     push.acceptLanguage = lang;
+    inbox.acceptLanguage = lang;
 
     final agent = userAgent ?? WMTUserAgent.libraryDefault();
     operations.userAgent = agent;
     push.userAgent = agent;
+    inbox.userAgent = agent;
 
     WMTLogger.debug("Mobile Token object created with:");
     WMTLogger.debug(" - baseURL: $baseURL");
     WMTLogger.debug(" - acceptLanguage: ${acceptLanguage}");
     WMTLogger.debug(" - userAgent: ${agent.description}");
 
-    return WultraMobileToken._(operations, push);
+    return WultraMobileToken._(operations, push, inbox);
   }
 
   /// Sets accept language for the outgoing requests headers for [operations], [push] and [inbox] objects.
@@ -76,7 +83,7 @@ class WultraMobileToken {
   setAcceptLanguage(String lang) {
       operations.acceptLanguage = lang;
       push.acceptLanguage = lang;
-      // inbox.acceptLanguage = lang;
+      inbox.acceptLanguage = lang;
       WMTLogger.info("Accept language set to ${lang} for all services.");
   }
 }

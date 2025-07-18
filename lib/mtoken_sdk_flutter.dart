@@ -6,6 +6,7 @@ export 'src/wultra_mobile_token.dart';
 export 'src/operations/operations.dart';
 export 'src/operations/rejection_reason.dart';
 export 'src/operations/user_operation.dart';
+export 'src/operations/user_operation_attribute.dart';
 export 'src/operations/online_operation.dart';
 export 'src/operations/operation_proximity_check.dart';
 export 'src/operations/qr_operation.dart';
@@ -13,6 +14,11 @@ export 'src/operations/qr_operation_parser.dart';
 
 // Push notifications
 export 'src/push/push.dart';
+
+// Inbox messages
+export 'src/inbox/inbox.dart';
+export 'src/inbox/inbox_message.dart';
+export 'src/inbox/inbox_count.dart';
 
 // Logging
 export 'src/core/logger.dart';

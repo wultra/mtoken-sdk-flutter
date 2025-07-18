@@ -1,11 +1,6 @@
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
-import 'package:mtoken_sdk_flutter/src/operations/user_operation.dart';
-import 'package:mtoken_sdk_flutter/src/operations/user_operation_attribute.dart';
 
 void main() {
 
@@ -228,6 +223,8 @@ void main() {
       expect(expectation, platform.toRequestObject());
     });
   });
+
+  // TODO: more tests (PACUtils, QRPArser tests)
 }
 
 List<WMTUserOperation> getList(String json) {
