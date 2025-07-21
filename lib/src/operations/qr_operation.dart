@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
 import 'qr_operation_parser.dart';
 
 /// The `QROperationData` contains data operation data parsed from QR code.
@@ -110,20 +109,15 @@ class WMTQROperationData {
 
 enum WMTQROperationDataVersion {
   /// First version of operation data.
-  v1("A"),
+  v1,
   /// Type representing all newer versions of operation data (for forward compatibility).
-  vX("Ř"); // inprobable character to act only as a fallback
+  vX; // inprobable character to act only as a fallback
 
-  @internal
-  final String serialized;
-
-  const WMTQROperationDataVersion(this.serialized);
-
-  factory WMTQROperationDataVersion.fromSerialized(String serialized) {
-    return WMTQROperationDataVersion.values.firstWhere(
-      (version) => version.serialized == serialized,
-      orElse: () => WMTQROperationDataVersion.vX,
-    );
+  factory WMTQROperationDataVersion.fromSerialized(int serialized) {
+    switch (serialized) {
+      case 65: return WMTQROperationDataVersion.v1; // 'A' in ASCII
+      default: return WMTQROperationDataVersion.vX;
+    }
   }
 }
 

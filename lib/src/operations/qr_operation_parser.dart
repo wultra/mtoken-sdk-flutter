@@ -125,7 +125,7 @@ class WMTQROperationParser {
     if (versionChar < 'A'.codeUnitAt(0) || versionChar > 'Z'.codeUnitAt(0)) {
         throw WMTLogger.errorAndException("Offline operation: Version has to be an one capital letter (${versionChar} provided instead)");
     }
-    final version = WMTQROperationDataVersion.fromSerialized(versionString);
+    final version = WMTQROperationDataVersion.fromSerialized(versionChar);
 
     final templateIdString = versionString.substring(1);
     final templateId = int.tryParse(templateIdString);
