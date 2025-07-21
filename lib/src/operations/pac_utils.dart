@@ -16,7 +16,7 @@
 
 import 'dart:convert';
 import 'package:mtoken_sdk_flutter/src/utils/json_utils.dart';
-import '../core/logger.dart';
+import '../utils/log_utils.dart';
 
 /// Data payload which is returned from the parser.
 class WMTPACData {
@@ -46,7 +46,7 @@ class WMTPACUtils {
   /// Throws Exception when parsing failed
   static WMTPACData parseDeeplink(String url) {
 
-    WMTLogger.info("Parsing PAC deeplink: ${url}");
+    Log.info("Parsing PAC deeplink: ${url}");
 
     // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
 
@@ -57,7 +57,7 @@ class WMTPACUtils {
       final totp = urlParams["totp"] ?? urlParams["potp"];
 
       if (totp == null) {
-        WMTLogger.info("TOTP not found in URL: ${url}");
+        Log.info("TOTP not found in URL: ${url}");
       }
 
       return WMTPACData(
@@ -71,7 +71,7 @@ class WMTPACUtils {
         return _parseJWT(first.value);
       }
 
-    throw WMTLogger.errorAndException("Failed to parse deeplink. Valid keys not found in URL: ${url}");
+    throw Log.errorAndException("Failed to parse deeplink. Valid keys not found in URL: ${url}");
     }
   }
 
@@ -86,7 +86,7 @@ class WMTPACUtils {
     try {
       return parseDeeplink(code);
     } catch(e) {
-      WMTLogger.info("Parsing JWT: ${code}");
+      Log.info("Parsing JWT: ${code}");
       return _parseJWT(code);
     }
   }
@@ -106,16 +106,16 @@ class WMTPACUtils {
               potp: json['potp'],
             );
           } else {
-            throw WMTLogger.errorAndException("Failed to decode QR JWT from: ${code}");
+            throw Log.errorAndException("Failed to decode QR JWT from: ${code}");
           }
         } catch (e) {
-          throw WMTLogger.errorAndException("Failed to decode QR JWT from: ${code}. With error: ${e}");
+          throw Log.errorAndException("Failed to decode QR JWT from: ${code}. With error: ${e}");
         }
       }
     } else {
-      throw WMTLogger.errorAndException("JWT Payload is empty, jwtParts contain: ${jwtParts}");
+      throw Log.errorAndException("JWT Payload is empty, jwtParts contain: ${jwtParts}");
     }
-    throw WMTLogger.errorAndException("Failed to decode QR JWT from: ${code}");
+    throw Log.errorAndException("Failed to decode QR JWT from: ${code}");
   }
 
   static Map<String, String> _getURLParams(String url) {

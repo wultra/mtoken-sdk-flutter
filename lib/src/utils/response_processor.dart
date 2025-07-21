@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import '../core/logger.dart';
+import '../utils/log_utils.dart';
 
 typedef Resolver<T> = T Function();
 
@@ -22,6 +22,6 @@ T processResponse<T>(String text, Resolver<T> resolver) {
   try {
     return resolver();
   } catch (e) {
-    throw WMTLogger.errorAndException("Failed to deserialize ${text}", additionalData: e);
+    throw Log.errorAndException("Failed to deserialize ${text}", additionalData: e);
   }
 }

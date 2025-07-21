@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'core/logger.dart';
+import 'utils/log_utils.dart';
 import 'networking/user_agent.dart';
 import 'operations/operations.dart';
 import 'push/push.dart';
@@ -78,10 +78,10 @@ class WultraMobileToken {
     push.userAgent = agent;
     inbox.userAgent = agent;
 
-    WMTLogger.debug("Mobile Token object created with:");
-    WMTLogger.debug(" - baseURL: $baseURL");
-    WMTLogger.debug(" - acceptLanguage: ${acceptLanguage}");
-    WMTLogger.debug(" - userAgent: ${agent.description}");
+    Log.debug("Mobile Token object created with:");
+    Log.debug(" - baseURL: $baseURL");
+    Log.debug(" - acceptLanguage: ${acceptLanguage}");
+    Log.debug(" - userAgent: ${agent.description}");
 
     return WultraMobileToken._(operations, push, inbox);
   }
@@ -99,7 +99,7 @@ class WultraMobileToken {
       operations.acceptLanguage = lang;
       push.acceptLanguage = lang;
       inbox.acceptLanguage = lang;
-      WMTLogger.info("Accept language set to ${lang} for all services.");
+      Log.info("Accept language set to ${lang} for all services.");
   }
 }
 

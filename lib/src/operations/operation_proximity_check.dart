@@ -19,8 +19,6 @@ import 'package:meta/meta.dart';
 /// Object that is used to hold data about a proximity check.
 /// Data shall be assigned to the operation when obtained.
 class WMTOperationProximityCheck {
-
-  // TODO: add test for serialization
     
   /// The actual Time-based one time password.
   final String totp;

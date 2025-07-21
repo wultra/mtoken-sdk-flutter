@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import '../core/exception.dart';
-
 /// How much should Mobile Token library log into the console.
 enum WMTLoggerVerbosity {
   /// No logs will be printed.
@@ -44,38 +42,4 @@ class WMTLogger {
 
   /// Include time in the logs?
   static bool includeTime = true;
-
-  // TODO: Make this internal!
-
-  static void debug(String message) {
-    _log(message, WMTLoggerVerbosity.debug);
-  }
-
-  static void info(String message) {
-    _log(message, WMTLoggerVerbosity.info);
-  }
-
-  static void warn(String message) {
-    _log(message, WMTLoggerVerbosity.warn);
-  }
-
-  static void verbose(String message) {
-    _log(message, WMTLoggerVerbosity.verbose);
-  }
-
-  static void error(String message) {
-    _log(message, WMTLoggerVerbosity.error);
-  }
-
-  static WMTException errorAndException(String message, { Object? additionalData }) {
-    _log(message, WMTLoggerVerbosity.error);
-    return WMTException(description: message, additionalData: additionalData);
-  }
-
-  static void _log(String message, WMTLoggerVerbosity logVerbosity) {
-    if (verbosity.level >= logVerbosity.level) {
-        // ignore: avoid_print
-        print("[WMT:${logVerbosity.tag}${includeTime ? " - ${DateTime.now().toIso8601String()}" : ""}] ${message}");
-    }
-  }
 }

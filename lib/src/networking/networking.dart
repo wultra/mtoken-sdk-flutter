@@ -19,8 +19,8 @@ import 'dart:io';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
-import 'package:mtoken_sdk_flutter/src/core/exception.dart';
-import '../core/logger.dart';
+import '../core/exception.dart';
+import '../utils/log_utils.dart';
 import 'known_rest_api_error.dart';
 import '../networking/user_agent.dart';
 
@@ -35,7 +35,7 @@ class WMTNetworking {
 
   set acceptLanguage(String language) {
     _acceptLanguage = language;
-    WMTLogger.info("Accept language set to: ${language}.");
+    Log.info("Accept language set to: ${language}.");
   }
 
   WMTUserAgent userAgent = WMTUserAgent.libraryDefault();
@@ -122,20 +122,16 @@ class WMTNetworking {
         requestProcessor(request.headers);
       }
 
-      WMTLogger.info(" -> OUTGOING POST ${url}");
-      if (WMTLogger.verbosity.level >= WMTLoggerVerbosity.verbose.level) {
-        WMTLogger.verbose(_getHeadersString(request.headers));
-        WMTLogger.verbose(paylodeSerialized);
-      }
+      Log.info(" -> OUTGOING POST ${url}");
+      Log.verbose(_getHeadersString(request.headers));
+      Log.verbose(paylodeSerialized);
 
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();
 
-      WMTLogger.info(" <-- INCOMMING POST ${url}");
-      if (WMTLogger.verbosity.level >= WMTLoggerVerbosity.verbose.level) {
-        WMTLogger.verbose(_getHeadersString(response.headers));
-        WMTLogger.verbose(responseBody);
-      }
+      Log.info(" <-- INCOMMING POST ${url}");
+      Log.verbose(_getHeadersString(response.headers));
+      Log.verbose(responseBody);
 
       final data = jsonDecode(responseBody);
 

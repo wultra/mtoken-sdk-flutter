@@ -16,7 +16,7 @@
 
 import 'dart:convert';
 import 'qr_operation.dart';
-import '../core/logger.dart';
+import '../utils/log_utils.dart';
 
 /// Parser for offline QR operations.
 class WMTQROperationParser {
@@ -41,7 +41,7 @@ class WMTQROperationParser {
     final attributes = string.split("\n");
 
     if (attributes.length < _minimumAttributeFields) {
-      throw WMTLogger.errorAndException("Offline operation: QR operation needs to have at least ${_minimumAttributeFields} attributes but have ${attributes.length}");
+      throw Log.errorAndException("Offline operation: QR operation needs to have at least ${_minimumAttributeFields} attributes but have ${attributes.length}");
     }
 
     // Acquire all attributes
@@ -58,7 +58,7 @@ class WMTQROperationParser {
 
     // Validate operationId
     if (operationId.isEmpty) {
-      throw WMTLogger.errorAndException("Offline operation: QR operation ID is empty!.");
+      throw Log.errorAndException("Offline operation: QR operation ID is empty!.");
     }
 
     final signature = _parseSignature(signatureString);
@@ -66,7 +66,7 @@ class WMTQROperationParser {
     // validate nonce
     final nonceByteArray = base64Decode(nonce);
     if (nonceByteArray.length != 16) {
-        throw WMTLogger.errorAndException("Offline operation: Invalid nonce data length (${nonceByteArray.length})");
+        throw Log.errorAndException("Offline operation: Invalid nonce data length (${nonceByteArray.length})");
     }
 
     // Parse operation data fields
@@ -103,17 +103,17 @@ class WMTQROperationParser {
   /// Returns operation signature object if provided string contains valid key type and signature.
   static WMTQROperationSignature _parseSignature(String signaturePayload) {
     if (signaturePayload.isEmpty) {
-      throw WMTLogger.errorAndException("Empty offline operation signature");
+      throw Log.errorAndException("Empty offline operation signature");
     }
     final rawKey = signaturePayload[0];
     final signingKey = WMTSigningKey.fromSerialized(rawKey);
     if (signingKey == null) {
-      throw WMTLogger.errorAndException("Invalid offline operation signature key: ${rawKey}");
+      throw Log.errorAndException("Invalid offline operation signature key: ${rawKey}");
     }
     final signatureBase64 = signaturePayload.substring(1);
     final signatureByteArray = base64Decode(signatureBase64);
     if (signatureByteArray.length < 64 || signatureByteArray.length > 255) {
-      throw WMTLogger.errorAndException("Invalid offline operation signature data (length ${signatureByteArray.length})");
+      throw Log.errorAndException("Invalid offline operation signature data (length ${signatureByteArray.length})");
     }
     return WMTQROperationSignature(
       signature: signatureByteArray,
@@ -126,19 +126,19 @@ class WMTQROperationParser {
   static WMTQROperationData _parseOperationData(String string) {
     final stringFields = _splitOperationData(string);
     if (stringFields.isEmpty) {
-      throw WMTLogger.errorAndException("No fields at all in the offline operation data");
+      throw Log.errorAndException("No fields at all in the offline operation data");
     }
 
     // Get and check version
     final versionString = stringFields[0];
     if (versionString.length < 2) {
-        throw WMTLogger.errorAndException("Version string needs to be at least 2 characters long ('${versionString}' provided instead)");
+        throw Log.errorAndException("Version string needs to be at least 2 characters long ('${versionString}' provided instead)");
     }
 
     final versionChar = versionString.codeUnitAt(0);
 
     if (versionChar < 'A'.codeUnitAt(0) || versionChar > 'Z'.codeUnitAt(0)) {
-        throw WMTLogger.errorAndException("Offline operation: Version has to be an one capital letter (${versionChar} provided instead)");
+        throw Log.errorAndException("Offline operation: Version has to be an one capital letter (${versionChar} provided instead)");
     }
     final version = WMTQROperationDataVersion.fromSerialized(versionChar);
 
@@ -146,11 +146,11 @@ class WMTQROperationParser {
     final templateId = int.tryParse(templateIdString);
 
     if (templateId == null) {
-        throw WMTLogger.errorAndException("Offline operation: TemplateID is not an integer: ${templateIdString}");
+        throw Log.errorAndException("Offline operation: TemplateID is not an integer: ${templateIdString}");
     }
 
     if (templateId < 0 || templateId > 99) {
-        throw WMTLogger.errorAndException("OfflineOperation: TemplateID is out of range ${templateId}.");
+        throw Log.errorAndException("OfflineOperation: TemplateID is out of range ${templateId}.");
     }
 
     // Parse operation data fields
@@ -234,7 +234,7 @@ class WMTQROperationParser {
     });
 
     if (result.length > _maximumDataFields) {
-      throw WMTLogger.errorAndException("Offline operation: Too many fields (${result.length})");
+      throw Log.errorAndException("Offline operation: Too many fields (${result.length})");
     }
     return result;
   }
@@ -242,13 +242,13 @@ class WMTQROperationParser {
   static WMTAmountField _parseAmount(String string) {
     final value = string.substring(1);
     if (value.length < 4) {
-      throw WMTLogger.errorAndException("Offline operation: Insufficient length for number+currency (${value.length})");
+      throw Log.errorAndException("Offline operation: Insufficient length for number+currency (${value.length})");
     }
     final currency = value.substring(value.length - 3).toUpperCase();
     final amountString = value.substring(0, value.length - 3);
     final amount = double.tryParse(amountString);
     if (amount == null) {
-      throw WMTLogger.errorAndException("Offline operation: Amount is not a number: ${amountString}");
+      throw Log.errorAndException("Offline operation: Amount is not a number: ${amountString}");
     }
     return WMTAmountField(amount, currency);
   }
@@ -259,7 +259,7 @@ class WMTQROperationParser {
     final ibanBic = string.substring(1);
     final components = ibanBic.split(",").where((v) => v.isNotEmpty).toList();
     if (components.length > 2 || components.isEmpty) {
-      throw WMTLogger.errorAndException("Offline operation: Unsupported format for IBAN: ${components}");
+      throw Log.errorAndException("Offline operation: Unsupported format for IBAN: ${components}");
     }
     final iban = components[0];
     final bic = components.length > 1 ? components[1] : null;
@@ -267,14 +267,14 @@ class WMTQROperationParser {
     for (var i = 0; i < iban.length; i++) {
       final c = iban[i];
       if (!allowedChars.contains(c)) {
-          throw WMTLogger.errorAndException("Invalid character in IBAN: ${c}");
+          throw Log.errorAndException("Invalid character in IBAN: ${c}");
       }
     }
     if (bic != null) {
       for (var i = 0; i < bic.length; i++) {
         final c = bic[i];
         if (!allowedChars.contains(c)) {
-          throw WMTLogger.errorAndException("Invalid character in BIC: ${c}");
+          throw Log.errorAndException("Invalid character in BIC: ${c}");
         }
       }
     }
@@ -295,7 +295,7 @@ class WMTQROperationParser {
     final dateString = string.substring(1);
         
     if (dateString.length != 8) {
-      throw WMTLogger.errorAndException("Offline operation: Date needs to be 8 characters long");
+      throw Log.errorAndException("Offline operation: Date needs to be 8 characters long");
     }
     try {
       final year = int.tryParse(dateString.substring(0, 4));
@@ -303,21 +303,21 @@ class WMTQROperationParser {
       final day = int.tryParse(dateString.substring(6, 8));
 
       if (year == null || month == null || day == null) {
-        throw WMTLogger.errorAndException("Offline operation: Year, month and day need to be integers. Year: ${year}, month: ${month}, day: ${day} from ${dateString}");
+        throw Log.errorAndException("Offline operation: Year, month and day need to be integers. Year: ${year}, month: ${month}, day: ${day} from ${dateString}");
       }
 
       if (day < 1 || day > 31) {
-        throw WMTLogger.errorAndException("Offline operation: Day needs to be between 1 and 31. Day: ${day}");
+        throw Log.errorAndException("Offline operation: Day needs to be between 1 and 31. Day: ${day}");
       }
 
       if (month < 1 || month > 12) {
-        throw WMTLogger.errorAndException("Offline operation: Month needs to be between 1 and 12. Month: ${month}");
+        throw Log.errorAndException("Offline operation: Month needs to be between 1 and 12. Month: ${month}");
       }
 
       final date = DateTime(year, month, day);
       return WMTDateField(date);
     } catch (e) {
-      throw WMTLogger.errorAndException("Offline operation: Unparseable date");
+      throw Log.errorAndException("Offline operation: Unparseable date");
     }
   }
 

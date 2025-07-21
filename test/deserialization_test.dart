@@ -223,8 +223,6 @@ void main() {
       expect(expectation, platform.toRequestObject());
     });
   });
-
-  // TODO: more tests (PACUtils, QRPArser tests)
 }
 
 List<WMTUserOperation> getList(String json) {

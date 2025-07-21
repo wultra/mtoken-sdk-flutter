@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import '../core/logger.dart';
+import '../utils/log_utils.dart';
 
 /// Known PowerAuth server error codes.
 enum WMTKnownRestApiError {
@@ -72,7 +72,7 @@ enum WMTKnownRestApiError {
   static WMTKnownRestApiError fromCode(String code) {
     var error = _codeMap[code];
     if (error == null) {
-      WMTLogger.error("Unknown error code: ${code}");
+      Log.error("Unknown error code: ${code}");
     }
     return error ?? WMTKnownRestApiError.genericError; // Fallback to generic error
   }

@@ -32,5 +32,5 @@ abstract class WMTOnlineOperation {
   abstract WMTOperationProximityCheck? proximityCheck;
 
   /// Additional mobile token data for authorization (available with PowerAuth server 1.10+) 
-  abstract Object? mobileTokenData; // TODO: add test for serialization
+  abstract Object? mobileTokenData;
 }
