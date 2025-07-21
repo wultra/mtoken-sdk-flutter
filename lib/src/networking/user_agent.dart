@@ -21,7 +21,9 @@ class WMTUserAgent {
     return WMTUserAgent._(false, false, userAgent);
   }
 
-  // TODO: Make this internal?
+  /// Gets the user agent string.
+  /// 
+  /// Returns null if the user agent is set to system default.
   Future<String?> get() async {
     if (_custom != null) {
       return _custom!;
