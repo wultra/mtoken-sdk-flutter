@@ -19,7 +19,6 @@ void main() {
 
       final operation = WMTQROperationParser.parse(code);
       expect("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId);
-      expect("5ff1b1ed-a3cc-45a3-8ab0-ed60950312b6", operation.operationId);
       expect("Payment", operation.title);
       expect("Please confirm this payment", operation.message);
       expect(operation.flags.biometricsAllowed, isTrue);
@@ -91,7 +90,7 @@ void main() {
       expect(() => WMTQROperationParser.parse(code.makeData()), throwsA(isA<WMTException>()));
     });
 
-    test("testMissingTitleOrMEssage", () {
+    test("testMissingTitleOrMessage", () {
       final code = TestQRData();
       code.title = "";
       code.message = "";
@@ -229,7 +228,7 @@ void main() {
       for (var date in ["D", "D0", "D2004", "D20189999"]) {
         final code = TestQRData();
         code.operationData = "A1*${date}";
-        expect(() => { WMTQROperationParser.parse(code.makeData()) }, throwsA(isA<WMTException>()));
+        expect(() => WMTQROperationParser.parse(code.makeData()), throwsA(isA<WMTException>()));
       }
     });
 
