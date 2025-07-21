@@ -224,8 +224,7 @@ void main() {
       // Test custom user agent
       tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.custom(testUserAgent));
 
-      // TODO: try different endpoint
-      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
+      await tempMtoken.inbox.getMessageList(0, 50, false, requestProcessor: (headers) {
         expect(headers.value("user-agent"), testUserAgent);
       });
 
@@ -233,8 +232,7 @@ void main() {
 
       tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
 
-      // TODO: try different endpoint
-      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
+      await tempMtoken.push.register(WMTPushPlatform.fcm("test"), requestProcessor: (headers) {
         expect(headers.value("user-agent")?.startsWith("Dart"), isTrue); // default user agent is something like "Dart/2.14 (dart:io)"
       });
     });
@@ -251,8 +249,7 @@ void main() {
 
       // set eng lang
       wmt.setAcceptLanguage(en);
-      // TODO: try different endpoint
-      await wmt.operations.getOperations(requestProcessor: (headers) {
+      await wmt.inbox.getMessageList(0, 50, false, requestProcessor: (headers) {
         expect(headers.value("accept-language"), en);
       });
     });
