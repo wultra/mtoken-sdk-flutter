@@ -1,4 +1,5 @@
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
+import 'package:mtoken_sdk_flutter/src/utils/response_processor.dart';
 import '../networking/networking.dart';
 import 'online_operation.dart';
 import 'qr_operation.dart';
@@ -31,8 +32,10 @@ class WMTOperations extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    final list = response as List<dynamic>;
-    return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
+    return processResponse("operations list", () {
+      final list = response as List<dynamic>;
+      return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
+    });
   }
 
   /// Retrieves operation detail based on operation ID.
@@ -50,7 +53,9 @@ class WMTOperations extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    return WMTUserOperation.fromJson(response);
+    return processResponse("operation detail", () {
+      return WMTUserOperation.fromJson(response);
+    });
   }
   
   /// Retrieves the history of user operations with their current status.
@@ -69,8 +74,10 @@ class WMTOperations extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    final list = response as List<dynamic>;
-    return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
+    return processResponse("operations history", () {
+      final list = response as List<dynamic>;
+      return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
+    });
   }
 
   /// Authorize operation with given PowerAuth authentication object.
@@ -144,6 +151,8 @@ class WMTOperations extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    return WMTUserOperation.fromJson(response);
+    return processResponse("operation claim", () {
+      return WMTUserOperation.fromJson(response);
+    });
   }
 }

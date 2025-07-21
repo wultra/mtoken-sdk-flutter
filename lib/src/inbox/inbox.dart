@@ -51,7 +51,6 @@ class WMTInbox extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    // TODO: use this handling for all deserialization (create helper method?)
     return processResponse("inbox message list", () {
       final list = response as List<dynamic>;
       return list.map((item) => WMTInboxMessage.fromJson(item as Map<String, dynamic>)).toList();

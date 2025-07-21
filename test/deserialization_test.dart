@@ -4,7 +4,7 @@ import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 
 void main() {
 
-  group("operationsTests", () {
+  group("deserializationTests", () {
     test('testRealDataNoAttributes', () {
       
       final json = '{ "status": "OK", "responseObject": [ { "id": "8eebd926-40d4-4214-8208-307f01b0b68f", "status": "APPROVED", "name": "authorize_payment", "data": "A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated": "2018-06-21T13:41:41+0000", "operationExpires": "2018-06-21T13:46:45+0000", "allowedSignatureType": { "type": "2FA", "variants": [ "possession_knowledge", "possession_biometry" ] }, "formData": { "title": "Confirm Payment", "message": "Hello,\\nplease confirm following payment:", "attributes": [ ] } } ] }';

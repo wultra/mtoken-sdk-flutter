@@ -7,6 +7,9 @@ set -u # stop when undefined variable is used
 # path to the script folder
 SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+# list available iOS Simulators
+xcrun simctl list devices available
+
 # get the first available iOS Simulator ID
 SIM_ID=$(xcrun simctl list devices available | grep 'iPhone' | head -n 1 | grep -oE '[A-F0-9-]{36}')
 
