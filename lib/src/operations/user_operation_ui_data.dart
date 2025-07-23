@@ -221,7 +221,7 @@ class WMTRedirectPostApprovalScreenPayload {
   }
 }
 
-// --- GENERIC PSOT APPROVAL ---
+// --- GENERIC POST APPROVAL ---
 
 class WMTPostApprovalScreenGeneric extends WMTPostApprovalScreen {
   /// Heading of the post-approval screen.

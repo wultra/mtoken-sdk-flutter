@@ -56,14 +56,14 @@ void main() {
 
       // try to authorize with invalid password
       try {
-        await wmt.operations.auhtorize(detail, await credentials.invalidKnowledge());
+        await wmt.operations.authorize(detail, await credentials.invalidKnowledge());
         fail("Authorization should fail with invalid password");
       } catch (e) {
         expect(e, isA<WMTException>());
       }
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detail, await credentials.knowledge());
+      await wmt.operations.authorize(detail, await credentials.knowledge());
     });
 
     test("testReject", () async {
@@ -96,7 +96,7 @@ void main() {
       expect(detail.mobileTokenData, isNotNull);
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detail, await credentials.knowledge());
+      await wmt.operations.authorize(detail, await credentials.knowledge());
 
       final opAfterApproval = await helper.getOperation(detail.id);
       final mobileTokenData = opAfterApproval.additionalData["mobileTokenData"];
@@ -115,7 +115,7 @@ void main() {
       final detailOp1 = await wmt.operations.getDetail(op1.operationId);
 
       // authorize with correct password
-      await wmt.operations.auhtorize(detailOp1, await credentials.knowledge());
+      await wmt.operations.authorize(detailOp1, await credentials.knowledge());
 
       final history = await wmt.operations.getHistory(await credentials.knowledge());
       expect(history.length, 2);
@@ -181,7 +181,7 @@ void main() {
         timestampReceived: DateTime.now(),
       );
 
-      await wmt.operations.auhtorize(claimed, await credentials.knowledge());
+      await wmt.operations.authorize(claimed, await credentials.knowledge());
     });
 
     test("cancelWithReason", () async {

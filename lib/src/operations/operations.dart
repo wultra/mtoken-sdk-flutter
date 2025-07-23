@@ -102,7 +102,7 @@ class WMTOperations extends WMTNetworking {
   /// - [operation] Operation to authorize.
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
   /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> auhtorize(WMTOnlineOperation operation, PowerAuthAuthentication authentication, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> authorize(WMTOnlineOperation operation, PowerAuthAuthentication authentication, { WMTRequestProcessor? requestProcessor }) async {
 
     final opProxyCheck = operation.proximityCheck;
     Object? proximityRequest;
