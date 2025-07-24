@@ -88,7 +88,7 @@ class WMTNetworking {
 
   @internal
   Future<dynamic> post(
-    String paylodeSerialized,
+    String payloadSerialized,
     String endpointPath,
     Map<String, String> headers,
     WMTRequestProcessor? requestProcessor
@@ -116,7 +116,7 @@ class WMTNetworking {
         request.headers.set(key, value);
       });
 
-      request.write(paylodeSerialized);
+      request.write(payloadSerialized);
 
       if (requestProcessor != null) {
         requestProcessor(request.headers);
@@ -124,7 +124,7 @@ class WMTNetworking {
 
       Log.info(" -> OUTGOING POST ${url}");
       Log.verbose(_getHeadersString(request.headers));
-      Log.verbose(paylodeSerialized);
+      Log.verbose(payloadSerialized);
 
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();

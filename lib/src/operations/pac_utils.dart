@@ -15,7 +15,7 @@
  */
 
 import 'dart:convert';
-import 'package:mtoken_sdk_flutter/src/utils/json_utils.dart';
+import '../utils/json_utils.dart';
 import '../utils/log_utils.dart';
 
 /// Data payload which is returned from the parser.

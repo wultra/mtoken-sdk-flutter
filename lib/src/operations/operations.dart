@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'package:mtoken_sdk_flutter/src/utils/response_processor.dart';
+import '../utils/response_processor.dart';
 import '../networking/networking.dart';
 import 'online_operation.dart';
 import 'qr_operation.dart';
