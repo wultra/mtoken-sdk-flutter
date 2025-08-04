@@ -1,0 +1,22 @@
+name: "Integration Tests Android"
+
+on:
+  push:
+    branches:
+      - develop
+      - release/*
+  pull_request:
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Create .env file
+        run: echo -e "${{ secrets.ENV_FILE }}" > example/.env
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Run Integration on Android
+        run: sh ./scripts/integration-tests-android.sh
