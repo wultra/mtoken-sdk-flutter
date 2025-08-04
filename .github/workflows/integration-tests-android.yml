@@ -19,4 +19,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
       - name: Run Integration on Android
-        run: sh ./scripts/integration-tests-android.sh
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          script: sh ./scripts/integration-tests-android.sh
