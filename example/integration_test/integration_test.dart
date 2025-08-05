@@ -204,7 +204,7 @@ void main() {
       late WultraMobileToken tempMtoken;
       const expectedDefaultUserAgentProductName = "MobileTokenFlutter";
       const testUserAgent = "test-agent";
-      final envInfo = EnvironmentInfo();
+      final envInfo = await PowerAuthUtils.getEnvironmentInfo();
 
       // Test default behavior (libraryDefault)
 
@@ -217,8 +217,8 @@ void main() {
         expect(userAgent.contains(envInfo.systemName), isTrue);
         expect(userAgent.contains(envInfo.deviceId), isTrue);
         expect(userAgent.contains(envInfo.deviceManufacturer), isTrue);
-        expect(userAgent.contains(envInfo.applicationIdentifier), isTrue);
-        expect(userAgent.contains(envInfo.applicationVersion), isTrue);
+        expect(userAgent.contains(envInfo.applicationIdentifier!), isTrue);
+        expect(userAgent.contains(envInfo.applicationVersion!), isTrue);
       });
 
       // Test custom user agent
@@ -228,7 +228,7 @@ void main() {
         expect(headers.value("user-agent"), testUserAgent);
       });
 
-      // Test system default (should be undefined in the request)
+      // Test system default
 
       tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
 

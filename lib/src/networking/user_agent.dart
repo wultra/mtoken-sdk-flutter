@@ -1,4 +1,5 @@
-import '../utils/default_user_agent.dart';
+import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
+import '../core/version.dart';
 
 class WMTUserAgent {
 
@@ -29,7 +30,7 @@ class WMTUserAgent {
       return _custom!;
     }
     if (_libraryDefault) {
-      return WMTDefaultUserAgent.userAgent;
+      return await _defaultUserAgent();
     }
     return null;
   }
@@ -42,5 +43,19 @@ class WMTUserAgent {
       return "WMTUserAgent(libraryDefault)";
     }
     return "WMTUserAgent(systemDefault)";
+  }
+
+  Future<String> _defaultUserAgent() async {
+    final product = "MobileTokenFlutter";
+    final sdkVer = wmtSdkVersion;
+    final envInfo = await PowerAuthUtils.getEnvironmentInfo();
+    final appVer = envInfo.applicationVersion;
+    final appId = envInfo.applicationIdentifier;
+    final maker = envInfo.deviceManufacturer;
+    final model = envInfo.deviceId;
+    final os = envInfo.systemName;
+    final osVer = envInfo.systemVersion;
+    final userAgent = "${product}/${sdkVer} ${appId}/${appVer} (${maker}; ${os}/${osVer}; ${model})";
+    return userAgent;
   }
 }
