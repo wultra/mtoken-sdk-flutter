@@ -9,13 +9,18 @@ on:
 jobs:
   analyze-flutter:
     name: Analyze
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
       - name: Create .env file
         run: echo -e "${{ secrets.ENV_FILE }}" > example/.env
-      - name: Setup
-        uses: ./.github/actions/setup
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          channel: stable
+          version: latest
+      - name: Get Flutter Dependencies
+        run: pushd example && flutter pub get && popd
       - name: Analyze Code
         run: flutter analyze --fatal-warnings
