@@ -7,6 +7,5 @@ set -u # stop when undefined variable is used
 # path to the script folder
 SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-pushd "$SCRIPT_FOLDER/../example"
+cd "$SCRIPT_FOLDER/../example"
 flutter test -r expanded integration_test/integration_test.dart --ignore-timeouts
-popd
