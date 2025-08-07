@@ -16,7 +16,7 @@
 
 import 'dart:convert';
 import 'qr_operation.dart';
-import '../utils/log_utils.dart';
+import '../core/logger.dart';
 
 /// Parser for offline QR operations.
 class WMTQROperationParser {
@@ -329,5 +329,4 @@ class WMTQROperationParser {
       blockWhenOnCall: string.contains("C"),
     );
   }
-
 }

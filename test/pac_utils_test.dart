@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
-import 'package:mtoken_sdk_flutter/src/operations/pac_utils.dart';
 
 void main() {
 

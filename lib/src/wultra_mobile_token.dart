@@ -15,7 +15,7 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'utils/log_utils.dart';
+import 'core/logger.dart';
 import 'networking/user_agent.dart';
 import 'operations/operations.dart';
 import 'push/push.dart';
@@ -78,10 +78,10 @@ class WultraMobileToken {
     push.userAgent = agent;
     inbox.userAgent = agent;
 
-    Log.debug("Mobile Token object created with:");
-    Log.debug(" - baseURL: $baseURL");
-    Log.debug(" - acceptLanguage: ${acceptLanguage}");
-    Log.debug(" - userAgent: ${agent.description}");
+    Log.verbose("Mobile Token object created with:");
+    Log.verbose(" - baseURL: $baseURL");
+    Log.verbose(" - acceptLanguage: ${acceptLanguage}");
+    Log.verbose(" - userAgent: ${agent.description}");
 
     return WultraMobileToken._(operations, push, inbox);
   }

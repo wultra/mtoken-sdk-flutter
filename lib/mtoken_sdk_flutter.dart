@@ -26,6 +26,7 @@ export 'src/operations/online_operation.dart';
 export 'src/operations/operation_proximity_check.dart';
 export 'src/operations/qr_operation.dart';
 export 'src/operations/qr_operation_parser.dart';
+export 'src/operations/pac_utils.dart';
 
 // Push notifications
 export 'src/push/push.dart';
@@ -36,7 +37,7 @@ export 'src/inbox/inbox_message.dart';
 export 'src/inbox/inbox_count.dart';
 
 // Logging
-export 'src/core/logger.dart';
+export 'src/core/logger.dart' show WMTLogger, WMTLoggerVerbosity, WMTLogListener;
 
 // Error handling
 export 'src/networking/known_rest_api_error.dart';

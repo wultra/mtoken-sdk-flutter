@@ -19,8 +19,7 @@ import 'dart:io';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
-import '../core/exception.dart';
-import '../utils/log_utils.dart';
+import '../core/logger.dart';
 import 'known_rest_api_error.dart';
 import '../networking/user_agent.dart';
 
@@ -43,9 +42,12 @@ class WMTNetworking {
   @protected
   final PowerAuth powerAuth;
   final String _baseUrl;
+  final String _name;
 
-  WMTNetworking(this.powerAuth, String baseUrl)
-        : _baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+  WMTNetworking(this.powerAuth, String baseUrl, this._name)
+        : _baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl {
+    Log.verbose("Networking initialized for ${_name} with base URL: ${_baseUrl}.");
+  }
 
   @internal
   Future<dynamic> postSigned(
@@ -55,7 +57,7 @@ class WMTNetworking {
     String uriId,
     { WMTRequestProcessor? requestProcessor }
   ) async {
-
+    Log.verbose(() => "Creating signed request for ${_name} with uriId: ${uriId}.");
     final body = jsonEncode(requestData);
     final paHeader = await powerAuth.requestSignature(auth, "POST", uriId, body);
 
@@ -74,17 +76,17 @@ class WMTNetworking {
     String tokenName,
     { WMTRequestProcessor? requestProcessor }
   ) async {
+    Log.verbose(() => "Creating token signed request for ${_name}.");
+    final body = jsonEncode(requestData);
+    final token = await powerAuth.tokenStore.requestAccessToken(tokenName, auth);
+    final paHeader = await powerAuth.tokenStore.generateHeaderForToken(token.tokenName);
 
-        final body = jsonEncode(requestData);
-        final token = await powerAuth.tokenStore.requestAccessToken(tokenName, auth);
-        final paHeader = await powerAuth.tokenStore.generateHeaderForToken(token.tokenName);
+    final headers = {
+      paHeader.key: paHeader.value
+    };
 
-        final headers = {
-          paHeader.key: paHeader.value
-        };
-
-        return await post(body, endpoindPath, headers, requestProcessor);
-    }
+    return await post(body, endpoindPath, headers, requestProcessor);
+  }
 
   @internal
   Future<dynamic> post(
@@ -123,15 +125,15 @@ class WMTNetworking {
       }
 
       Log.info(" -> OUTGOING POST ${url}");
-      Log.verbose(_getHeadersString(request.headers));
-      Log.verbose(payloadSerialized);
+      Log.verbose(() => _getHeadersString(request.headers));
+      Log.debug(payloadSerialized);
 
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();
 
-      Log.info(" <-- INCOMMING POST ${url}");
-      Log.verbose(_getHeadersString(response.headers));
-      Log.verbose(responseBody);
+      Log.info(" <-- INCOMMING POST ${url}, status code ${response.statusCode}");
+      Log.verbose(() => _getHeadersString(response.headers));
+      Log.debug(responseBody);
 
       final data = jsonDecode(responseBody);
 
@@ -139,7 +141,7 @@ class WMTNetworking {
 
       if (data["status"] != "OK") {
         final error = WMTResponseError.fromJson(responseObject as Map<String, dynamic>);
-        throw WMTException(description: "Error response: ${error.message} (code: ${error.code})");
+        throw Log.errorAndException("Error response: ${error.message} (code: ${error.code})");
       }
 
       return responseObject;

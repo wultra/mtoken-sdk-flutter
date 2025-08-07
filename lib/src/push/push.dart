@@ -26,7 +26,7 @@ final class WMTPush extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTPush(super.powerAuth, super.baseUrl);
+  WMTPush(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTPush");
 
   /// Registers the PowerAuth activation for push notifications on the PowerAuth backend.
   /// 
@@ -125,11 +125,16 @@ final class WMTPushPlatform {
 
 /// Environment for Apple Push Notification Service (APNs).
 enum WMTPushApnsEnvironment {
+
+  /// APNs environment for development (developer-signed builds).
   development("development"),
+
+  /// APNs environment for production (AppStore or TestFlight builds).
   production("production");
 
   @internal
   final String value;
+  @internal
   const WMTPushApnsEnvironment(this.value);
 }
 

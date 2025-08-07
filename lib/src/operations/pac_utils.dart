@@ -16,7 +16,7 @@
 
 import 'dart:convert';
 import '../utils/json_utils.dart';
-import '../utils/log_utils.dart';
+import '../core/logger.dart';
 
 /// Data payload which is returned from the parser.
 class WMTPACData {
@@ -33,9 +33,9 @@ class WMTPACData {
   });
 }
 
+/// Utility class for Proximity Antifraud Check (PAC) handling.
 class WMTPACUtils {
   
-
   /// Method accepts deeplink URL and returns payload data or throws and exception.
   /// 
   /// Params: 
@@ -46,7 +46,7 @@ class WMTPACUtils {
   /// Throws Exception when parsing failed
   static WMTPACData parseDeeplink(String url) {
 
-    Log.info("Parsing PAC deeplink: ${url}");
+    Log.verbose("Parsing PAC deeplink: ${url}");
 
     // Deeplink can have two query items with operationId & optional totp or single query item with JWT value
 
