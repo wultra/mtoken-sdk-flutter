@@ -100,7 +100,7 @@ typedef WMTLogListener = void Function(String message, WMTLoggerVerbosity verbos
 
   static void _log(dynamic object, WMTLoggerVerbosity logVerbosity) {
     final isVerbosityAllowed = WMTLogger.verbosity.level >= logVerbosity.level;
-    // log only if the verbosity level is allowed or log listeer does not follow the verbosity level
+    // log only if the verbosity level is allowed or log listener does not follow the verbosity level
     if (_logListener?._followVerboseLevel == false || isVerbosityAllowed) {
       
       final String message;

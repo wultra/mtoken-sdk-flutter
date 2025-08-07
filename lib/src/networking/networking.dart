@@ -57,7 +57,7 @@ class WMTNetworking {
     String uriId,
     { WMTRequestProcessor? requestProcessor }
   ) async {
-    Log.verbose(() => "Creating signed request for ${_name} with uriId: ${uriId}.");
+    Log.verbose("Creating signed request for ${_name} with uriId: ${uriId}.");
     final body = jsonEncode(requestData);
     final paHeader = await powerAuth.requestSignature(auth, "POST", uriId, body);
 
@@ -76,7 +76,7 @@ class WMTNetworking {
     String tokenName,
     { WMTRequestProcessor? requestProcessor }
   ) async {
-    Log.verbose(() => "Creating token signed request for ${_name}.");
+    Log.verbose("Creating token signed request for ${_name}.");
     final body = jsonEncode(requestData);
     final token = await powerAuth.tokenStore.requestAccessToken(tokenName, auth);
     final paHeader = await powerAuth.tokenStore.generateHeaderForToken(token.tokenName);
