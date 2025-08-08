@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-import '../core/logger.dart';
+import '../networking/known_rest_api_error.dart';
 
-typedef Resolver<T> = T Function();
+/// Error object when error on the server happens.
+class WMTResponseError {
+  /// Error code, which is one of the [WMTKnownRestApiError] values.
+  WMTKnownRestApiError code;
+  /// Error message, which is usually localized message for the user.
+  String message;
 
-T processResponse<T>(String text, Resolver<T> resolver) {
-  try {
-    return resolver();
-  } catch (e) {
-    throw Log.errorAndException("Failed to deserialize ${text}", originalException: e);
+  WMTResponseError(this.code, this.message);
+
+  factory WMTResponseError.fromJson(Map<String, dynamic> json) {
+    final code = WMTKnownRestApiError.fromCode(json['code'] as String);
+    return WMTResponseError(code, json['message'] as String);
   }
 }

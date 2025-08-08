@@ -72,7 +72,7 @@ enum WMTKnownRestApiError {
   static WMTKnownRestApiError fromCode(String code) {
     var error = _codeMap[code];
     if (error == null) {
-      Log.error("Unknown error code: ${code}");
+      Log.error("Unknown error code '${code}', falling back to generic error.");
     }
     return error ?? WMTKnownRestApiError.genericError; // Fallback to generic error
   }

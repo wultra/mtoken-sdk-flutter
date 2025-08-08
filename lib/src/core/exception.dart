@@ -14,14 +14,31 @@
  * limitations under the License.
  */
 
+import '../networking/response_error.dart';
+
 /// Possible logic errors during the API calls.
 class WMTException {
 
   /// Description of the Exception.
   String description;
 
-  /// Optional additional data that helps with the exception.
-  Object? additionalData;
-  
-  WMTException({ required this.description, this.additionalData });
+  /// If the exception is caused by an original exception, this field contains it.
+  Object? originalException;
+
+  /// Response error if the exception is caused by a server error.
+  WMTResponseError? responseError;
+
+  WMTException({ required this.description, this.originalException, this.responseError });
+
+  @override
+  String toString() {
+    final buffer = StringBuffer("WMTException: ${description}");
+    if (originalException != null) {
+      buffer.write(" (original exception: ${originalException})");
+    }
+    if (responseError != null) {
+      buffer.write(" (server response error: message ${responseError!.message}, code: ${responseError!.code})");
+    }
+    return buffer.toString();
+  }
 }
