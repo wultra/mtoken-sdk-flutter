@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import '../core/logger.dart';
+
 /// Operation Attribute can be visualized as "1 row in operation screen".
 /// 
 /// Every type of the attribute has it's own "strongly typed" implementation.
@@ -83,7 +85,10 @@ enum WMTAttributeType {
   static WMTAttributeType fromSerialized(String serialized) {
     return WMTAttributeType.values.firstWhere(
       (type) => type._serialized == serialized,
-      orElse: () => WMTAttributeType.unknown // Fallback to unknown if not found
+      orElse: ()  {
+        Log.error("Unknown WMTAttributeType serialized value: $serialized");
+        return WMTAttributeType.unknown; // Fallback to unknown if not found
+      }
     );
   }
 }

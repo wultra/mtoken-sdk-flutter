@@ -15,10 +15,9 @@
  */
 
 import 'dart:typed_data';
-
 import 'qr_operation_parser.dart';
 
-/// The `QROperationData` contains data operation data parsed from QR code.
+/// Contains operation data parsed from the offline operation QR code.
 class WMTQROperation {
   
   /// Operation's identifier.

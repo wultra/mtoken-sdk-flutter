@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import '../utils/log_utils.dart';
+import '../core/logger.dart';
 
 typedef Resolver<T> = T Function();
 

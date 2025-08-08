@@ -17,7 +17,6 @@
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'inbox_message.dart';
 import '../utils/response_processor.dart';
-
 import 'inbox_count.dart';
 import '../networking/networking.dart';
 
@@ -29,7 +28,7 @@ class WMTInbox extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTInbox(super.powerAuth, super.baseUrl);
+  WMTInbox(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTInbox");
 
   /// Get number of unread messages in the inbox.
   /// 
