@@ -164,7 +164,7 @@ void main() {
       expect(detail.status, WMTUserOperationStatus.pending);
     });
 
-    test("testClaim", () async {
+    test("testClaimWithTOTP", () async {
       final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: true);
 
       // claim the operation
@@ -175,11 +175,19 @@ void main() {
       final totp = (await helper.getOperation(op.operationId)).proximityOtp;
       expect(totp, isNotNull);
 
-      claimed.proximityCheck = WMTOperationProximityCheck(
-        totp: totp!,
-        type: WMTProximityCheckType.qrCode,
-        timestampReceived: DateTime.now(),
-      );
+      claimed.proximityCheck = await WMTOperationProximityCheck.withSynchronizedTime(totp: totp ?? "", type: WMTProximityCheckType.qrCode, powerAuth: sdk);
+
+      await wmt.operations.authorize(claimed, await credentials.knowledge());
+    });
+
+    test("testClaimWithoutTOTP", () async {
+      final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: false);
+
+      // claim the operation
+      final claimed = await wmt.operations.claim(op.operationId);
+
+      final totp = (await helper.getOperation(op.operationId)).proximityOtp;
+      expect(totp, isNull);
 
       await wmt.operations.authorize(claimed, await credentials.knowledge());
     });
