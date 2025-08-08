@@ -175,11 +175,7 @@ void main() {
       final totp = (await helper.getOperation(op.operationId)).proximityOtp;
       expect(totp, isNotNull);
 
-      claimed.proximityCheck = WMTOperationProximityCheck(
-        totp: totp!,
-        type: WMTProximityCheckType.qrCode,
-        timestampReceived: DateTime.fromMillisecondsSinceEpoch(await sdk.timeSynchronizationService.currentTime()),
-      );
+      claimed.proximityCheck = await WMTOperationProximityCheck.withSynchronizedTime(totp: totp ?? "", type: WMTProximityCheckType.qrCode, powerAuth: sdk);
 
       await wmt.operations.authorize(claimed, await credentials.knowledge());
     });
