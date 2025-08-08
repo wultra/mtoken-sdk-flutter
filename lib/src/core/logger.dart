@@ -94,9 +94,9 @@ typedef WMTLogListener = void Function(String message, WMTLoggerVerbosity verbos
     _log(object, WMTLoggerVerbosity.error);
   }
 
-  static WMTException errorAndException(String message, { WMTResponseError? serverError, Object? originalException}) {
+  static WMTException errorAndException(String message, { WMTResponseError? responseError, Object? originalException}) {
     _log(() => message, WMTLoggerVerbosity.error);
-    return WMTException(description: message, originalException: originalException, responseError: serverError);
+    return WMTException(description: message, originalException: originalException, responseError: responseError);
   }
 
   static void _log(dynamic object, WMTLoggerVerbosity logVerbosity) {
