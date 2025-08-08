@@ -107,7 +107,13 @@ class WMTOperations extends WMTNetworking {
     final opProxyCheck = operation.proximityCheck;
     Object? proximityRequest;
     if (opProxyCheck != null) {
-        proximityRequest = { "otp": opProxyCheck.totp, "type": opProxyCheck.type.serialized, "timestampReceived": opProxyCheck.timestampReceived.millisecondsSinceEpoch, "timestampSent": DateTime.now().millisecondsSinceEpoch };
+      proximityRequest = { 
+        "otp": opProxyCheck.totp,
+        "type": opProxyCheck.type.serialized,
+        "timestampReceived": opProxyCheck.timestampReceived.millisecondsSinceEpoch,
+        // we do not synchronize time here for simplicity, just take the value
+        "timestampSent": await powerAuth.timeSynchronizationService.currentTime()
+      };
     }
 
     await postSigned(
@@ -119,7 +125,7 @@ class WMTOperations extends WMTNetworking {
     );
   }
 
-  ///Reject operation with a reason.
+  /// Reject operation with a reason.
   /// 
   /// Params: 
   /// - [operationId] ID of the operation.
