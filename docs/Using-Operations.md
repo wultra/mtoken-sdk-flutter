@@ -123,7 +123,7 @@ final operation = await mtoken.operations.getDetail(operationId);
 
 ## Claim the Operation
 
-To claim a non-persolized operation use `claim`. 
+To claim a non-personalized operation use `claim`. 
 
 A non-personalized operation refers to an operation that is initiated without a specific userId. In this state, the operation is not tied to a particular user. 
 

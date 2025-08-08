@@ -142,7 +142,7 @@ class WMTNetworking {
 
       if (data["status"] != "OK") {
         final error = WMTResponseError.fromJson(responseObject as Map<String, dynamic>);
-        throw WMTException(description: "Error response retrieved", responseError: error);
+        throw WMTException(description: "Error response retrieved", serverError: error);
       }
 
       return responseObject;
