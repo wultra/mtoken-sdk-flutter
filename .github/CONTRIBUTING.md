@@ -1,6 +1,6 @@
 # Welcome to the Wultra Mobile Token SDK Flutter repository!
 
-In this file, you'll find several topics that will help you with the contribution process, how to create pull requests and how to prepare a new release.
+In this file, you'll find several topics that will help you with the contribution process, how to run tests, how to create pull requests and how to prepare a new release.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -14,10 +14,10 @@ In this file, you'll find several topics that will help you with the contributio
 > [!WARNING]
 > If you're not a Wultra employee or contractor, please fill out the [Wultra Contributor License Agreement](https://forms.gle/r715RoVDoji4GD7K7) before you start contributing.
 
-> [!INFO]
+> [!NOTE]
 > We recommend development on the macOS platform, as the iOS simulator is only available on macOS. However, you can also develop on Windows or Linux, but you will need a Mac to build and test the iOS version of the SDK.
 
-> [!INFO]
+> [!NOTE]
 > Our recommended IDE for development is [Visual Studio Code](https://code.visualstudio.com/) with [Flutter Extension](https://marketplace.visualstudio.com/items?itemName=Dart-Code.flutter) installed.
 >
 > You can use other IDEs that are capable of Flutter development, but we recommend using Visual Studio Code for its simplicity and ease of use.
@@ -68,7 +68,7 @@ flutter test
 
 Integration test are located in the `example/integration_test` directory.
 
-> [!INFO]
+> [!NOTE]
 > To run the test on desired device, we recommend using the UI of the flutter extension in Visual Studio Code.
 >
 > When integration tests are run from the command line, the first available device is used. If you want to run the tests on a specific device, you can use the `-d` option with the device ID.
@@ -136,7 +136,7 @@ The versioning of the SDK follows the [Semantic Versioning](https://semver.org/)
 
 ### Creating a Release (example scenario)
 
-> [!INFO]
+> [!NOTE]
 > This scenario describes how to create a new `1.2.0` release of the SDK from the HEAD of the `develop` branch.
 
 1. Create an issue for the new release, e.g. `Prepare release 1.2.0`. Add info what is the reason for the release.
@@ -167,4 +167,3 @@ The versioning of the SDK follows the [Semantic Versioning](https://semver.org/)
     - Click on "Draft a new release".
     - Select the `1.2.0` tag you just created.
     - Fill in the release title and description. The description should contain a summary of the changes made in the release, which can be copied from the `CHANGELOG.md` file.
-    
