@@ -38,7 +38,7 @@ The default value will look like: `MobileTokenFlutter/1.0.0 my.company.example/2
 
 ```dart
 // create the WultraMobileToken instance set to french and with custom user agent
-final mtoken = powerAuth.createMobileToken(acceptLanguage: "fr", userAgent:"MyCustomUserAgent");
+final mtoken = powerAuth.createMobileToken(acceptLanguage: "fr", userAgent: "MyCustomUserAgent");
 
 // If needed, you can change the language at runtime
 mtoken.setAcceptLanguage("de"); // set "requested content" to german language
