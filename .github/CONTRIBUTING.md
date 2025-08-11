@@ -34,16 +34,16 @@ The project structure is organized as follows (the most important files and dire
 
 ```
 mtoken-sdk-flutter/
-├── .github                  # GitHub-related files (workflows, contributing guidelines)
+├── .github/                 # GitHub-related files (workflows, contributing guidelines)
 ├── docs/                    # Documentation files that will be published on developers.wultra.com
 ├── example/                 # Host application for the integration tests
 │   ├── .env                 # Environment variables for the integration tests
-│   ├── .env-example         # Example Environment variables for the integration tests
+│   ├── .env-example         # Example environment variables for the integration tests
 │   ├── integration_test/    # Integration tests for the SDK
 ├── lib/                     # Main library code
 │   ├── src/                 # Source code of the SDK
 │   ├── mtoken_sdk_flutter.dart  # Public API of the SDK
-|── scripts/                 # Scripts for building and testing
+|── scripts/                 # Scripts for building, testing, releasing
 ├── test/                    # Unit tests for the SDK
 |── CHANGELOG.md             # Changelog of the SDK that is visible on pub.dev
 ├── pubspec.yaml             # Project metadata and dependencies
@@ -54,6 +54,7 @@ mtoken-sdk-flutter/
 
 Before you run the tests, make sure:
 - the `example/.env` file is set up correctly. You can use the `.env-example` file as a reference.
+  - variables needed can be provided by the Wultra team or your own development team in case of self-hosted environments
 - dependencies in the `example` directory are installed by running `flutter pub get`.
 
 ### Unit Tests
@@ -114,7 +115,7 @@ flutter test -r expanded integration_test/integration_test.dart # test with expa
 
 ### Release Versioning
 
-The versioning of the SDK follows the [Semantic Versioning](https://semver.org/) principles. The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`.
+The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`.
 
 - The `major` version is incremented when a milestone is reached, e.g. a platform version is updated or major principle is changed.
 - The `minor` version is incremented when a new feature is added or a significant change is made. Minor changes can be API incompatible, but they should not break existing functionality.
