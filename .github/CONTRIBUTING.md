@@ -26,6 +26,7 @@ Before you start development, make sure you have the following prerequisites:
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) installed.
 - [Android Studio](https://developer.android.com/studio) installed for Android development.
 - [Xcode](https://developer.apple.com/xcode/) (for iOS development) installed on your Mac.
+- [CocoaPods](https://guides.cocoapods.org/using/getting-started.html) installed for iOS development.
 - Flutter-capable IDE installed (Visual Studio Code with Flutter Extension is recommended).
 
 ## Project Structure
@@ -56,6 +57,7 @@ Before you run the tests, make sure:
 - the `example/.env` file is set up correctly. You can use the `.env-example` file as a reference.
   - variables needed can be provided by the Wultra team or your own development team in case of self-hosted environments
 - dependencies in the `example` directory are installed by running `flutter pub get`.
+- CocoaPods dependencies are installed for iOS by running `pod install` in the `example/ios` directory.
 
 ### Unit Tests
 
@@ -95,10 +97,10 @@ flutter test -r expanded integration_test/integration_test.dart # test with expa
 2. Make your changes and commit them with a clear commit message that describes the changes you made.
 3. Push your changes to the remote repository.
 4. Create a pull request from your branch to the `develop` branch of the repository.
- - Pick a descriptive title for your pull request that summarizes the changes you made.
- -  In the pull request description, reference the issue you are addressing by using `#issue-number`, e.g. `#123`. This will automatically link the pull request to the issue.
- - If you're not a Wultra employee or contractor, wait for a Wultra team member to review your pull request and approve workflows to run.
- - If you're a Wultra employee or contractor, wait for all workflows to pass and then request review from a Wultra maintainer.
+    - Pick a descriptive title for your pull request that summarizes the changes you made.
+    -  In the pull request description, reference the issue you are addressing by using `#issue-number`, e.g. `#123`. This will automatically link the pull request to the issue.
+    - If you're not a Wultra employee or contractor, wait for a Wultra team member to review your pull request and approve workflows to run.
+    - If you're a Wultra employee or contractor, wait for all workflows to pass and then request review from a Wultra maintainer.
 
 ## Preparing a New Release
 
@@ -142,17 +144,17 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
 
 1. Create an issue for the new release, e.g. `Prepare release 1.2.0`. Add info what is the reason for the release.
 2. Prepare new branch from `develop` branch without any changes (if a release branch does not exist yet) and push it to the remote repository without any changes. Release branches are protected and can be created only by Wultra employees or contractors.:
-   - `git checkout develop`
-   - `git pull origin develop`
-   - `git checkout -b release/1.2.x`
-   - `git push -u origin release/1.2.x`
+    - `git checkout develop`
+    - `git pull origin develop`
+    - `git checkout -b release/1.2.x`
+- `git push -u origin release/1.2.x`
 3. Create a new branch for the exact release (for example `issues/65-prepare-release-1_2_0`).
 4. Make sure that all the files mentioned in the [each release should contain following changes](#each-release-should-contain-following-changes) section are updated correctly.
 5. Commit the changes with a clear commit message, e.g. `Prepare release 1.2.0`.
 6. Push the changes to the remote repository.
 7. Create a pull request from the `issues/65-prepare-release-1_2_0` branch to the `release/1.2.x` branch.
-   - The pull request title should be `Prepare release 1.2.0`.
-   - The pull request description should reference the issue you created in the first step, e.g. `#65`.
+    - The pull request title should be `Prepare release 1.2.0`.
+    - The pull request description should reference the issue you created in the first step, e.g. `#65`.
 8. Wait for the pull request to be reviewed and approved by a Wultra team member.
 9. Once the pull request is approved, merge it into the `release/1.2.x` branch using the "Squash and merge" option. This will ensure that the git history is linear, and the commit message is clear.
 10. Run the `Release` GitHub action to create a new tag and publish the release:
@@ -168,3 +170,4 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
     - Click on "Draft a new release".
     - Select the `1.2.0` tag you just created.
     - Fill in the release title and description. The description should contain a summary of the changes made in the release, which can be copied from the `CHANGELOG.md` file.
+12. Verify that the release is published on pub.dev
