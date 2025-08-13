@@ -161,6 +161,8 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
     - Go to the "Actions" tab in the GitHub repository.
     - Select the "Release" workflow.
     - Click on "Run workflow" and select the `release/1.2.x` branch.
+    - Enter the version number `1.2.0` in the `version` input field.
+    - Enter the pub.dev token in the `pubDevToken` input field. This ensures that the released will link the release to the user who created it.
     - Click on "Run workflow" button to start the workflow.
     - Wait for the workflow to finish. It will create a new tag in the format `1.2.0` and push it to the remote repository.
     - If the tag or release already exists, the workflow will fail, and you need to fix the issue before proceeding.
