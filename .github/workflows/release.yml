@@ -1,0 +1,38 @@
+name: "Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.0)'     
+        required: true
+      # we want token to explicitely see in the pub.dev who released the package
+      # and by this, we also avoid setting the token in the repository secrets
+      pubDevToken:
+        description: 'Pub.dev token to use for the release'
+        required: true
+
+jobs:
+  release-package:
+    name: Release Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Setup Flutter SDK
+        uses: flutter-actions/setup-flutter@54feb1e258158303e041b9eaf89314dcfbf6d38a
+        with:
+          channel: stable
+          version: latest
+      - name: Verify that the release is prepared
+        run: sh scripts/prepare-release.sh ${{ github.event.inputs.version }} --verify
+      - name: Set pub.dev token
+        run: dart pub token add https://pub.dev --env-var ${{ github.event.inputs.pubDevToken }}
+      - name: Create Tag
+        run: |
+          git config --local user.email "deployer@wultra.com"
+          git config --local user.name "GitHub Action Deployer"
+          git tag -a "${{ github.event.inputs.version }}" -m "GitHub Action Automated release ${{ github.event.inputs.version }}"
+          git push origin "${{ github.event.inputs.version }}"
+      - name: Publish to pub.dev
+        run: dart pub publish
