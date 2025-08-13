@@ -147,7 +147,7 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
     - `git checkout develop`
     - `git pull origin develop`
     - `git checkout -b release/1.2.x`
-- `git push -u origin release/1.2.x`
+    - `git push -u origin release/1.2.x`
 3. Create a new branch for the exact release (for example `issues/65-prepare-release-1_2_0`).
 4. Make sure that all the files mentioned in the [each release should contain following changes](#each-release-should-contain-following-changes) section are updated correctly.
 5. Commit the changes with a clear commit message, e.g. `Prepare release 1.2.0`.
