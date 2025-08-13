@@ -27,7 +27,7 @@ jobs:
       - name: Verify that the release is prepared
         run: sh scripts/prepare-release.sh ${{ github.event.inputs.version }} --verify
       - name: Set pub.dev token
-        run: dart pub token add https://pub.dev --env-var ${{ github.event.inputs.pubDevToken }}
+        run: flutter pub token add https://pub.dev --env-var ${{ github.event.inputs.pubDevToken }}
       - name: Create Tag
         run: |
           git config --local user.email "deployer@wultra.com"
@@ -35,4 +35,4 @@ jobs:
           git tag -a "${{ github.event.inputs.version }}" -m "GitHub Action Automated release ${{ github.event.inputs.version }}"
           git push origin "${{ github.event.inputs.version }}"
       - name: Publish to pub.dev
-        run: dart pub publish
+        run: flutter pub publish
