@@ -6,8 +6,8 @@ set -u # stop when undefined variable is used
 
 ######### USAGE #########
 # This script prepares the release of the Flutter package by running the JavaScript script from Wultra infrastructure repository.
-# If can be run in 3 modes:
-# 1. With a version argument: it will prepare the release with the current verion in the pubspec.yaml file.
+# It can be run in 3 modes:
+# 1. With a version argument: it will prepare the release with the current version in the pubspec.yaml file.
 #    Example: sh scripts/prepare-release.sh 1.0.0
 # 2. With a version argument and --verify: it will verify that the given release version is prepared.
 #    Example: sh scripts/prepare-release.sh 1.0.0 --verify
@@ -32,7 +32,7 @@ echo "Downloading prepare-release.js script from Wultra infrastructure repositor
 curl -fsSL "$URL" -o "$TMP_FILE"
 
 # Run the file with Node.js in a root directory of the repository
-COMMAND="node $TMP_FILE -p $SCRIPT_FOLDER/.." # --ignore-git-clean" 
+COMMAND="node $TMP_FILE -p $SCRIPT_FOLDER/.." # --ignore-git-clean" # uncomment to ignore git clean errors
 if [ $# -ge 1 ]; then
   COMMAND="$COMMAND -v $1"
 fi

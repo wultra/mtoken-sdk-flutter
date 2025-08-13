@@ -6,11 +6,6 @@ on:
       version:
         description: 'Version to release (e.g. 1.0.0)'     
         required: true
-      # we want token to explicitely see in the pub.dev who released the package
-      # and by this, we also avoid setting the token in the repository secrets
-      pubDevToken:
-        description: 'Pub.dev token to use for the release'
-        required: true
 
 jobs:
   release-package:
@@ -27,7 +22,7 @@ jobs:
       - name: Verify that the release is prepared
         run: sh scripts/prepare-release.sh ${{ github.event.inputs.version }} --verify
       - name: Set pub.dev token
-        run: flutter pub token add https://pub.dev --env-var ${{ github.event.inputs.pubDevToken }}
+        run: flutter pub token add https://pub.dev --env-var ${{ secrets.PUB_DEV_TOKEN }}
       - name: Create Tag
         run: |
           git config --local user.email "deployer@wultra.com"
