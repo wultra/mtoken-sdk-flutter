@@ -1,0 +1,7 @@
+.env
+docs
+build
+*.log
+.prepare-release.json
+scripts
+.idea
