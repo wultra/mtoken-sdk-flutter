@@ -125,17 +125,17 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
 
 ### Each release should contain following changes
 
+> [!TIP]
+> You can use the `scripts/prepare-release.sh` script to prepare all the necessary files for a new release.
+> 
+> If you pass a `--verify` flag to the script, it will check if all the files are updated correctly and will not allow you to proceed with the release if any of the files are not updated.
+
 - updated `pubspec.yaml` file with the new version number
 - updated `lib/src/core/version.dart` file with the new version number
 - updated `CHANGELOG.md` file with the new version number and a summary of the changes for pub.dev
 - updated `docs/changelog.md` file with the new version number and a summary of the changes for Wultra developers documentation
 - _(if needed)_ updated `docs/Readme.md` file with the new version and compatibility information
 - _(if needed)_ updated `docs/SDK-Integration.md` file with the new version and compatibility information
-
-> [!TIP]
-> You can use the `scripts/prepare-release.sh` script to prepare all the necessary files for a new release.
-> 
-> If you pass a `--verify` flag to the script, it will check if all the files are updated correctly and will not allow you to proceed with the release if any of the files are not updated.
 
 ### Creating a Release (example scenario)
 
