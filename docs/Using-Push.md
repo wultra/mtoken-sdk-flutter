@@ -3,8 +3,8 @@
 <!-- begin remove -->
 - [Introduction](#introduction)
 - [Getting an Instance](#getting-an-instance)
-- [WMTPush API Reference](#wmtpush-api-reference)
 - [Registering to Push Notifications Example](#registering-to-push-notifications-example)
+
 ## Introduction
 <!-- end -->
 
@@ -34,7 +34,7 @@ final push = mtoken.push;
 ```dart
 String token; // Push token from the platform (e.g. Firebase Cloud Messaging or Apple Push Notification service)
 
-// for the sake of the exaple, we assume the token is for FCM
+// for the sake of the example, we assume the token is for FCM
 final data = WMTPushPlatform.fcm(token);
 await mtoken.push.register(data);
 ```

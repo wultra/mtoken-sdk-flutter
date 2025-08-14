@@ -17,8 +17,6 @@ The library is available for the following __Flutter 3.3.0+__ platforms:
 - __Android 5.0 (API 21)__ and newer
 - __iOS 13.4__ and newer
 
-    ### How To Install
-
 ## How To Install
 
 ### 1. Prerequisites
@@ -76,7 +74,7 @@ pod install
 cd ..
 ```
 
-#### 3. Import in your dart files
+#### 4. Import in your Dart files
 
 ```dart
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';

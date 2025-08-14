@@ -8,7 +8,6 @@
   - [Get List of Messages](#get-list-of-messages)
   - [Get Message Detail](#get-message-detail)
   - [Set Message as Read](#set-message-as-read)
-- [Error handling](#error-handling)
 
 ## Introduction
 <!-- end -->
