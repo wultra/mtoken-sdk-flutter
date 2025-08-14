@@ -19,9 +19,10 @@ import 'dart:io';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
+import 'user_agent.dart';
+import 'response_error.dart';
+import '../core/exception.dart';
 import '../core/logger.dart';
-import 'known_rest_api_error.dart';
-import '../networking/user_agent.dart';
 
 typedef WMTRequestProcessor = void Function(HttpHeaders);
 
@@ -97,10 +98,10 @@ class WMTNetworking {
   ) async {
 
     final client = HttpClient();
+    final url = "${_baseUrl}${endpointPath}";
 
     try {
 
-      final url = "${_baseUrl}${endpointPath}";
       final jsonType = "application/json";
 
       // Only POST method is supported for now.
@@ -141,11 +142,15 @@ class WMTNetworking {
 
       if (data["status"] != "OK") {
         final error = WMTResponseError.fromJson(responseObject as Map<String, dynamic>);
-        throw Log.errorAndException("Error response: ${error.message} (code: ${error.code})");
+        throw WMTException(description: "Error response retrieved", responseError: error);
       }
 
       return responseObject;
 
+    } catch (e) {
+      // Log the error and rethrow it
+      Log.error("Error during POST request to ${url}: ${e.toString()}");
+      rethrow;
     } finally {
       client.close();
     }
@@ -159,18 +164,4 @@ class WMTNetworking {
     return "${result}}";
   }
 }
-  
-/// Error object when error on the server happens.
-class WMTResponseError {
-  /// Error code, which is one of the [WMTKnownRestApiError] values.
-  WMTKnownRestApiError code;
-  /// Error message, which is usually localized message for the user.
-  String message;
 
-  WMTResponseError(this.code, this.message);
-
-  factory WMTResponseError.fromJson(Map<String, dynamic> json) {
-    final code = WMTKnownRestApiError.fromCode(json['code'] as String);
-    return WMTResponseError(code, json['message'] as String);
-  }
-}
