@@ -37,5 +37,5 @@ jobs:
       - name: Run Integration on Android
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 33
+          api-level: 35
           script: cd example && flutter test -r expanded integration_test/integration_test.dart --ignore-timeouts
