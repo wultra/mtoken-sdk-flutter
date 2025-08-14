@@ -58,8 +58,10 @@ void main() {
       try {
         await wmt.operations.authorize(detail, await credentials.invalidKnowledge());
         fail("Authorization should fail with invalid password");
+      } on WMTException catch (e) {
+        expect(e.responseError?.code, WMTKnownRestApiError.authenticationFailure);
       } catch (e) {
-        expect(e, isA<WMTException>());
+        fail("Wrong exception type: ${e}");
       }
 
       // authorize with correct password

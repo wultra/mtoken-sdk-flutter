@@ -40,8 +40,9 @@ export 'src/inbox/inbox_count.dart';
 export 'src/core/logger.dart' show WMTLogger, WMTLoggerVerbosity, WMTLogListener;
 
 // Error handling
-export 'src/networking/known_rest_api_error.dart';
 export 'src/core/exception.dart';
 
 // Networking
+export 'src/networking/known_rest_api_error.dart';
 export 'src/networking/user_agent.dart';
+export 'src/networking/response_error.dart';

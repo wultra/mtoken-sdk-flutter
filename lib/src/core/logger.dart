@@ -15,6 +15,7 @@
  */
 
 import 'package:meta/meta.dart';
+import '../networking/response_error.dart';
 import 'exception.dart';
 
 /// How much should Mobile Token library log into the console.
@@ -93,9 +94,9 @@ typedef WMTLogListener = void Function(String message, WMTLoggerVerbosity verbos
     _log(object, WMTLoggerVerbosity.error);
   }
 
-  static WMTException errorAndException(String message, { Object? additionalData }) {
+  static WMTException errorAndException(String message, { WMTResponseError? responseError, Object? originalException}) {
     _log(() => message, WMTLoggerVerbosity.error);
-    return WMTException(description: message, additionalData: additionalData);
+    return WMTException(description: message, originalException: originalException, responseError: responseError);
   }
 
   static void _log(dynamic object, WMTLoggerVerbosity logVerbosity) {
