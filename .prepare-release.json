@@ -59,11 +59,6 @@
             "type": "bash",
             "script": "cd example && flutter pub get && cd ..",
             "description": "Run flutter pub get to update dependencies after version change."
-        },
-        {
-            "type": "bash",
-            "script": "cd example/ios && pod install && cd ../..",
-            "description": "Run pod install to update iOS dependencies after version change."
         }
     ]
 }

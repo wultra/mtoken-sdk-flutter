@@ -143,13 +143,13 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
 > This scenario describes how to create a new `1.2.0` release of the SDK from the HEAD of the `develop` branch.
 
 1. Create an issue for the new release, e.g. `Prepare release 1.2.0`. Add info what is the reason for the release.
-2. Prepare new branch from `develop` branch without any changes (if a release branch does not exist yet) and push it to the remote repository without any changes. Release branches are protected and can be created only by Wultra employees or contractors.:
+2. Prepare new branch from `develop` branch without any changes (if a release branch does not exist yet) and push it to the remote repository without any changes. Release branches are protected and can be created only by Wultra employees or contractors:
     - `git checkout develop`
     - `git pull origin develop`
     - `git checkout -b release/1.2.x`
     - `git push -u origin release/1.2.x`
 3. Create a new branch for the exact release (for example `issues/65-prepare-release-1_2_0`).
-4. Make sure that all the files mentioned in the [each release should contain following changes](#each-release-should-contain-following-changes) section are updated correctly.
+4. Make sure that all the files mentioned in the "[each release should contain following changes](#each-release-should-contain-following-changes)" section are updated correctly.
 5. Commit the changes with a clear commit message, e.g. `Prepare release 1.2.0`.
 6. Push the changes to the remote repository.
 7. Create a pull request from the `issues/65-prepare-release-1_2_0` branch to the `release/1.2.x` branch.
@@ -157,16 +157,12 @@ The version number is composed of three parts: `major.minor.patch`, e.g. `1.0.0`
     - The pull request description should reference the issue you created in the first step, e.g. `#65`.
 8. Wait for the pull request to be reviewed and approved by a Wultra team member.
 9. Once the pull request is approved, merge it into the `release/1.2.x` branch using the "Squash and merge" option. This will ensure that the git history is linear, and the commit message is clear.
-10. Run the `Release` GitHub action to create a new tag and publish the release:
-    - Go to the "Actions" tab in the GitHub repository.
-    - Select the "Release" workflow.
-    - Click on "Run workflow" and select the `release/1.2.x` branch.
-    - Enter the version number `1.2.0` in the `version` input field.
-    - Enter the pub.dev token in the `pubDevToken` input field. This ensures that the released will link the release to the user who created it.
-    - Click on "Run workflow" button to start the workflow.
-    - Wait for the workflow to finish. It will create a new tag in the format `1.2.0` and push it to the remote repository.
-    - If the tag or release already exists, the workflow will fail, and you need to fix the issue before proceeding.
-    - If the release gets stuck (for example only tag is created, but no release is created), you need to contact a repository maintainer to fix the issue manually.
+10. Go to the [Wultra Azure DevOps portal](https://dev.azure.com/wultra) and run the `mtoken-sdk-flutter` release pipeline. In the pipeline
+    - specify the `release/1.2.x` branch as the source branch
+    - specify the `1.2.0` version as the release version
+    - the pipeline will verify that all the files are updated correctly and that the git history is linear
+    - the pipeline will automatically create a new tag `1.2.0` in the repository
+    - the pipeline will also automatically publish the new version to pub.dev
 11. Create a new release on GitHub:
     - Go to the "Releases" section of the repository.
     - Click on "Draft a new release".
