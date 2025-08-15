@@ -1,5 +1,5 @@
 # Changelog
 
-## 1.0.0 (TBA)
+## 1.0.0
 
-- Initial SDK release
+* Initial release of the Wultra Mobile Token Flutter SDK 🎉
