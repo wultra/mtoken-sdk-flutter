@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-const wmtSdkVersion = "1.0.0";
+const wmtSdkVersion = "0.0.1-dev";
