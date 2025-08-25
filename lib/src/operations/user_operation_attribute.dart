@@ -49,6 +49,7 @@ class WMTUserOperationAttribute {
       case WMTAttributeType.note: return WMTOperationAttributeNote.fromJson(json);
       case WMTAttributeType.heading: return WMTOperationAttributeHeading.fromJson(json);
       case WMTAttributeType.image: return WMTOperationAttributeImage.fromJson(json);
+      case WMTAttributeType.alert: return WMTOperationAttributeAlert.fromJson(json);
       case WMTAttributeType.unknown:
         // Fallback to a generic attribute if type is unknown
         return WMTUserOperationAttribute(
@@ -75,6 +76,8 @@ enum WMTAttributeType {
   heading("HEADING"),
   /// For image displaying.
   image("IMAGE"),
+  /// Alert attribute for an operation, used to display title/message alert view with icon.
+  alert("ALERT"),
   /// Fallback type for attributes that do not match any specific type.
   unknown("UNKNOWN");
 
@@ -85,7 +88,7 @@ enum WMTAttributeType {
   static WMTAttributeType fromSerialized(String serialized) {
     return WMTAttributeType.values.firstWhere(
       (type) => type._serialized == serialized,
-      orElse: ()  {
+      orElse: () {
         Log.error("Unknown WMTAttributeType serialized value: $serialized");
         return WMTAttributeType.unknown; // Fallback to unknown if not found
       }
@@ -234,6 +237,64 @@ class WMTOperationAttributeImage extends WMTUserOperationAttribute {
       label: json['label'] as String,
       thumbnailUrl: json['thumbnailUrl'] as String,
       originalUrl: json['originalUrl'] as String?,
+    );
+  }
+}
+
+/// Enum representing the type of alert to be displayed.
+/// Each type corresponds to a different visual appearance.
+enum WMTAttributeAlertType {
+  success('SUCCESS'),
+  warning('WARNING'),
+  info('INFO'),
+  error('ERROR');
+
+  final String value;
+  const WMTAttributeAlertType(this.value);
+
+  /// Returns the [WMTAttributeAlertType] for the given serialized value, or null if not found.
+  static WMTAttributeAlertType fromSerialized(String serialized) {
+    return WMTAttributeAlertType.values.firstWhere(
+            (type) => type.value == serialized,
+        orElse: () {
+          Log.error("Unknown WMTAttributeAlertType serialized value: $serialized");
+          return WMTAttributeAlertType.info; // Fallback to info if not found
+        }
+    );
+  }
+}
+
+/// Alert attribute represents a notification or message that should be displayed to the user.
+/// It contains information about the type, title, and message of the alert.
+class WMTOperationAttributeAlert extends WMTUserOperationAttribute {
+
+  /// Type of the alert that determines its visual appearance.
+  /// Possible values: SUCCESS, WARNING, INFO, ERROR
+  final WMTAttributeAlertType alertType;
+
+  /// Title of the alert. Optional.
+  final String? title;
+
+  /// Message content of the alert.
+  final String message;
+
+  WMTOperationAttributeAlert({
+    required super.id,
+    required super.label,
+    required this.alertType,
+    required this.message,
+    this.title
+  }) : super (
+    type: WMTAttributeType.alert
+  );
+  
+  factory WMTOperationAttributeAlert.fromJson(Map<String, dynamic> json) {
+    return WMTOperationAttributeAlert(
+        id: json['id'] as String,
+        label: json['label'] as String,
+        alertType: WMTAttributeAlertType.fromSerialized(json['alertType'] as String),
+        message: json['message'] as String,
+        title: json['title'] as String?
     );
   }
 }

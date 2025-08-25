@@ -116,6 +116,47 @@ void main() {
       expect(imageAttribute2.originalUrl, isNull);
     });
 
+    test('testRealDataWithAlert', () {
+      final json = '{"status":"OK","currentTimestamp":"2023-02-10T12:30:42+0000","responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3","name":"authorize_payment","status":"PENDING","data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017","operationCreated":"2018-08-08T12:30:42+0000","operationExpires":"2018-08-08T12:35:43+0000","allowedSignatureType":{"type":"2FA","variants":["possession_knowledge","possession_biometry"]},"formData":{"title":"Potvrzení platby","message":"Dobrý den,prosíme o potvrzení následující platby:","attributes":[{"type":"AMOUNT","id":"operation.amount","label":"Částka","amount":965165234082.23,"currency":"CZK","valueFormatted":"965165234082.23 CZK"},{"type":"ALERT","id":"operation.warning","label":"","alertType":"WARNING","title":"Important Warning","message":"This is a warning message with all attributes filled in."},{"type":"ALERT","id":"operation.success","label":"","alertType":"SUCCESS","title":"Nice","message":"Operation completed successfully."},{"type":"ALERT","id":"operation.info","label":"","alertType":"INFO","message":"Remember to be safe online."},{"type":"ALERT","id":"operation.error","label":"","alertType":"ERROR","title":"Error","message":"Operation could not be completed."},{"type":"ALERT","id":"operation.invalid","label":"","alertType":"TYPO","message":"This is a message with invalid alert type."}]}}]}';
+      final list = getList(json);
+
+      expect(list.length, 1);
+      final operation = list[0];
+      expect(operation.formData.attributes.length, 6);
+
+      // Warning alert
+      final warningAlert = operation.formData.attributes[1] as WMTOperationAttributeAlert;
+      expect(warningAlert.alertType, WMTAttributeAlertType.warning);
+      expect(warningAlert.title, "Important Warning");
+      expect(warningAlert.message, "This is a warning message with all attributes filled in.");
+      expect(warningAlert.label, isEmpty); // label nullable / empty
+
+      // Success alert
+      final successAlert = operation.formData.attributes[2] as WMTOperationAttributeAlert;
+      expect(successAlert.alertType, WMTAttributeAlertType.success);
+      expect(successAlert.title, "Nice");
+      expect(successAlert.message, "Operation completed successfully.");
+
+      // Info alert (title nullable)
+      final infoAlert = operation.formData.attributes[3] as WMTOperationAttributeAlert;
+      expect(infoAlert.alertType, WMTAttributeAlertType.info);
+      expect(infoAlert.title, isNull);
+      expect(infoAlert.message, "Remember to be safe online.");
+
+      // Error alert
+      final errorAlert = operation.formData.attributes[4] as WMTOperationAttributeAlert;
+      expect(errorAlert.alertType, WMTAttributeAlertType.error);
+      expect(errorAlert.title, "Error");
+      expect(errorAlert.message, "Operation could not be completed.");
+
+      // Invalid alert type should fallback to .info
+      final fallbackAlert = operation.formData.attributes[5] as WMTOperationAttributeAlert;
+      expect(fallbackAlert.type, WMTAttributeType.alert);
+      expect(fallbackAlert.alertType, WMTAttributeAlertType.info);
+      expect(fallbackAlert.title, isNull);
+      expect(fallbackAlert.message, "This is a message with invalid alert type.");
+    });
+
     test('testAmountConversionAttributesResponseWithOnlyAmountFormattedAndCurrencyFormatted', () {
       final json = '{"status":"OK", "currentTimestamp":"2023-02-10T12:30:42+0000", "responseObject":[{"id":"930febe7-f350-419a-8bc0-c8883e7f71e3", "status": "APPROVED", "name":"authorize_payment", "data":"A1*A100CZK*Q238400856/0300**D20170629*NUtility Bill Payment - 05/2017", "operationCreated":"2018-08-08T12:30:42+0000", "operationExpires":"2018-08-08T12:35:43+0000", "allowedSignatureType": {"type":"2FA", "variants": ["possession_knowledge", "possession_biometry"]}, "formData": {"title":"Potvrzení platby", "message":"Dobrý den,prosíme o potvrzení následující platby:", "attributes": [{"type":"AMOUNT", "id":"operation.amount", "label":"Částka", "amountFormatted":"965165234082.23", "currencyFormatted":"CZK"}, { "type": "AMOUNT_CONVERSION", "id": "operation.conversion", "label": "Conversion", "dynamic": true, "sourceAmountFormatted": "1.26", "sourceCurrencyFormatted": "ETC", "targetAmountFormatted": "1710.98", "targetCurrencyFormatted": "USD"}]}}]}';
       final list = getList(json);
