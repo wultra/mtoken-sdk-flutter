@@ -179,7 +179,7 @@ class WMTOIDCUtils {
   // ---------------------------------------------------------------------------
 
   /// Base64 uri-safe encoding without padding
-  /// Dart's base64uri.encode already produces uri-safe strings (- -> +, _ -> /), 
+  /// Dart's base64Url.encode already produces uri-safe strings (+ -> -, / -> _), 
   /// so we just need to remove the padding characters.
   static String _toBase64UrlSafe(Uint8List bytes) {
     return base64Url.encode(bytes).replaceAll('=', '');
