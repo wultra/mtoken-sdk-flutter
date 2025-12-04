@@ -94,7 +94,8 @@ class WMTNetworking {
     String payloadSerialized,
     String endpointPath,
     Map<String, String> headers,
-    WMTRequestProcessor? requestProcessor
+    WMTRequestProcessor? requestProcessor,
+    { WMTE2EEConfiguration? e2ee }
   ) async {
 
     final client = HttpClient();
@@ -119,7 +120,33 @@ class WMTNetworking {
         request.headers.set(key, value);
       });
 
-      request.write(payloadSerialized);
+      // TODO: Support other E2EE configurations
+      String bodyToSend = payloadSerialized;
+      PowerAuthDecryptor? decryptor;
+
+      // Application-scope encryption
+      if (e2ee == WMTE2EEConfiguration.applicationScope) {
+        // Get encryptor
+        final encryptor = powerAuth.getEncryptorForApplicationScope();
+
+        // Encrypt plaintext payload
+        final encrypted = await encryptor.encryptRequest(
+          payloadSerialized,
+          PowerAuthDataFormat.utf8,
+        );
+
+        decryptor = encrypted.decryptor;
+        final cryptogram = encrypted.cryptogram;
+        final header = encrypted.header;
+
+        // Add E2EE header
+        request.headers.set(header.name, header.value);
+
+        // HTTP body is now the cryptogram JSON
+        bodyToSend = jsonEncode(cryptogram.toMap());
+      }
+
+      request.write(bodyToSend);
 
       if (requestProcessor != null) {
         requestProcessor(request.headers);
@@ -127,7 +154,7 @@ class WMTNetworking {
 
       Log.info(" -> OUTGOING POST ${url}");
       Log.verbose(() => _getHeadersString(request.headers));
-      Log.debug(payloadSerialized);
+      Log.debug(bodyToSend);
 
       final response = await request.close();
       final responseBody = await response.transform(utf8.decoder).join();
@@ -136,7 +163,21 @@ class WMTNetworking {
       Log.verbose(() => _getHeadersString(response.headers));
       Log.debug(responseBody);
 
-      final data = jsonDecode(responseBody);
+      Map<String, dynamic> data;
+
+      if (e2ee == WMTE2EEConfiguration.applicationScope && response.statusCode == 200) {
+        // Expect encrypted body -> decrypt first
+        final encryptedResponse = jsonDecode(responseBody) as Map<String, dynamic>;
+
+        final decryptedJsonString = await decryptor!.decryptResponse(
+          PowerAuthCryptogram.fromMap(encryptedResponse),
+          PowerAuthDataFormat.utf8,
+        );
+
+        data = jsonDecode(decryptedJsonString) as Map<String, dynamic>;
+      } else {
+        data = jsonDecode(responseBody) as Map<String, dynamic>;
+      }
 
       final responseObject = data["responseObject"];
 
@@ -163,5 +204,11 @@ class WMTNetworking {
     });
     return "${result}}";
   }
+}
+
+  enum WMTE2EEConfiguration {
+  notEncrypted,
+  applicationScope,
+  // activationScope, // can be added later
 }
 
