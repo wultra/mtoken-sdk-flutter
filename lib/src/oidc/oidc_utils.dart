@@ -115,7 +115,7 @@ class WMTOIDCUtils {
       }
 
       final uri = baseUri.replace(queryParameters: params);
-      Log.debug("OIDC: Successfully created auth uri: $uri");
+      Log.debug("OIDC: Successfully created authorizationUri");
       return uri;
     } catch (e) {
       Log.warn("OIDC: Failed to create authorization uri: $e");
@@ -135,34 +135,32 @@ class WMTOIDCUtils {
   }) {
     final query = uri.queryParameters;
     if (query.isEmpty) {
-      Log.error("OIDC: Invalid callback uri: $uri");
+      Log.error("OIDC: Invalid callback uri: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description:"[${WMTOIDCError.invalidDeeplink.code}] Invalid OIDC callback uri",
+        description: "[${WMTOIDCError.invalidDeeplink.code}] Invalid OIDC callback uri",
       );
     }
 
     final code = query["code"];
     if (code == null) {
-      Log.error("OIDC: Code not found in uri: $uri");
+      Log.error("OIDC: Authorization code missing in callback: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description:"[${WMTOIDCError.invalidDeeplink.code}] Missing authorization code in callback",
+        description: "[${WMTOIDCError.invalidDeeplink.code}] Missing authorization code in callback",
       );
     }
 
     final state = query["state"];
     if (state == null) {
-      Log.error("OIDC: State not found in uri: $uri");
+      Log.error("OIDC: State parameter missing in callback: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description:
-            "[${WMTOIDCError.invalidDeeplink.code}] Missing state in callback",
+        description: "[${WMTOIDCError.invalidDeeplink.code}] Missing state in callback",
       );
     }
 
     if (state != authData.state) {
-      Log.error("OIDC: Invalid state. Expected ${authData.state}, got $state");
+      Log.error("OIDC: State mismatch in callback. Expected state does not match received state. scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description:
-            "[${WMTOIDCError.invalidDeeplink.code}] State mismatch in callback",
+        description: "[${WMTOIDCError.invalidDeeplink.code}] State mismatch in callback",
       );
     }
 

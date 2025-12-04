@@ -210,7 +210,7 @@ The final step in the OIDC and PowerAuth integration is to use the `createOidcAc
 
 ```dart
 final activationAttributes = WMTOIDCUtils.processWebCallback(
-  url: redirectUri,
+  uri: redirectUri,
   authData: oidcAuthData,
 );
 

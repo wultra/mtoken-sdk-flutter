@@ -42,7 +42,7 @@ void main() {
     test("testGetConfigSucceed", () async {
       final providers = helper.getOIDCProperties();
       if (providers == null || providers.providerId.isEmpty) {
-        print("If you want to test OIDC PKCE, provide providers in the IntegrationHelper.");
+        print("If you want to test OIDC, provide providers in the IntegrationHelper.");
         return;
       }
 
@@ -115,8 +115,8 @@ void main() {
     /// while still maintaining a single logical browser-like session.
     ///
     /// ## Testing Requirements
-    /// You must also provide the `username` and `password` of your testing Auth0 account
-    /// when running this flow. and `providerIdPkce` in the config file
+    /// You must also provide the `username` and `password` of your testing Auth0 account, 
+    /// and `providerIdPkce` in the config file when running this flow.
 //     test("testOIDCActivationFlow", () async {
 //       final providers = helper.getOIDCProperties();
 

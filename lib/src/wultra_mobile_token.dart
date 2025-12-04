@@ -45,7 +45,7 @@ class WultraMobileToken {
   WultraMobileToken._(this.operations, this.push, this.inbox, this.oidc);
 
   /// 
-  /// [powerAuth] PowerAuth instance. Needs to be activated when calling any method of this class - othewise error will be thrown.
+  /// [powerAuth] PowerAuth instance. Needs to be activated when calling any method of this class - otherwise error will be thrown.
   /// 
   /// [acceptLanguage] Optionally sets the accept language for the outgoing requests headers for `operations`, `push` and `inbox` objects.
   ///                  The default value is "en".

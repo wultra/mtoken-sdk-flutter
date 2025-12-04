@@ -206,7 +206,7 @@ class WMTNetworking {
   }
 }
 
-  enum WMTE2EEConfiguration {
+enum WMTE2EEConfiguration {
   notEncrypted,
   applicationScope,
   // activationScope, // can be added later
