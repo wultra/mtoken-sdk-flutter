@@ -33,6 +33,15 @@ class AppConfig {
   /// PowerAuth Cloud application ID.
   static final String cloudApplicationId = dotenv.env['CLOUD_APPLICATION_ID'] ?? '';
 
+  /// OIDC Provider ID.
+  static final String oidcProviderId = dotenv.env['OIDC_PROVIDER_ID'] ?? '';
+  /// OIDC Provider ID for PKCE.
+  static final String oidcProviderIdPkce = dotenv.env['OIDC_PROVIDER_ID_PKCE'] ?? '';
+  /// OIDC Username.
+  static final String? oidcUsername = dotenv.env['OIDC_USERNAME'];
+  /// OIDC Password.
+  static final String? oidcPassword = dotenv.env['OIDC_PASSWORD'];
+
   AppConfig._();
 
   static Future<void> makeSureLoaded() async {
