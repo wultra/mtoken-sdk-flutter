@@ -5,6 +5,7 @@
 - [Using Operations](./Using-Operations.md)
 - [Using Push](./Using-Push.md)
 - [Using Inbox](./Using-Inbox.md)
+- [Using OIDC](./Using-OIDC.md)
 - [Server Error Handling](./Server-Error-Handling.md)
 - [Language and User-Agent Configuration](./Language-UserAgent-Configuration.md)
 
