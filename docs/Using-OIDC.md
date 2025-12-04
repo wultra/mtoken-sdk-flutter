@@ -302,7 +302,7 @@ Validates the callback `Uri`, extracts the authorization code and state, compare
 ```dart
 try {
   final activationAttributes = WMTOIDCUtils.processWebCallback(
-    url: callbackUri,
+    uri: callbackUri,
     authData: authRequest,
   );
 
