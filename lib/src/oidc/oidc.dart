@@ -123,7 +123,7 @@ extension PowerAuthOidcActivation on PowerAuth {
       Log.error("OIDC: Activation failed with error: $e");
 
       throw WMTException(
-        description: "[${WMTOIDCError.activationFailed.code}] OIDC Activation Failed",
+        description: "[${WMTOIDCError.activationFailed}] OIDC Activation Failed",
         originalException: e,
       );
     }

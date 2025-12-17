@@ -54,13 +54,13 @@ class WMTOIDCUtils {
     } on PowerAuthException catch (e) {
       Log.error("OIDC: PKCE generation failed (PowerAuth error): $e");
       throw WMTException(
-        description: "[${WMTOIDCError.codeChallengeGenerationFailed.code}] Failed to generate PKCE codes",
+        description: "[${WMTOIDCError.codeChallengeGenerationFailed}] Failed to generate PKCE codes",
         originalException: e,
       );
     } catch (e) {
       Log.error("OIDC: PKCE generation failed (unexpected): $e");
       throw WMTException(
-        description: "[${WMTOIDCError.codeChallengeGenerationFailed.code}] Unexpected error during PKCE generation",
+        description: "[${WMTOIDCError.codeChallengeGenerationFailed}] Unexpected error during PKCE generation",
         originalException: e,
       );
     }
@@ -75,13 +75,13 @@ class WMTOIDCUtils {
     } on PowerAuthException catch (e) {
       Log.error("OIDC: Random bytes generation failed (PowerAuth error): $e");
       throw WMTException(
-        description: "[${WMTOIDCError.randomBytesFailed.code}] Failed to generate random bytes",
+        description: "[${WMTOIDCError.randomBytesFailed}] Failed to generate random bytes",
         originalException: e,
       );
     } catch (e) {
       Log.error("OIDC: Random bytes generation failed (unexpected): $e");
       throw WMTException(
-        description: "[${WMTOIDCError.randomBytesFailed.code}] Unexpected error during random bytes generation",
+        description: "[${WMTOIDCError.randomBytesFailed}] Unexpected error during random bytes generation",
         originalException: e,
       );
     }
@@ -120,7 +120,7 @@ class WMTOIDCUtils {
     } catch (e) {
       Log.warn("OIDC: Failed to create authorization uri: $e");
       throw WMTException(
-        description: "[${WMTOIDCError.authorizationUriCreationFailed.code}] Failed to create authorization uri",
+        description: "[${WMTOIDCError.authorizationUriCreationFailed}] Failed to create authorization uri",
         originalException: e,
       );
     }
@@ -137,7 +137,7 @@ class WMTOIDCUtils {
     if (query.isEmpty) {
       Log.error("OIDC: Invalid callback uri: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description: "[${WMTOIDCError.invalidDeeplink.code}] Invalid OIDC callback uri",
+        description: "[${WMTOIDCError.invalidDeeplink}] Invalid OIDC callback uri",
       );
     }
 
@@ -145,7 +145,7 @@ class WMTOIDCUtils {
     if (code == null) {
       Log.error("OIDC: Authorization code missing in callback: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description: "[${WMTOIDCError.invalidDeeplink.code}] Missing authorization code in callback",
+        description: "[${WMTOIDCError.invalidDeeplink}] Missing authorization code in callback",
       );
     }
 
@@ -153,14 +153,14 @@ class WMTOIDCUtils {
     if (state == null) {
       Log.error("OIDC: State parameter missing in callback: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description: "[${WMTOIDCError.invalidDeeplink.code}] Missing state in callback",
+        description: "[${WMTOIDCError.invalidDeeplink}] Missing state in callback",
       );
     }
 
     if (state != authData.state) {
       Log.error("OIDC: State mismatch in callback. Expected state does not match received state. scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}");
       throw WMTException(
-        description: "[${WMTOIDCError.invalidDeeplink.code}] State mismatch in callback",
+        description: "[${WMTOIDCError.invalidDeeplink}] State mismatch in callback",
       );
     }
 

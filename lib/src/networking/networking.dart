@@ -165,11 +165,11 @@ class WMTNetworking {
 
       Map<String, dynamic> data;
 
-      if (e2ee == WMTE2EEConfiguration.applicationScope && response.statusCode == 200) {
+      if (decryptor != null && response.statusCode == 200) {
         // Expect encrypted body -> decrypt first
         final encryptedResponse = jsonDecode(responseBody) as Map<String, dynamic>;
 
-        final decryptedJsonString = await decryptor!.decryptResponse(
+        final decryptedJsonString = await decryptor.decryptResponse(
           PowerAuthCryptogram.fromMap(encryptedResponse),
           PowerAuthDataFormat.utf8,
         );

@@ -16,24 +16,18 @@
 
 /// Typed error codes used in the OIDC (OpenID Connect) flow.
 class WMTOIDCError {
-  
-  /// Raw string error code, e.g. "oidc_invalidDeeplink".
-  final String code;
-
-  const WMTOIDCError._(this.code);
-
   /// Error when generating random bytes for cryptographic purposes failed.
-  static const randomBytesFailed = WMTOIDCError._("oidc_randomBytesFailed");
+  static const randomBytesFailed = "oidc_randomBytesFailed";
 
   /// Error when PKCE code challenge generation failed.
-  static const codeChallengeGenerationFailed = WMTOIDCError._("oidc_codeChallengeGenerationFailed");
+  static const codeChallengeGenerationFailed = "oidc_codeChallengeGenerationFailed";
 
   /// Error when deeplink cannot be parsed or handled.
-  static const invalidDeeplink = WMTOIDCError._("oidc_invalidDeeplink");
+  static const invalidDeeplink = "oidc_invalidDeeplink";
 
   /// Error when authorization URL creation failed.
-  static const authorizationUriCreationFailed = WMTOIDCError._("oidc_authorizationUriCreationFailed");
+  static const authorizationUriCreationFailed = "oidc_authorizationUriCreationFailed";
 
   /// Error when PowerAuth activation via OIDC failed.
-  static const activationFailed = WMTOIDCError._("oidc_activationFailed");
+  static const activationFailed = "oidc_activationFailed";
 }
