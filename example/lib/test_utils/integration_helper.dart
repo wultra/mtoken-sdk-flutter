@@ -227,6 +227,20 @@ class IntegrationHelper {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     return List.generate(length, (index) => chars[Random().nextInt(chars.length)]).join();
   }
+
+  OIDCProperties? getOIDCProperties() {
+    final providerId = AppConfig.oidcProviderId;
+    final providerIdPkce = AppConfig.oidcProviderIdPkce;
+
+    if (providerId == "" && providerIdPkce == "") { return null; }
+      
+    return OIDCProperties(
+      providerId: AppConfig.oidcProviderId,
+      providerIdPkce: AppConfig.oidcProviderIdPkce,
+      oidcUsername: AppConfig.oidcUsername,
+      oidcPassword: AppConfig.oidcPassword,
+    );
+  }
 }
 
 enum HtptMethod {
@@ -507,4 +521,18 @@ class ActivationCredentials {
     Future<PowerAuthAuthentication> invalidKnowledge() async => PowerAuthAuthentication.password(await invalidPasswordObject());
     Future<PowerAuthPassword> validPasswordObject({bool destroyOnUse = true}) => PowerAuthPassword.fromString(validPassword, destroyOnUse: destroyOnUse);
     Future<PowerAuthPassword> invalidPasswordObject({bool destroyOnUse = true}) => PowerAuthPassword.fromString(invalidPassword, destroyOnUse: destroyOnUse);
+}
+
+class OIDCProperties {
+    String providerId;
+    String providerIdPkce;
+    String? oidcUsername;
+    String? oidcPassword;
+
+    OIDCProperties({
+      required this.providerId,
+      required this.providerIdPkce,
+      required this.oidcUsername,
+      required this.oidcPassword,
+    });
 }

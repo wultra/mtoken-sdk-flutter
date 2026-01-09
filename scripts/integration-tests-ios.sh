@@ -19,11 +19,14 @@ echo "Booting iOS Simulator with ID: $SIM_ID"
 open -a Simulator
 xcrun simctl boot "$SIM_ID"
 
-# we dont need to wait for the simulator to be fully booted, just run the tests (the compilation takes time anyway)
+# wait until the simulator is actually booted/ready (to give more deterministic logs)
+xcrun simctl bootstatus "$SIM_ID" -b
 
 pushd "$SCRIPT_FOLDER/../example"
 pushd "ios"
 pod install # install pods to shave some time off the test run
 popd
-flutter test -d "$SIM_ID" -r expanded integration_test/integration_test.dart --ignore-timeouts
+
+flutter test -v -d "$SIM_ID" -r expanded integration_test/integration_test.dart --ignore-timeouts
+
 popd

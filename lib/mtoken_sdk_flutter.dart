@@ -36,6 +36,14 @@ export 'src/inbox/inbox.dart';
 export 'src/inbox/inbox_message.dart';
 export 'src/inbox/inbox_count.dart';
 
+// OIDC
+export 'src/oidc/oidc.dart';
+export 'src/oidc/oidc_config.dart';
+export 'src/oidc/oidc_authorization_request.dart';
+export 'src/oidc/oidc_activation_attributes.dart';
+export 'src/oidc/oidc_error.dart';
+export 'src/oidc/oidc_utils.dart';
+
 // Logging
 export 'src/core/logger.dart' show WMTLogger, WMTLoggerVerbosity, WMTLogListener;
 

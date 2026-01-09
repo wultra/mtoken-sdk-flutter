@@ -15,6 +15,7 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
+import 'package:mtoken_sdk_flutter/src/oidc/oidc.dart';
 import 'core/logger.dart';
 import 'networking/user_agent.dart';
 import 'operations/operations.dart';
@@ -37,11 +38,14 @@ class WultraMobileToken {
   /// Inbox networking layer for Wultra Mobile Token API.
   final WMTInbox inbox;
 
+  /// OIDC networking layer for Wultra Mobile Token API.
+  final WMTOIDC oidc;
+
   // Private constructor to enforce the use of the factory method.
-  WultraMobileToken._(this.operations, this.push, this.inbox);
+  WultraMobileToken._(this.operations, this.push, this.inbox, this.oidc);
 
   /// 
-  /// [powerAuth] PowerAuth instance. Needs to be activated when calling any method of this class - othewise error will be thrown.
+  /// [powerAuth] PowerAuth instance. Needs to be activated when calling any method of this class - otherwise error will be thrown.
   /// 
   /// [acceptLanguage] Optionally sets the accept language for the outgoing requests headers for `operations`, `push` and `inbox` objects.
   ///                  The default value is "en".
@@ -66,27 +70,30 @@ class WultraMobileToken {
     final operations = WMTOperations(powerAuth, baseURL);
     final push = WMTPush(powerAuth, baseURL);
     final inbox = WMTInbox(powerAuth, baseURL);
+    final oidc = WMTOIDC(powerAuth, baseURL);
 
     // set default accept language and user agent
     final lang = acceptLanguage ?? "en";
     operations.acceptLanguage = lang;
     push.acceptLanguage = lang;
     inbox.acceptLanguage = lang;
+    oidc.acceptLanguage = lang;
 
     final agent = userAgent ?? WMTUserAgent.libraryDefault();
     operations.userAgent = agent;
     push.userAgent = agent;
     inbox.userAgent = agent;
+    oidc.userAgent = agent;
 
     Log.verbose("Mobile Token object created with:");
     Log.verbose(" - baseURL: $baseURL");
     Log.verbose(" - acceptLanguage: ${acceptLanguage}");
     Log.verbose(" - userAgent: ${agent.description}");
 
-    return WultraMobileToken._(operations, push, inbox);
+    return WultraMobileToken._(operations, push, inbox, oidc);
   }
 
-  /// Sets accept language for the outgoing requests headers for [operations], [push] and [inbox] objects.
+  /// Sets accept language for the outgoing requests headers for [operations], [push], [inbox], and [oidc] objects.
   ///
   /// The value can be further modified in the each object individualy.
   ///
@@ -99,6 +106,7 @@ class WultraMobileToken {
       operations.acceptLanguage = lang;
       push.acceptLanguage = lang;
       inbox.acceptLanguage = lang;
+      oidc.acceptLanguage = lang;
       Log.info("Accept language set to ${lang} for all services.");
   }
 }
