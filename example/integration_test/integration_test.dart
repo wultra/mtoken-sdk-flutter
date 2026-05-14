@@ -172,6 +172,7 @@ void main() {
       // claim the operation
       final claimed = await wmt.operations.claim(op.operationId);
 
+      // ignore: deprecated_member_use
       expect(claimed.ui?.preApprovalScreen?.type, "QR_SCAN");
 
       final totp = (await helper.getOperation(op.operationId)).proximityOtp;

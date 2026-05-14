@@ -15,6 +15,8 @@
  */
 
 import 'user_operation_attribute.dart';
+import 'pre_approval_element.dart';
+import 'pre_approval_controls.dart';
 
 /// Operation UI model that contains data for screens for pre and/or post approved operation.
 class WMTUserOperationUIData {
@@ -24,8 +26,22 @@ class WMTUserOperationUIData {
   /// Block approval when on call (for example when on phone or skype call).
   final bool? blockApprovalOnCall;
 
+  /// Pre-approval screens to display before the operation can be approved.
+  ///
+  /// May contain multiple screens that the user must go through.
+  /// When the backend provides the legacy single `preApprovalScreen`,
+  /// it is automatically converted to a single-element list.
+  final List<WMTPreApprovalScreen>? preApprovalScreens;
+
   /// UI for pre-approval operation screen.
-  final WMTPreApprovalScreen? preApprovalScreen;
+  ///
+  /// Convenience getter returning the first pre-approval screen (if any).
+  /// Use [preApprovalScreens] for the full list.
+  @Deprecated('Use preApprovalScreens instead')
+  WMTPreApprovalScreen? get preApprovalScreen =>
+      preApprovalScreens != null && preApprovalScreens!.isNotEmpty
+          ? preApprovalScreens!.first
+          : null;
 
   /// UI for post-approval operation screen.
   ///
@@ -37,18 +53,29 @@ class WMTUserOperationUIData {
   WMTUserOperationUIData({
     this.flipButtons,
     this.blockApprovalOnCall,
-    this.preApprovalScreen,
+    this.preApprovalScreens,
     this.postApprovalScreen,
   });
 
   /// Creates a [WMTUserOperationUIData] from a JSON map.
+  ///
+  /// Supports both the new `preApprovalScreens` (plural, array) format
+  /// and the legacy `preApprovalScreen` (singular) format.
+  /// When the legacy format is detected, it is converted to the new model.
   factory WMTUserOperationUIData.fromJson(Map<String, dynamic> json) {
+    List<WMTPreApprovalScreen>? screens;
+    if (json['preApprovalScreens'] != null) {
+      screens = (json['preApprovalScreens'] as List<dynamic>)
+          .map((s) => WMTPreApprovalScreen.fromJson(s as Map<String, dynamic>))
+          .toList();
+    } else if (json['preApprovalScreen'] != null) {
+      screens = [WMTPreApprovalScreen._fromLegacyJson(json['preApprovalScreen'] as Map<String, dynamic>)];
+    }
+
     return WMTUserOperationUIData(
       flipButtons: json['flipButtons'] as bool?,
       blockApprovalOnCall: json['blockApprovalOnCall'] as bool?,
-      preApprovalScreen: json['preApprovalScreen'] != null
-          ? WMTPreApprovalScreen.fromJson(json['preApprovalScreen'] as Map<String, dynamic>)
-          : null,
+      preApprovalScreens: screens,
       postApprovalScreen: json['postApprovalScreen'] != null
           ? WMTPostApprovalScreen.fromJson(json['postApprovalScreen'] as Map<String, dynamic>)
           : null,
@@ -56,8 +83,9 @@ class WMTUserOperationUIData {
   }
 }
 
+/// Pre-approval screen model with configurable elements and controls.
 class WMTPreApprovalScreen {
-  /// Type of PreApprovalScreen ('WARNING', 'INFO', 'QR_SCAN').
+  /// Type of the screen ('WARNING', 'INFO', 'QR_SCAN').
   final String type;
 
   /// Heading of the pre-approval screen.
@@ -66,30 +94,89 @@ class WMTPreApprovalScreen {
   /// Message to the user.
   final String message;
 
-  /// Array of items to be displayed as list of choices.
-  final List<String>? items;
+  /// Optional unique identifier of the screen.
+  final String? id;
 
-  /// Type of the approval button ('SLIDER' or 'BUTTON')
-  final String? approvalType;
+  /// Whether to show a back button instead of a decline/reject button.
+  final bool? backButton;
+
+  /// Asset identifier for the screen image.
+  final String? image;
+
+  /// Structured elements that form the screen content.
+  ///
+  /// Elements can be [WMTPreApprovalElementListItem], [WMTPreApprovalElementAlert],
+  /// or [WMTPreApprovalElementButton].
+  final List<WMTPreApprovalElement>? elements;
+
+  /// Configuration of approve/decline controls.
+  final WMTPreApprovalControls? controls;
 
   WMTPreApprovalScreen({
     required this.type,
     required this.heading,
     required this.message,
-    this.items,
-    this.approvalType,
+    this.id,
+    this.backButton,
+    this.image,
+    this.elements,
+    this.controls,
   });
 
-  /// Creates a [WMTPreApprovalScreen] from a JSON map.
+  /// Creates a [WMTPreApprovalScreen] from the new JSON format.
   factory WMTPreApprovalScreen.fromJson(Map<String, dynamic> json) {
     return WMTPreApprovalScreen(
       type: json['type'] as String,
       heading: json['heading'] as String,
       message: json['message'] as String,
-      items: (json['items'] as List<dynamic>?)?.map((item) => item as String).toList(),
-      approvalType: json['approvalType'] as String?,
+      id: json['id'] as String?,
+      backButton: json['backButton'] as bool?,
+      image: json['image'] as String?,
+      elements: (json['elements'] as List<dynamic>?)
+          ?.map((e) => WMTPreApprovalElement.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      controls: json['controls'] != null
+          ? WMTPreApprovalControls.fromJson(json['controls'] as Map<String, dynamic>)
+          : null,
     );
-  }  
+  }
+
+  /// Converts the legacy single pre-approval screen format to the new model.
+  ///
+  /// Legacy `items` are mapped to [WMTPreApprovalElementListItem] elements
+  /// and `approvalType` is mapped to [WMTPreApprovalControls].
+  factory WMTPreApprovalScreen._fromLegacyJson(Map<String, dynamic> json) {
+    final legacyItems = (json['items'] as List<dynamic>?)?.map((item) => item as String).toList();
+    final legacyApprovalType = json['approvalType'] as String?;
+
+    // Convert legacy items to ListItem elements
+    List<WMTPreApprovalElement>? elements;
+    if (legacyItems != null && legacyItems.isNotEmpty) {
+      elements = legacyItems.map((item) => WMTPreApprovalElementListItem(
+        text: item,
+        icon: 'fallback_icon',
+      )).toList();
+    }
+
+    // Convert legacy approvalType to controls
+    WMTPreApprovalControls? controls;
+    if (legacyApprovalType != null) {
+      controls = WMTPreApprovalControls(
+        approve: WMTPreApprovalApprove(
+          type: WMTPreApprovalApproveType.fromSerialized(legacyApprovalType),
+        ),
+      );
+    }
+
+    return WMTPreApprovalScreen(
+      type: json['type'] as String,
+      heading: json['heading'] as String,
+      message: json['message'] as String,
+      image: 'fallback_image',
+      elements: elements,
+      controls: controls,
+    );
+  }
 }
 
 class WMTPostApprovalScreen {
