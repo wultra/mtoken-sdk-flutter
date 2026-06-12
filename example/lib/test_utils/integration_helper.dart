@@ -72,7 +72,8 @@ class IntegrationHelper {
     await AppConfig.makeSureLoaded();
 
     // CONFIGURE SDK
-    await sdk.configure(configuration: PowerAuthConfiguration(configuration: AppConfig.sdkConfig, baseEndpointUrl: AppConfig.enrollmentUrl));
+    final appDetail = await getApplicationDetail();
+    await sdk.configure(configuration: PowerAuthConfiguration(configuration: appDetail.mobileSdkConfig, baseEndpointUrl: AppConfig.enrollmentUrl));
 
     // REMOVE LOCAL INSTANCE IF PRESENT
 
@@ -80,6 +81,11 @@ class IntegrationHelper {
   }
 
   // --- SERVER CALLS ---
+
+  Future<ApplicationDetail> getApplicationDetail() async {
+    final resp = await _makeCall("", "${AppConfig.cloudUrl}/admin/applications/${AppConfig.cloudApplicationId}", method: HtptMethod.get);
+    return ApplicationDetail.fromJson(resp);
+  }
 
   Future<CreatedActivation> createActivation({String? userId, bool autoCommit = true}) async {
 
@@ -270,6 +276,32 @@ class CreatedActivation {
       activationCodeSignature: json['activationCodeSignature'],
       activationQrCodeData: json['activationQrCodeData'],
       registrationId: json['registrationId']
+    );
+  }
+}
+
+class ApplicationDetail {
+  final String id;
+  final String serviceBaseUrl;
+  final String appKey;
+  final String appSecret;
+  final String mobileSdkConfig;
+
+  ApplicationDetail({
+    required this.id,
+    required this.serviceBaseUrl,
+    required this.appKey,
+    required this.appSecret,
+    required this.mobileSdkConfig,
+  });
+
+  factory ApplicationDetail.fromJson(Map<String, dynamic> json) {
+    return ApplicationDetail(
+      id: json['id'],
+      serviceBaseUrl: json['serviceBaseUrl'],
+      appKey: json['appKey'],
+      appSecret: json['appSecret'],
+      mobileSdkConfig: json['mobileSdkConfig']
     );
   }
 }
