@@ -21,8 +21,6 @@ class AppConfig {
 
   /// Enrollment URL.
   static final String enrollmentUrl = dotenv.env['ENROLLMENT_URL'] ?? '';
-  /// SDK Config string
-  static final String sdkConfig = dotenv.env['SDK_CONFIG'] ?? '';
 
   /// PowerAuth Cloud URL.
   static final String cloudUrl = dotenv.env['CLOUD_URL'] ?? '';
