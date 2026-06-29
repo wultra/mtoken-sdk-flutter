@@ -45,6 +45,9 @@ class WMTPreApprovalScreenAction {
 
 /// Records user navigation through pre-approval screens.
 ///
+/// Each "visit" captures an opening timestamp and, when closed, a closing
+/// timestamp and the action that ended the visit.
+///
 /// This helper implements [WMTMobileTokenDataRecord] and tracks which
 /// screens were displayed, when they were opened/closed, and what action
 /// the user took. The recorded data is included in the `mobileTokenData`
@@ -69,53 +72,78 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   String get key => 'preApprovalScreens';
 
   final List<_Visit> _visits = [];
-  String? _currentScreenId;
+  _Visit? _openVisit;
 
-  /// Starts recording a visit to the screen identified by [id].
+  final DateTime Function() _now;
+
+  /// Creates a new recorder.
   ///
-  /// If another screen visit is currently open, it will be auto-closed
-  /// without an action before the new visit begins.
+  /// An optional [timeProvider] can be injected for deterministic testing
+  /// or to use PowerAuth time synchronization.
+  WMTPreApprovalScreensRecorder({DateTime Function()? timeProvider})
+      : _now = timeProvider ?? (() => DateTime.now());
+
+  /// Opens a new visit for [id].
+  ///
+  /// If a different visit is already open, it is appended as-is
+  /// (without `timestampClosed` / `action`). If the same screen is
+  /// already open, this call is a no-op.
   /// Does nothing if [id] is empty.
   ///
   /// Returns this recorder for chaining.
   WMTPreApprovalScreensRecorder begin(String id) {
     if (id.isEmpty) return this;
 
-    // Auto-close previous open visit if switching screens
-    if (_currentScreenId != null && _currentScreenId != id) {
-      _closeCurrentVisit(null);
+    if (_openVisit != null) {
+      if (_openVisit!.screen == id) return this;
+      _visits.add(_openVisit!);
     }
 
-    // Ignore duplicate begin for the same screen
-    if (_currentScreenId == id) return this;
-
-    _visits.add(_Visit(
+    _openVisit = _Visit(
       screen: id,
-      timestampOpened: DateTime.now().millisecondsSinceEpoch,
-    ));
-    _currentScreenId = id;
+      timestampOpened: _now().toUtc().toIso8601String(),
+    );
     return this;
   }
 
-  /// Closes the visit to the screen identified by [id] with the given [action].
+  /// Closes the current visit (if its id matches) and records [action].
   ///
-  /// Only closes the visit if [id] matches the currently open screen.
+  /// Falls back to the last recorded visit with the same id that is still
+  /// unclosed (no `timestampClosed` and no `action`).
   ///
   /// Returns this recorder for chaining.
   WMTPreApprovalScreensRecorder end(String id, WMTPreApprovalScreenAction action) {
-    if (_currentScreenId != id) return this;
-    _closeCurrentVisit(action);
+    // Currently open visit matches this id → close & append
+    if (_openVisit != null && _openVisit!.screen == id) {
+      _openVisit!.timestampClosed = _now().toUtc().toIso8601String();
+      _openVisit!.action = action.name;
+      _visits.add(_openVisit!);
+      _openVisit = null;
+      return this;
+    }
+
+    // Fallback: last recorded visit with same id still unfinished
+    if (_visits.isNotEmpty) {
+      final last = _visits.last;
+      if (last.screen == id && last.timestampClosed == null && last.action == null) {
+        last.timestampClosed = _now().toUtc().toIso8601String();
+        last.action = action.name;
+      }
+    }
+
     return this;
   }
 
   /// Builds the visit records as a JSON-serializable list.
   ///
-  /// Any currently open visit is auto-closed without an action.
+  /// If a visit is still open, it is auto-closed (with `timestampClosed`
+  /// but no action) and appended.
   @override
   dynamic build() {
-    // Auto-close any open visit
-    if (_currentScreenId != null) {
-      _closeCurrentVisit(null);
+    if (_openVisit != null) {
+      _openVisit!.timestampClosed = _now().toUtc().toIso8601String();
+      _visits.add(_openVisit!);
+      _openVisit = null;
     }
 
     return _visits.map((v) {
@@ -136,25 +164,14 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   /// Clears all recorded visits, allowing reuse for a new operation.
   void reset() {
     _visits.clear();
-    _currentScreenId = null;
-  }
-
-  void _closeCurrentVisit(WMTPreApprovalScreenAction? action) {
-    if (_visits.isNotEmpty) {
-      final last = _visits.last;
-      if (last.timestampClosed == null) {
-        last.timestampClosed = DateTime.now().millisecondsSinceEpoch;
-        last.action = action?.name;
-      }
-    }
-    _currentScreenId = null;
+    _openVisit = null;
   }
 }
 
 class _Visit {
   final String screen;
-  final int timestampOpened;
-  int? timestampClosed;
+  final String timestampOpened;
+  String? timestampClosed;
   String? action;
 
   _Visit({required this.screen, required this.timestampOpened});

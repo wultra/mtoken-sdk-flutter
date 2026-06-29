@@ -158,13 +158,13 @@ class WMTPreApprovalScreen {
       )).toList();
     }
 
-    // Convert legacy approvalType to controls
+    // Convert legacy approvalType to controls (only SLIDER triggers controls)
     WMTPreApprovalControls? controls;
-    if (legacyApprovalType != null) {
+    if (legacyApprovalType == 'SLIDER') {
       controls = WMTPreApprovalControls(
-        approve: WMTPreApprovalApprove(
-          type: WMTPreApprovalApproveType.fromSerialized(legacyApprovalType),
-        ),
+        flip: true,
+        decline: WMTPreApprovalDecline(type: WMTPreApprovalDeclineType.back),
+        approve: WMTPreApprovalApprove(type: WMTPreApprovalApproveType.slider),
       );
     }
 

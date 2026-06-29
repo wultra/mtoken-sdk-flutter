@@ -130,10 +130,15 @@ class WMTOperations extends WMTNetworking {
   /// Params: 
   /// - [operationId] ID of the operation.
   /// - [reason] Reason for the rejection.
+  /// - [mobileTokenData] Optional mobile token data to send with the rejection (e.g. pre-approval screen visit records).
   /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> reject(String operationId, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> reject(String operationId, WMTRejectionReason reason, { Object? mobileTokenData, WMTRequestProcessor? requestProcessor }) async {
+    final requestObject = <String, dynamic>{ "id": operationId, "reason": reason.serialized };
+    if (mobileTokenData != null) {
+      requestObject["mobileTokenData"] = mobileTokenData;
+    }
     await postSigned(
-      { "requestObject": { "id": operationId, "reason": reason.serialized } },
+      { "requestObject": requestObject },
       PowerAuthAuthentication.possession(),
       "/api/auth/token/app/operation/cancel",
       "/operation/cancel",

@@ -264,12 +264,15 @@ void main() {
       }
     });
 
-    test('legacy SLIDER approvalType is converted to controls', () {
+    test('legacy SLIDER approvalType is converted to controls with flip and decline', () {
       final json = jsonDecode(_legacyFormatJson) as Map<String, dynamic>;
       final uiData = WMTUserOperationUIData.fromJson(json);
       final screen = uiData.preApprovalScreens!.first;
 
       expect(screen.controls, isNotNull);
+      expect(screen.controls!.flip, true);
+      expect(screen.controls!.decline, isNotNull);
+      expect(screen.controls!.decline!.type, WMTPreApprovalDeclineType.back);
       expect(screen.controls!.approve, isNotNull);
       expect(screen.controls!.approve!.type, WMTPreApprovalApproveType.slider);
     });
@@ -290,7 +293,7 @@ void main() {
       expect(uiData.preApprovalScreens!.first.controls, isNull);
     });
 
-    test('legacy format with BUTTON approvalType', () {
+    test('legacy format with BUTTON approvalType has null controls', () {
       final json = jsonDecode('''{
         "preApprovalScreen": {
           "type": "INFO",
@@ -302,8 +305,7 @@ void main() {
       final uiData = WMTUserOperationUIData.fromJson(json);
       final screen = uiData.preApprovalScreens!.first;
 
-      expect(screen.controls, isNotNull);
-      expect(screen.controls!.approve!.type, WMTPreApprovalApproveType.button);
+      expect(screen.controls, isNull);
     });
 
     test('legacy format with empty items has null elements', () {

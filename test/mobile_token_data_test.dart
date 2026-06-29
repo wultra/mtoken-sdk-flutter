@@ -141,8 +141,8 @@ void main() {
       final visits = recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'screen1');
-      expect(visits[0]['timestampOpened'], isA<int>());
-      expect(visits[0]['timestampClosed'], isA<int>());
+      expect(visits[0]['timestampOpened'], isA<String>());
+      expect(visits[0]['timestampClosed'], isA<String>());
       expect(visits[0]['action'], 'CONTINUE');
     });
 
@@ -161,21 +161,22 @@ void main() {
       expect(visits[1]['action'], 'SCAN');
     });
 
-    test('auto-closes previous visit when switching screens', () {
+    test('appends open visit as-is when switching screens', () {
       final recorder = WMTPreApprovalScreensRecorder();
       recorder.begin('screen1');
-      recorder.begin('screen2'); // should auto-close screen1
+      recorder.begin('screen2'); // should append screen1 as-is (no timestampClosed)
 
       final visits = recorder.build() as List;
       expect(visits.length, 2);
 
-      // screen1 auto-closed without action
+      // screen1 appended without closing (no timestampClosed, no action)
       expect(visits[0]['screen'], 'screen1');
-      expect(visits[0]['timestampClosed'], isA<int>());
+      expect(visits[0].containsKey('timestampClosed'), false);
       expect(visits[0].containsKey('action'), false);
 
       // screen2 auto-closed by build()
       expect(visits[1]['screen'], 'screen2');
+      expect(visits[1]['timestampClosed'], isA<String>());
     });
 
     test('build auto-closes open visit', () {
@@ -185,7 +186,7 @@ void main() {
       final visits = recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'screen1');
-      expect(visits[0]['timestampClosed'], isA<int>());
+      expect(visits[0]['timestampClosed'], isA<String>());
       expect(visits[0].containsKey('action'), false);
     });
 
@@ -200,7 +201,23 @@ void main() {
       expect(visits.length, 1);
     });
 
-    test('end with non-matching id is a no-op', () {
+    test('end with non-matching id falls back to last unclosed visit', () {
+      final recorder = WMTPreApprovalScreensRecorder();
+      recorder.begin('screen1');
+      recorder.begin('screen2'); // pushes screen1 as-is (unclosed)
+      recorder.end('screen1', WMTPreApprovalScreenAction.back); // fallback to screen1 in visits
+      recorder.end('screen2', WMTPreApprovalScreenAction.continueAction);
+
+      final visits = recorder.build() as List;
+      expect(visits.length, 2);
+      expect(visits[0]['screen'], 'screen1');
+      expect(visits[0]['action'], 'BACK');
+      expect(visits[0]['timestampClosed'], isA<String>());
+      expect(visits[1]['screen'], 'screen2');
+      expect(visits[1]['action'], 'CONTINUE');
+    });
+
+    test('end with non-matching id and no fallback is a no-op', () {
       final recorder = WMTPreApprovalScreensRecorder();
       recorder.begin('screen1');
       recorder.end('screen2', WMTPreApprovalScreenAction.back); // no match, ignored
@@ -297,6 +314,18 @@ void main() {
       final visits = recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'new');
+    });
+
+    test('timestamps are ISO 8601 strings', () {
+      final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
+      final recorder = WMTPreApprovalScreensRecorder(timeProvider: () => fixedTime);
+
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+
+      final visits = recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:30:00.000Z');
+      expect(visits[0]['timestampClosed'], '2025-06-15T10:30:00.000Z');
     });
   });
 }
