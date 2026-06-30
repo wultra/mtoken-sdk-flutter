@@ -77,24 +77,11 @@ void main() {
       expect(s2.controls, isNull);
     });
 
-    // ignore: deprecated_member_use_from_same_package
-    test('deprecated preApprovalScreen getter returns first screen', () {
-      final json = jsonDecode(_newFormatJson) as Map<String, dynamic>;
-      final uiData = WMTUserOperationUIData.fromJson(json);
-
-      // ignore: deprecated_member_use_from_same_package
-      expect(uiData.preApprovalScreen, isNotNull);
-      // ignore: deprecated_member_use_from_same_package
-      expect(uiData.preApprovalScreen!.id, 'id1');
-    });
-
     test('handles null preApprovalScreens', () {
       final json = jsonDecode('{"flipButtons": true}') as Map<String, dynamic>;
       final uiData = WMTUserOperationUIData.fromJson(json);
 
       expect(uiData.preApprovalScreens, isNull);
-      // ignore: deprecated_member_use_from_same_package
-      expect(uiData.preApprovalScreen, isNull);
     });
 
     test('handles empty elements array', () {
@@ -244,10 +231,10 @@ void main() {
       expect(screen.type, 'WARNING');
       expect(screen.heading, 'Watch out!');
       expect(screen.message, 'You may become a victim of an attack.');
-      expect(screen.image, isNull);
+      expect(screen.image, 'fallback_image');
     });
 
-    test('legacy items are converted to ListItem elements without fallback icon', () {
+    test('legacy items are converted to ListItem elements with fallback icon', () {
       final json = jsonDecode(_legacyFormatJson) as Map<String, dynamic>;
       final uiData = WMTUserOperationUIData.fromJson(json);
       final screen = uiData.preApprovalScreens!.first;
@@ -260,7 +247,7 @@ void main() {
         expect(element, isA<WMTPreApprovalElementListItem>());
         expect(element.type, WMTPreApprovalElementType.listItem);
         expect(element.text, 'Item ${i + 1}');
-        expect((element as WMTPreApprovalElementListItem).icon, isNull);
+        expect((element as WMTPreApprovalElementListItem).icon, 'fallback_icon');
       }
     });
 
@@ -277,7 +264,7 @@ void main() {
       expect(screen.controls!.approve!.type, WMTPreApprovalApproveType.slider);
     });
 
-    test('legacy format without items has null elements', () {
+    test('legacy format without items has null elements but fallback image', () {
       final json = jsonDecode('''{
         "preApprovalScreen": {
           "type": "INFO",
@@ -291,6 +278,7 @@ void main() {
       expect(uiData.preApprovalScreens!.length, 1);
       expect(uiData.preApprovalScreens!.first.elements, isNull);
       expect(uiData.preApprovalScreens!.first.controls, isNull);
+      expect(uiData.preApprovalScreens!.first.image, 'fallback_image');
     });
 
     test('legacy format with BUTTON approvalType has null controls', () {
@@ -308,7 +296,7 @@ void main() {
       expect(screen.controls, isNull);
     });
 
-    test('legacy format with empty items has null elements', () {
+    test('legacy format with empty items has null elements but fallback image', () {
       final json = jsonDecode('''{
         "preApprovalScreen": {
           "type": "INFO",
@@ -320,6 +308,7 @@ void main() {
       final uiData = WMTUserOperationUIData.fromJson(json);
 
       expect(uiData.preApprovalScreens!.first.elements, isNull);
+      expect(uiData.preApprovalScreens!.first.image, 'fallback_image');
     });
 
     test('new format takes priority over legacy', () {
@@ -339,6 +328,23 @@ void main() {
   });
 
   group('PostApprovalScreen', () {
+    test('unknown type returns base PostApprovalScreen', () {
+      final json = jsonDecode('''{
+        "postApprovalScreen": {
+          "type": "FUTURE_TYPE",
+          "heading": "Future",
+          "message": "Some future screen"
+        }
+      }''') as Map<String, dynamic>;
+      final uiData = WMTUserOperationUIData.fromJson(json);
+
+      expect(uiData.postApprovalScreen, isNotNull);
+      expect(uiData.postApprovalScreen!.type, 'FUTURE_TYPE');
+      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenReview>()));
+      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenRedirect>()));
+      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenGeneric>()));
+    });
+
     test('post approval screen still works', () {
       final json = jsonDecode('''{
         "postApprovalScreen": {

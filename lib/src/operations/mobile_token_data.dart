@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import 'dart:async';
+import 'dart:collection';
+
 /// Interface for structured records that contribute to mobile token data.
 ///
 /// Implement this to create reusable, self-contained data records
@@ -25,7 +28,8 @@ abstract class WMTMobileTokenDataRecord {
   /// Builds the value representation of this record.
   ///
   /// The returned value must be JSON-serializable (primitives, maps, lists).
-  dynamic build();
+  /// May return a [Future] for async implementations.
+  FutureOr<dynamic> build();
 }
 
 /// Builder for composing structured mobile token data for operation authorization.
@@ -38,18 +42,17 @@ abstract class WMTMobileTokenDataRecord {
 /// ```dart
 /// final builder = WMTMobileTokenDataBuilder();
 /// builder.put('customKey', 'customValue');
-/// builder.putRecord(recorder);
+/// await builder.putRecord(recorder);
 ///
 /// operation.mobileTokenData = builder.build();
 /// ```
 class WMTMobileTokenDataBuilder {
-  final Map<String, dynamic> _generic = {};
-  final Map<String, WMTMobileTokenDataRecord> _records = {};
+  final Map<String, dynamic> _data = LinkedHashMap<String, dynamic>();
 
   /// Creates a builder with optional initial entries.
   WMTMobileTokenDataBuilder([Map<String, dynamic>? initialData]) {
     if (initialData != null) {
-      _generic.addAll(initialData);
+      _data.addAll(initialData);
     }
   }
 
@@ -58,15 +61,16 @@ class WMTMobileTokenDataBuilder {
   /// The [value] must be JSON-serializable.
   /// Returns this builder for chaining.
   WMTMobileTokenDataBuilder put(String key, dynamic value) {
-    _generic[key] = value;
+    _data[key] = value;
     return this;
   }
 
   /// Adds or replaces a structured [record] by its key.
   ///
+  /// The record's [WMTMobileTokenDataRecord.build] result is stored under [WMTMobileTokenDataRecord.key].
   /// Returns this builder for chaining.
-  WMTMobileTokenDataBuilder putRecord(WMTMobileTokenDataRecord record) {
-    _records[record.key] = record;
+  Future<WMTMobileTokenDataBuilder> putRecord(WMTMobileTokenDataRecord record) async {
+    _data[record.key] = await record.build();
     return this;
   }
 
@@ -74,29 +78,23 @@ class WMTMobileTokenDataBuilder {
   ///
   /// Returns `true` if the key was found and removed.
   bool remove(String key) {
-    final hadGeneric = _generic.containsKey(key);
-    if (hadGeneric) _generic.remove(key);
-    final removedRecord = _records.remove(key) != null;
-    return hadGeneric || removedRecord;
+    if (_data.containsKey(key)) {
+      _data.remove(key);
+      return true;
+    }
+    return false;
   }
 
   /// Removes all entries.
   ///
   /// Returns this builder for chaining.
   WMTMobileTokenDataBuilder clear() {
-    _generic.clear();
-    _records.clear();
+    _data.clear();
     return this;
   }
 
   /// Builds an immutable snapshot of the collected data.
-  ///
-  /// Record values are resolved by calling [WMTMobileTokenDataRecord.build].
   Map<String, dynamic> build() {
-    final result = Map<String, dynamic>.from(_generic);
-    for (final record in _records.values) {
-      result[record.key] = record.build();
-    }
-    return Map.unmodifiable(result);
+    return Map.unmodifiable(Map<String, dynamic>.from(_data));
   }
 }

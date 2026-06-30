@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mtoken_sdk_flutter/src/operations/mobile_token_data.dart';
 import 'package:mtoken_sdk_flutter/src/operations/pre_approval_screens_recorder.dart';
 
+import 'test_utils.dart';
+
 void main() {
   group('WMTMobileTokenDataBuilder', () {
     test('builds empty map', () {
@@ -40,18 +42,18 @@ void main() {
       expect(result['key'], 'second');
     });
 
-    test('putRecord adds record by key', () {
+    test('putRecord adds record by key', () async {
       final builder = WMTMobileTokenDataBuilder();
-      builder.putRecord(_TestRecord('testKey', 'testValue'));
+      await builder.putRecord(_TestRecord('testKey', 'testValue'));
 
       final result = builder.build();
       expect(result['testKey'], 'testValue');
     });
 
-    test('putRecord replaces record with same key', () {
+    test('putRecord replaces record with same key', () async {
       final builder = WMTMobileTokenDataBuilder();
-      builder.putRecord(_TestRecord('key', 'first'));
-      builder.putRecord(_TestRecord('key', 'second'));
+      await builder.putRecord(_TestRecord('key', 'first'));
+      await builder.putRecord(_TestRecord('key', 'second'));
 
       final result = builder.build();
       expect(result['key'], 'second');
@@ -65,9 +67,9 @@ void main() {
       expect(builder.build(), isEmpty);
     });
 
-    test('remove removes record', () {
+    test('remove removes record', () async {
       final builder = WMTMobileTokenDataBuilder();
-      builder.putRecord(_TestRecord('key', 'value'));
+      await builder.putRecord(_TestRecord('key', 'value'));
 
       expect(builder.remove('key'), true);
       expect(builder.build(), isEmpty);
@@ -86,10 +88,10 @@ void main() {
       expect(builder.build(), isEmpty);
     });
 
-    test('clear removes all entries', () {
+    test('clear removes all entries', () async {
       final builder = WMTMobileTokenDataBuilder({'init': 'val'});
       builder.put('key1', 'v1');
-      builder.putRecord(_TestRecord('key2', 'v2'));
+      await builder.putRecord(_TestRecord('key2', 'v2'));
       builder.clear();
 
       expect(builder.build(), isEmpty);
@@ -103,31 +105,29 @@ void main() {
       expect(() => result['new'] = 'fail', throwsA(isA<UnsupportedError>()));
     });
 
-    test('chaining works', () {
+    test('chaining works', () async {
       final builder = WMTMobileTokenDataBuilder();
-      final result = builder
-          .put('a', 1)
-          .put('b', 2)
-          .putRecord(_TestRecord('c', 3))
-          .build();
+      builder.put('a', 1).put('b', 2);
+      await builder.putRecord(_TestRecord('c', 3));
+      final result = builder.build();
 
       expect(result.length, 3);
     });
 
-    test('generic and record can coexist with different keys', () {
+    test('generic and record can coexist with different keys', () async {
       final builder = WMTMobileTokenDataBuilder();
       builder.put('generic', 'gValue');
-      builder.putRecord(_TestRecord('record', 'rValue'));
+      await builder.putRecord(_TestRecord('record', 'rValue'));
 
       final result = builder.build();
       expect(result['generic'], 'gValue');
       expect(result['record'], 'rValue');
     });
 
-    test('record value overrides generic with same key', () {
+    test('record value overrides generic with same key', () async {
       final builder = WMTMobileTokenDataBuilder();
       builder.put('key', 'genericValue');
-      builder.putRecord(_TestRecord('key', 'recordValue'));
+      await builder.putRecord(_TestRecord('key', 'recordValue'));
 
       final result = builder.build();
       // Record is applied after generic, so it overrides
@@ -136,17 +136,29 @@ void main() {
   });
 
   group('WMTPreApprovalScreensRecorder', () {
+
+    late WMTPreApprovalScreensRecorder Function({Future<DateTime> Function()? timeProvider}) createRecorder;
+
+    setUp(() {
+      final mockPowerAuth = MockPowerAuth();
+      createRecorder = ({Future<DateTime> Function()? timeProvider}) =>
+          WMTPreApprovalScreensRecorder(
+            powerAuth: mockPowerAuth,
+            timeProvider: timeProvider ?? () async => DateTime.now(),
+          );
+    });
+
     test('key is preApprovalScreens', () {
-      final recorder = WMTPreApprovalScreensRecorder();
+      final recorder = createRecorder();
       expect(recorder.key, 'preApprovalScreens');
     });
 
-    test('records a single screen visit', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+    test('records a single screen visit', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'screen1');
       expect(visits[0]['timestampOpened'], isA<String>());
@@ -154,14 +166,14 @@ void main() {
       expect(visits[0]['action'], 'CONTINUE');
     });
 
-    test('records multiple screen visits', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
-      recorder.begin('screen2');
-      recorder.end('screen2', WMTPreApprovalScreenAction.scan);
+    test('records multiple screen visits', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('screen2');
+      await recorder.end('screen2', WMTPreApprovalScreenAction.scan);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 2);
       expect(visits[0]['screen'], 'screen1');
       expect(visits[0]['action'], 'CONTINUE');
@@ -169,12 +181,12 @@ void main() {
       expect(visits[1]['action'], 'SCAN');
     });
 
-    test('appends open visit as-is when switching screens', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.begin('screen2'); // should append screen1 as-is (no timestampClosed)
+    test('appends open visit as-is when switching screens', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.begin('screen2'); // should append screen1 as-is (no timestampClosed)
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 2);
 
       // screen1 appended without closing (no timestampClosed, no action)
@@ -187,36 +199,36 @@ void main() {
       expect(visits[1]['timestampClosed'], isA<String>());
     });
 
-    test('build auto-closes open visit', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
+    test('build auto-closes open visit', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'screen1');
       expect(visits[0]['timestampClosed'], isA<String>());
       expect(visits[0].containsKey('action'), false);
     });
 
-    test('duplicate begin for same screen is a no-op', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.begin('screen1'); // duplicate, ignored
+    test('duplicate begin for same screen is a no-op', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.begin('screen1'); // duplicate, ignored
 
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 1);
     });
 
-    test('end with non-matching id falls back to last unclosed visit', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.begin('screen2'); // pushes screen1 as-is (unclosed)
-      recorder.end('screen1', WMTPreApprovalScreenAction.back); // fallback to screen1 in visits
-      recorder.end('screen2', WMTPreApprovalScreenAction.continueAction);
+    test('end with non-matching id falls back to last unclosed visit', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.begin('screen2'); // pushes screen1 as-is (unclosed)
+      await recorder.end('screen1', WMTPreApprovalScreenAction.back); // fallback to screen1 in visits
+      await recorder.end('screen2', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 2);
       expect(visits[0]['screen'], 'screen1');
       expect(visits[0]['action'], 'BACK');
@@ -225,52 +237,52 @@ void main() {
       expect(visits[1]['action'], 'CONTINUE');
     });
 
-    test('end with non-matching id and no fallback is a no-op', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.end('screen2', WMTPreApprovalScreenAction.back); // no match, ignored
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+    test('end with non-matching id and no fallback is a no-op', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.end('screen2', WMTPreApprovalScreenAction.back); // no match, ignored
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['action'], 'CONTINUE');
     });
 
-    test('begin with empty id is a no-op', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('');
+    test('begin with empty id is a no-op', () async {
+      final recorder = createRecorder();
+      await recorder.begin('');
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits, isEmpty);
     });
 
-    test('reset clears all visits', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder.begin('screen1');
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+    test('reset clears all visits', () async {
+      final recorder = createRecorder();
+      await recorder.begin('screen1');
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
       recorder.reset();
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits, isEmpty);
     });
 
-    test('all action types work', () {
-      final recorder = WMTPreApprovalScreensRecorder();
+    test('all action types work', () async {
+      final recorder = createRecorder();
 
-      recorder.begin('s1');
-      recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
-      recorder.begin('s2');
-      recorder.end('s2', WMTPreApprovalScreenAction.back);
-      recorder.begin('s3');
-      recorder.end('s3', WMTPreApprovalScreenAction.close);
-      recorder.begin('s4');
-      recorder.end('s4', WMTPreApprovalScreenAction.reject);
-      recorder.begin('s5');
-      recorder.end('s5', WMTPreApprovalScreenAction.scan);
-      recorder.begin('s6');
-      recorder.end('s6', WMTPreApprovalScreenAction.custom('CUSTOM_ACTION'));
+      await recorder.begin('s1');
+      await recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('s2');
+      await recorder.end('s2', WMTPreApprovalScreenAction.back);
+      await recorder.begin('s3');
+      await recorder.end('s3', WMTPreApprovalScreenAction.close);
+      await recorder.begin('s4');
+      await recorder.end('s4', WMTPreApprovalScreenAction.reject);
+      await recorder.begin('s5');
+      await recorder.end('s5', WMTPreApprovalScreenAction.scan);
+      await recorder.begin('s6');
+      await recorder.end('s6', WMTPreApprovalScreenAction.custom('CUSTOM_ACTION'));
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 6);
       expect(visits[0]['action'], 'CONTINUE');
       expect(visits[1]['action'], 'BACK');
@@ -280,26 +292,25 @@ void main() {
       expect(visits[5]['action'], 'CUSTOM_ACTION');
     });
 
-    test('chaining works', () {
-      final recorder = WMTPreApprovalScreensRecorder();
-      recorder
-          .begin('s1')
-          .end('s1', WMTPreApprovalScreenAction.continueAction)
-          .begin('s2')
-          .end('s2', WMTPreApprovalScreenAction.scan);
+    test('chaining works', () async {
+      final recorder = createRecorder();
+      await recorder.begin('s1');
+      await recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('s2');
+      await recorder.end('s2', WMTPreApprovalScreenAction.scan);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 2);
     });
 
-    test('integrates with builder', () {
+    test('integrates with builder', () async {
       final builder = WMTMobileTokenDataBuilder();
-      final recorder = WMTPreApprovalScreensRecorder();
+      final recorder = createRecorder();
 
-      recorder.begin('screen1');
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('screen1');
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
-      builder.putRecord(recorder);
+      await builder.putRecord(recorder);
       builder.put('customKey', 'customValue');
 
       final result = builder.build();
@@ -309,29 +320,29 @@ void main() {
       expect((result['preApprovalScreens'] as List)[0]['screen'], 'screen1');
     });
 
-    test('recorder can be reused after reset', () {
-      final recorder = WMTPreApprovalScreensRecorder();
+    test('recorder can be reused after reset', () async {
+      final recorder = createRecorder();
 
-      recorder.begin('old');
-      recorder.end('old', WMTPreApprovalScreenAction.close);
+      await recorder.begin('old');
+      await recorder.end('old', WMTPreApprovalScreenAction.close);
       recorder.reset();
 
-      recorder.begin('new');
-      recorder.end('new', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('new');
+      await recorder.end('new', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits.length, 1);
       expect(visits[0]['screen'], 'new');
     });
 
-    test('timestamps are ISO 8601 strings', () {
+    test('timestamps are ISO 8601 strings', () async {
       final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
-      final recorder = WMTPreApprovalScreensRecorder(timeProvider: () => fixedTime);
+      final recorder = createRecorder(timeProvider: () async => fixedTime);
 
-      recorder.begin('screen1');
-      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      await recorder.begin('screen1');
+      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
-      final visits = recorder.build() as List;
+      final visits = await recorder.build() as List;
       expect(visits[0]['timestampOpened'], '2025-06-15T10:30:00.000Z');
       expect(visits[0]['timestampClosed'], '2025-06-15T10:30:00.000Z');
     });

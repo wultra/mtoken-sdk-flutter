@@ -30,18 +30,8 @@ class WMTUserOperationUIData {
   ///
   /// May contain multiple screens that the user must go through.
   /// When the backend provides the legacy single `preApprovalScreen`,
-  /// it is automatically converted to a single-element list.
+  /// it is automatically decoded into a single-element list.
   final List<WMTPreApprovalScreen>? preApprovalScreens;
-
-  /// UI for pre-approval operation screen.
-  ///
-  /// Convenience getter returning the first pre-approval screen (if any).
-  /// Use [preApprovalScreens] for the full list.
-  @Deprecated('Use preApprovalScreens instead')
-  WMTPreApprovalScreen? get preApprovalScreen =>
-      preApprovalScreens != null && preApprovalScreens!.isNotEmpty
-          ? preApprovalScreens!.first
-          : null;
 
   /// UI for post-approval operation screen.
   ///
@@ -53,18 +43,15 @@ class WMTUserOperationUIData {
   WMTUserOperationUIData({
     this.flipButtons,
     this.blockApprovalOnCall,
-    List<WMTPreApprovalScreen>? preApprovalScreens,
-    @Deprecated('Use preApprovalScreens instead')
-    WMTPreApprovalScreen? preApprovalScreen,
+    this.preApprovalScreens,
     this.postApprovalScreen,
-  }) : preApprovalScreens = preApprovalScreens ??
-           (preApprovalScreen != null ? [preApprovalScreen] : null);
+  });
 
   /// Creates a [WMTUserOperationUIData] from a JSON map.
   ///
   /// Supports both the new `preApprovalScreens` (plural, array) format
   /// and the legacy `preApprovalScreen` (singular) format.
-  /// When the legacy format is detected, it is converted to the new model.
+  /// When the legacy format is detected, it is decoded into the new model.
   factory WMTUserOperationUIData.fromJson(Map<String, dynamic> json) {
     List<WMTPreApprovalScreen>? screens;
     if (json['preApprovalScreens'] != null) {
@@ -148,15 +135,30 @@ class WMTPreApprovalScreen {
   ///
   /// Legacy `items` are mapped to [WMTPreApprovalElementListItem] elements
   /// and `approvalType` is mapped to [WMTPreApprovalControls].
+  ///
+  /// Only enters the legacy branch when no new-model markers are present
+  /// (`elements`, `controls`, `id`, `backButton`, `image`).
   factory WMTPreApprovalScreen._fromLegacyJson(Map<String, dynamic> json) {
+    // Detect if this is actually a new-model payload
+    final hasNewModel = json.containsKey('elements') ||
+        json.containsKey('controls') ||
+        json.containsKey('id') ||
+        json.containsKey('backButton') ||
+        json.containsKey('image');
+
+    if (hasNewModel) {
+      return WMTPreApprovalScreen.fromJson(json);
+    }
+
     final legacyItems = (json['items'] as List<dynamic>?)?.map((item) => item as String).toList();
     final legacyApprovalType = json['approvalType'] as String?;
 
-    // Convert legacy items to ListItem elements
+    // Convert legacy items to ListItem elements with fallback icon
     List<WMTPreApprovalElement>? elements;
     if (legacyItems != null && legacyItems.isNotEmpty) {
       elements = legacyItems.map((item) => WMTPreApprovalElementListItem(
         text: item,
+        icon: _fallbackIcon,
       )).toList();
     }
 
@@ -174,10 +176,14 @@ class WMTPreApprovalScreen {
       type: json['type'] as String,
       heading: json['heading'] as String,
       message: json['message'] as String,
+      image: _fallbackImage,
       elements: elements,
       controls: controls,
     );
   }
+
+  static const String _fallbackImage = 'fallback_image';
+  static const String _fallbackIcon = 'fallback_icon';
 }
 
 class WMTPostApprovalScreen {
@@ -189,6 +195,9 @@ class WMTPostApprovalScreen {
   WMTPostApprovalScreen({required this.type});
 
   /// Creates a [WMTPostApprovalScreen] from a JSON map.
+  ///
+  /// Returns the base [WMTPostApprovalScreen] for unknown types
+  /// (forward compatibility).
   factory WMTPostApprovalScreen.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String;
     switch (type) {
@@ -199,7 +208,7 @@ class WMTPostApprovalScreen {
       case 'GENERIC':
         return WMTPostApprovalScreenGeneric.fromJson(json);
       default:
-        throw ArgumentError('Unknown PostApprovalScreen type: $type');
+        return WMTPostApprovalScreen(type: type);
     }
   }
 }
