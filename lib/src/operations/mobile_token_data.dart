@@ -74,9 +74,10 @@ class WMTMobileTokenDataBuilder {
   ///
   /// Returns `true` if the key was found and removed.
   bool remove(String key) {
-    final removedGeneric = _generic.remove(key) != null;
+    final hadGeneric = _generic.containsKey(key);
+    if (hadGeneric) _generic.remove(key);
     final removedRecord = _records.remove(key) != null;
-    return removedGeneric || removedRecord;
+    return hadGeneric || removedRecord;
   }
 
   /// Removes all entries.

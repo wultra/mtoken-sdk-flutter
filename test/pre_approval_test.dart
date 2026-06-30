@@ -5,7 +5,7 @@ import 'package:mtoken_sdk_flutter/src/operations/pre_approval_element.dart';
 import 'package:mtoken_sdk_flutter/src/operations/pre_approval_controls.dart';
 
 void main() {
-  group('PreApprovalScreen - New format', () {
+  group('PreApprovalScreen', () {
     test('parses multiple screens with all element types', () {
       final json = jsonDecode(_newFormatJson) as Map<String, dynamic>;
       final uiData = WMTUserOperationUIData.fromJson(json);
@@ -244,10 +244,10 @@ void main() {
       expect(screen.type, 'WARNING');
       expect(screen.heading, 'Watch out!');
       expect(screen.message, 'You may become a victim of an attack.');
-      expect(screen.image, 'fallback_image');
+      expect(screen.image, isNull);
     });
 
-    test('legacy items are converted to ListItem elements with fallback icon', () {
+    test('legacy items are converted to ListItem elements without fallback icon', () {
       final json = jsonDecode(_legacyFormatJson) as Map<String, dynamic>;
       final uiData = WMTUserOperationUIData.fromJson(json);
       final screen = uiData.preApprovalScreens!.first;
@@ -260,7 +260,7 @@ void main() {
         expect(element, isA<WMTPreApprovalElementListItem>());
         expect(element.type, WMTPreApprovalElementType.listItem);
         expect(element.text, 'Item ${i + 1}');
-        expect((element as WMTPreApprovalElementListItem).icon, 'fallback_icon');
+        expect((element as WMTPreApprovalElementListItem).icon, isNull);
       }
     });
 
@@ -338,7 +338,7 @@ void main() {
     });
   });
 
-  group('PostApprovalScreen - unchanged', () {
+  group('PostApprovalScreen', () {
     test('post approval screen still works', () {
       final json = jsonDecode('''{
         "postApprovalScreen": {

@@ -53,9 +53,12 @@ class WMTUserOperationUIData {
   WMTUserOperationUIData({
     this.flipButtons,
     this.blockApprovalOnCall,
-    this.preApprovalScreens,
+    List<WMTPreApprovalScreen>? preApprovalScreens,
+    @Deprecated('Use preApprovalScreens instead')
+    WMTPreApprovalScreen? preApprovalScreen,
     this.postApprovalScreen,
-  });
+  }) : preApprovalScreens = preApprovalScreens ??
+           (preApprovalScreen != null ? [preApprovalScreen] : null);
 
   /// Creates a [WMTUserOperationUIData] from a JSON map.
   ///
@@ -123,7 +126,7 @@ class WMTPreApprovalScreen {
     this.controls,
   });
 
-  /// Creates a [WMTPreApprovalScreen] from the new JSON format.
+  /// Creates a [WMTPreApprovalScreen] from a JSON map.
   factory WMTPreApprovalScreen.fromJson(Map<String, dynamic> json) {
     return WMTPreApprovalScreen(
       type: json['type'] as String,
@@ -154,7 +157,6 @@ class WMTPreApprovalScreen {
     if (legacyItems != null && legacyItems.isNotEmpty) {
       elements = legacyItems.map((item) => WMTPreApprovalElementListItem(
         text: item,
-        icon: 'fallback_icon',
       )).toList();
     }
 
@@ -172,7 +174,6 @@ class WMTPreApprovalScreen {
       type: json['type'] as String,
       heading: json['heading'] as String,
       message: json['message'] as String,
-      image: 'fallback_image',
       elements: elements,
       controls: controls,
     );

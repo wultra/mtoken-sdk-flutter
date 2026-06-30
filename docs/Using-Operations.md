@@ -11,6 +11,8 @@
 - [Off-line Authorization](#off-line-authorization)
 - [WMTUserOperation](#wmtuseroperation)
 - [Creating a Custom Operation](#creating-a-custom-operation)
+- [Pre-Approval Screens](#pre-approval-screens)
+- [Mobile Token Data](#mobile-token-data)
 - [TOTP ProximityCheck](#totp-proximity-check)
 
 ## Introduction
@@ -255,13 +257,132 @@ abstract class WMTOnlineOperation {
 }
 ```
 
+## Pre-Approval Screens
+
+Pre-approval screens define additional UI that can be displayed before the user decides to approve or reject an operation. They allow displaying structured instructions, warnings, or interactive elements to the user.
+
+The screens are available via `WMTUserOperation.ui.preApprovalScreens` and may contain multiple screens that the user navigates through.
+
+Types:
+
+- `WARNING`
+- `INFO`
+- `QR_SCAN` – this type indicates that the `WMTOperationProximityCheck` must be used
+
+A pre-approval screen can contain the following building blocks:
+
+- Heading and message – textual content displayed at the top of the screen.
+- Optional metadata:
+  - `id` – unique screen identifier
+  - `backButton` – show a navigation back button
+  - `image` – in-app asset identifier
+- Elements – structured items that form the main content of the screen:
+  - List item (`LIST_ITEM`) – text with optional `icon` and `style` (`INFO`, `WARNING`, `DANGER`).
+  - Alert (`ALERT`) – highlighted box with `style` (`INFO`, `WARNING`, `DANGER`).
+  - Button (`BUTTON`) – action element with `action` (`LINK`, `MAIL`, `PHONE`), plus optional `actionSettings` string describing additional behavior (e.g. `"REJECT"`).
+- Controls – configuration of approve/decline actions:
+  - Decline – `BACK` or `REJECT`, with optional `text`.
+  - Approve – `SLIDER` or `BUTTON`, with optional `text` and optional countdown (`counter`). The counter defines how long (in seconds) the approve control remains disabled after the screen appears.
+  - Layout options – `axis` (`HORIZONTAL` or `VERTICAL`) and `flip` (swap order of controls).
+
+## Mobile Token Data
+
+With PowerAuth Server **1.10+**, you can pass additional, customer-specific metadata during operation authorization or rejection using the `mobileTokenData` property.
+
+This feature is especially useful for **fraud detection systems (FDS)**, customer risk evaluation, or other backend-specific business logic.
+
+### Direct Map Approach
+
+If you already have a static set of key–value pairs, you can directly assign a map to your operation:
+
+```dart
+operation.mobileTokenData = {
+  'deviceFingerprint': 'abc123def456',
+  'riskScore': 0.8,
+  'location': {'latitude': 50.0755, 'longitude': 14.4378},
+};
+```
+
+### Builder-Based Approach
+
+For more dynamic, structured, or multi-step data, use the `WMTMobileTokenDataBuilder`.
+
+```dart
+// Create the builder (optionally with initial data)
+final builder = WMTMobileTokenDataBuilder(initialData: {'deviceFingerprint': 'abc123'});
+
+// Add generic entries
+builder.put('riskScore', 0.82);
+
+// Assign to the operation
+operation.mobileTokenData = builder.build();
+```
+
+### Record Helpers
+
+Sometimes, additional data attached to `mobileTokenData` is not just a few key–value pairs. It can represent structured sections of information (for example, a timeline of user actions).
+
+To support these cases, the SDK defines the `WMTMobileTokenDataRecord` interface:
+
+```dart
+abstract class WMTMobileTokenDataRecord {
+  /// Top-level key under which this record is stored.
+  String get key;
+
+  /// Produces the value to store for this key.
+  dynamic build();
+}
+```
+
+You can pass records to the builder with `builder.put(record)`.
+
+### Predefined Record Helper: `WMTPreApprovalScreensRecorder`
+
+The SDK includes a predefined implementation, `WMTPreApprovalScreensRecorder`, which records how users navigate through Pre-Approval screens.
+
+Each recorded "visit" contains:
+
+- Screen identifier (`screen`)
+- Opening timestamp
+- Closing timestamp
+- User action (`CONTINUE`, `CLOSE`, `REJECT`, `SCAN`, etc.)
+
+The `WMTPreApprovalScreensRecorder` exposes the following methods:
+
+- `begin(id)` – starts a new visit for the given screen ID. If another visit is already open, it is automatically added to the list (without a closing timestamp or action).
+- `end(id, action)` – closes the current visit if the given id matches. If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
+- `reset()` – resets recorded visits.
+
+```dart
+// Create MobileTokenData builder instance
+final builder = WMTMobileTokenDataBuilder();
+
+// Create the screen recorder
+final screenRecorder = WMTPreApprovalScreensRecorder();
+
+// Display UI for the PreApproval screen and record that it was shown
+screenRecorder.begin(screen.id);
+// Record when user leaves the PreApproval screen
+screenRecorder.end(screen.id, WMTScreenAction.continue_);
+
+// ... repeat for all screens from operation.ui.preApprovalScreens
+
+// When the PreApproval flow is finished, pass the recorder to the builder
+builder.put(screenRecorder);
+
+// Assign created mobileTokenData to the Operation before approving/rejecting
+operation.mobileTokenData = builder.build();
+```
+
+The `mobileTokenData` is completely optional and the structure is customer-specific. If you don't need this functionality, you can continue using operations without providing this property.
+
 ## TOTP Proximity Check
 
 Two-Factor Authentication (2FA) using Time-Based One-Time Passwords (TOTP) in the Operations is facilitated through the use of proximity check. This allows secure approval of operations through QR code scanning or deeplink handling.
 
 **QR Code Flow:**
 
-When the `WMTUserOperation.ui.preApprovalScreen` has a `type` == `QR_SCAN`, the app should open the camera to scan the QR code before confirming the operation. Use the camera to scan the QR code containing the necessary data payload for the operation.
+When the `WMTUserOperation.ui.preApprovalScreens` contains a screen with `type` == `QR_SCAN`, the app should open the camera to scan the QR code before confirming the operation. Use the camera to scan the QR code containing the necessary data payload for the operation.
 
 **Deeplink Flow:**
 

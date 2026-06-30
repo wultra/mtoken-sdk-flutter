@@ -78,6 +78,14 @@ void main() {
       expect(builder.remove('nonexistent'), false);
     });
 
+    test('remove returns true for key with null value', () {
+      final builder = WMTMobileTokenDataBuilder();
+      builder.put('key', null);
+
+      expect(builder.remove('key'), true);
+      expect(builder.build(), isEmpty);
+    });
+
     test('clear removes all entries', () {
       final builder = WMTMobileTokenDataBuilder({'init': 'val'});
       builder.put('key1', 'v1');
