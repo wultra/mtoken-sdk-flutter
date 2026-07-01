@@ -328,7 +328,7 @@ void main() {
   });
 
   group('PostApprovalScreen', () {
-    test('unknown type returns base PostApprovalScreen', () {
+    test('unknown type throws ArgumentError', () {
       final json = jsonDecode('''{
         "postApprovalScreen": {
           "type": "FUTURE_TYPE",
@@ -336,13 +336,8 @@ void main() {
           "message": "Some future screen"
         }
       }''') as Map<String, dynamic>;
-      final uiData = WMTUserOperationUIData.fromJson(json);
 
-      expect(uiData.postApprovalScreen, isNotNull);
-      expect(uiData.postApprovalScreen!.type, 'FUTURE_TYPE');
-      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenReview>()));
-      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenRedirect>()));
-      expect(uiData.postApprovalScreen, isNot(isA<WMTPostApprovalScreenGeneric>()));
+      expect(() => WMTUserOperationUIData.fromJson(json), throwsArgumentError);
     });
 
     test('post approval screen still works', () {

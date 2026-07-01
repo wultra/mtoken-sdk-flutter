@@ -182,7 +182,14 @@ class WMTPreApprovalScreen {
     );
   }
 
+  /// Sentinel injected as [image] during legacy conversion because the legacy
+  /// format has no image field. UI code should check for this value and render
+  /// a suitable default (e.g. a generic icon or no image).
   static const String _fallbackImage = 'fallback_image';
+
+  /// Sentinel injected as [WMTPreApprovalElementListItem.icon] during legacy
+  /// conversion because legacy items have no icon. UI code should check for
+  /// this value and provide a default rendering.
   static const String _fallbackIcon = 'fallback_icon';
 }
 
@@ -195,9 +202,6 @@ class WMTPostApprovalScreen {
   WMTPostApprovalScreen({required this.type});
 
   /// Creates a [WMTPostApprovalScreen] from a JSON map.
-  ///
-  /// Returns the base [WMTPostApprovalScreen] for unknown types
-  /// (forward compatibility).
   factory WMTPostApprovalScreen.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String;
     switch (type) {
@@ -208,7 +212,7 @@ class WMTPostApprovalScreen {
       case 'GENERIC':
         return WMTPostApprovalScreenGeneric.fromJson(json);
       default:
-        return WMTPostApprovalScreen(type: type);
+        throw ArgumentError('Unknown PostApprovalScreen type: $type');
     }
   }
 }

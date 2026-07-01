@@ -285,6 +285,15 @@ A pre-approval screen can contain the following building blocks:
   - Approve – `SLIDER` or `BUTTON`, with optional `text` and optional countdown (`counter`). The counter defines how long (in seconds) the approve control remains disabled after the screen appears.
   - Layout options – `axis` (`HORIZONTAL` or `VERTICAL`) and `flip` (swap order of controls).
 
+### Legacy Format Compatibility
+
+The SDK supports the legacy singular `preApprovalScreen` payload from older server versions and automatically converts it to the new `preApprovalScreens` list. During this conversion, the following sentinel values are injected because the legacy format does not carry these fields:
+
+- **`image`**: Set to `"fallback_image"`. Your UI layer should check for this value and render an appropriate default (e.g. a generic icon or no image).
+- **`icon`** (on list item elements): Set to `"fallback_icon"`. Your UI layer should detect this value and provide a suitable default rendering.
+
+These sentinels are only injected during legacy conversion — new-format payloads are passed through as-is. This behavior matches the iOS and Android SDKs.
+
 ## Mobile Token Data
 
 With PowerAuth Server **1.10+**, you can pass additional, customer-specific metadata during operation authorization or rejection using the `mobileTokenData` property.

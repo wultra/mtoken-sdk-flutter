@@ -140,10 +140,10 @@ void main() {
     late WMTPreApprovalScreensRecorder Function({Future<DateTime> Function()? timeProvider}) createRecorder;
 
     setUp(() {
-      final mockPowerAuth = MockPowerAuth();
+      final mockPA = mockPowerAuth();
       createRecorder = ({Future<DateTime> Function()? timeProvider}) =>
           WMTPreApprovalScreensRecorder(
-            powerAuth: mockPowerAuth,
+            powerAuth: mockPA,
             timeProvider: timeProvider ?? () async => DateTime.now(),
           );
     });
