@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 Wultra s.r.o.
+ * Copyright 2026 Wultra s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ enum WMTPreApprovalButtonAxis {
 
   static WMTPreApprovalButtonAxis? fromSerialized(String? value) {
     if (value == null) return null;
+    // Cast to nullable list so firstWhere can return null via orElse
     return WMTPreApprovalButtonAxis.values.cast<WMTPreApprovalButtonAxis?>().firstWhere(
       (e) => e!.serialized == value,
       orElse: () => null,
