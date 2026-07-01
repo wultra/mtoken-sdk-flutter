@@ -318,7 +318,7 @@ For more dynamic, structured, or multi-step data, use the `WMTMobileTokenDataBui
 
 ```dart
 // Create the builder (optionally with initial data)
-final builder = WMTMobileTokenDataBuilder(initialData: {'deviceFingerprint': 'abc123'});
+final builder = WMTMobileTokenDataBuilder({'deviceFingerprint': 'abc123'});
 
 // Add generic entries
 builder.put('riskScore', 0.82);
@@ -339,11 +339,11 @@ abstract class WMTMobileTokenDataRecord {
   String get key;
 
   /// Produces the value to store for this key.
-  dynamic build();
+  FutureOr<dynamic> build();
 }
 ```
 
-You can pass records to the builder with `builder.put(record)`.
+You can pass records to the builder with `await builder.putRecord(record)`.
 
 ### Predefined Record Helper: `WMTPreApprovalScreensRecorder`
 
@@ -366,18 +366,18 @@ The `WMTPreApprovalScreensRecorder` exposes the following methods:
 // Create MobileTokenData builder instance
 final builder = WMTMobileTokenDataBuilder();
 
-// Create the screen recorder
-final screenRecorder = WMTPreApprovalScreensRecorder();
+// Create the screen recorder (requires a PowerAuth instance)
+final screenRecorder = WMTPreApprovalScreensRecorder(powerAuth: powerAuth);
 
 // Display UI for the PreApproval screen and record that it was shown
-screenRecorder.begin(screen.id);
+await screenRecorder.begin(screen.id);
 // Record when user leaves the PreApproval screen
-screenRecorder.end(screen.id, WMTScreenAction.continue_);
+await screenRecorder.end(screen.id, WMTPreApprovalScreenAction.continueAction);
 
 // ... repeat for all screens from operation.ui.preApprovalScreens
 
 // When the PreApproval flow is finished, pass the recorder to the builder
-builder.put(screenRecorder);
+await builder.putRecord(screenRecorder);
 
 // Assign created mobileTokenData to the Operation before approving/rejecting
 operation.mobileTokenData = builder.build();

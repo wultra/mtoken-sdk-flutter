@@ -118,8 +118,8 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
 
   /// Closes the current visit (if its id matches) and records [action].
   ///
-  /// Falls back to the last recorded visit with the same id that is still
-  /// unclosed (no `timestampClosed` and no `action`).
+  /// If no open visit matches, falls back to the last recorded visit if it
+  /// has the same [id] and is still unclosed (no `timestampClosed` / `action`).
   ///
   /// Returns this recorder for chaining.
   Future<WMTPreApprovalScreensRecorder> end(String id, WMTPreApprovalScreenAction action) async {

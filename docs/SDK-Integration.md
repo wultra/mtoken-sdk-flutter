@@ -8,8 +8,8 @@ The PowerAuth Flutter SDK is a required dependency that will be automatically in
 
 | WMT Version | PowerAuth Flutter SDK |
 |-------------|--------------------|
-| `2.0.x`     | `^1.1.0`.          |
-| `1.0.x`     | `^1.1.0`.          |
+| `2.0.x`     | `^1.3.0`           |
+| `1.0.x`     | `^1.1.0`           |
 
 ## Supported Platforms
 
