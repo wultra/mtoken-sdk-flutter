@@ -15,7 +15,6 @@
  */
 
 import 'dart:async';
-import 'dart:collection';
 
 /// Interface for structured records that contribute to mobile token data.
 ///
@@ -47,7 +46,7 @@ abstract class WMTMobileTokenDataRecord {
 /// operation.mobileTokenData = builder.build();
 /// ```
 class WMTMobileTokenDataBuilder {
-  final Map<String, dynamic> _data = LinkedHashMap<String, dynamic>();
+  final Map<String, dynamic> _data = {};
 
   /// Creates a builder with optional initial entries.
   WMTMobileTokenDataBuilder([Map<String, dynamic>? initialData]) {
