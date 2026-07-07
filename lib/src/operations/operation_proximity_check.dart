@@ -64,7 +64,8 @@ class WMTOperationProximityCheck {
   factory WMTOperationProximityCheck.create({
     required String totp,
     required WMTProximityCheckType type,
-    required DateTime timestampReceived,
+    @Deprecated("This parameter is ignored. Use WMTOperationProximityCheck(totp: totp, type: type) instead.")
+    DateTime? timestampReceived,
   }) {
     return WMTOperationProximityCheck(totp: totp, type: type);
   }

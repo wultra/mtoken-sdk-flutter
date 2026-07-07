@@ -15,7 +15,6 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import '../core/exception.dart';
 import '../core/logger.dart';
 import '../utils/response_processor.dart';
 import '../networking/networking.dart';
@@ -144,9 +143,8 @@ class WMTOperations extends WMTNetworking {
     final timestampSent = await timeService.currentTime();
 
     if (adjustedReceived > timestampSent) {
-      throw WMTException(
-        description:
-            "Proximity check timestamp is invalid"
+      throw Log.errorAndException(
+         "Proximity check timestamp is invalid (timestampReceived(adjusted)=$adjustedReceived, timestampSent=$timestampSent). The device time likely changed after the proximity check was received.",
       );
     }
 

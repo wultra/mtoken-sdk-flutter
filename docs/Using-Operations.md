@@ -270,7 +270,7 @@ When the app is launched via a deeplink, preserve the data from the deeplink and
 - Assign TOTP and Type to the Operation.
 - Once the QR code is scanned or a match from the deeplink is found, create a `WMTOperationProximityCheck` with:
   - `totp`: The actual Time-Based One-Time Password.
-  - `type`: Set to `QR_CODE` or `DEEPLINK`.
+  - `type`: Set to `WMTProximityCheckType.qrCode` or `WMTProximityCheckType.deeplink`.
 
 - Automatic Time Synchronization
   The SDK automatically produces server-aligned timestamps (`timestampReceived` and `timestampSent`) in the authorization request during `authorize`. This ensures correct timestamps even when the device system clock has been manually changed. If time is not yet synchronized with the server, the SDK will synchronize it before sending the authorization request.
