@@ -177,9 +177,71 @@ void main() {
       final totp = (await helper.getOperation(op.operationId)).proximityOtp;
       expect(totp, isNotNull);
 
-      claimed.proximityCheck = await WMTOperationProximityCheck.withSynchronizedTime(totp: totp ?? "", type: WMTProximityCheckType.qrCode, powerAuth: sdk);
+      claimed.proximityCheck = WMTOperationProximityCheck(totp: totp ?? "", type: WMTProximityCheckType.qrCode);
 
       await wmt.operations.authorize(claimed, await credentials.knowledge());
+    });
+
+    test("testProximityAuthorizeSynchronizesTimeWhenNotSynchronized", () async {
+      final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: true);
+
+      // claim the operation and get its TOTP
+      final claimed = await wmt.operations.claim(op.operationId);
+      final totp = (await helper.getOperation(op.operationId)).proximityOtp;
+      expect(totp, isNotNull);
+
+      claimed.proximityCheck = WMTOperationProximityCheck(totp: totp ?? "", type: WMTProximityCheckType.qrCode);
+
+      // reset the time synchronization right before authorizing
+      await sdk.timeSynchronizationService.resetTimeSynchronization();
+      expect(await sdk.timeSynchronizationService.isTimeSynchronized(), isFalse);
+
+      // the SDK must synchronize the time automatically during authorize
+      await wmt.operations.authorize(claimed, await credentials.knowledge());
+
+      // time must be synchronized after the authorization
+      expect(await sdk.timeSynchronizationService.isTimeSynchronized(), isTrue);
+
+      // verify the operation was approved on the server
+      expect((await helper.getOperation(op.operationId)).status, "APPROVED");
+    });
+
+    test("testProximityAuthorizeWithAlreadySynchronizedTime", () async {
+      final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: true);
+
+      // claim the operation and get its TOTP
+      final claimed = await wmt.operations.claim(op.operationId);
+      final totp = (await helper.getOperation(op.operationId)).proximityOtp;
+      expect(totp, isNotNull);
+
+      claimed.proximityCheck = WMTOperationProximityCheck(totp: totp ?? "", type: WMTProximityCheckType.qrCode);
+
+      // synchronize the time upfront
+      await sdk.timeSynchronizationService.synchronizeTime();
+      expect(await sdk.timeSynchronizationService.isTimeSynchronized(), isTrue);
+
+      await wmt.operations.authorize(claimed, await credentials.knowledge());
+
+      // verify the operation was approved on the server
+      expect((await helper.getOperation(op.operationId)).status, "APPROVED");
+    });
+
+    test("testProximityAuthorizeIgnoresCustomTimestamp", () async {
+      final op = await helper.createOperation(anonymous: true, proximityCheckEnabled: true);
+
+      // claim the operation and get its TOTP
+      final claimed = await wmt.operations.claim(op.operationId);
+      final totp = (await helper.getOperation(op.operationId)).proximityOtp;
+      expect(totp, isNotNull);
+
+      // the deliberately wrong timestamp must be ignored by the SDK - it uses (server-adjusted) current time instead
+      // ignore: deprecated_member_use
+      claimed.proximityCheck = WMTOperationProximityCheck.create(totp: totp ?? "", type: WMTProximityCheckType.qrCode, timestampReceived: DateTime.fromMillisecondsSinceEpoch(0));
+
+      await wmt.operations.authorize(claimed, await credentials.knowledge());
+
+      // verify the operation was approved on the server
+      expect((await helper.getOperation(op.operationId)).status, "APPROVED");
     });
 
     test("testClaimWithoutTOTP", () async {

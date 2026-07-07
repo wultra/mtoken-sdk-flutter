@@ -15,9 +15,11 @@
  */
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
+import '../core/logger.dart';
 import '../utils/response_processor.dart';
 import '../networking/networking.dart';
 import 'online_operation.dart';
+import 'operation_proximity_check.dart';
 import 'qr_operation.dart';
 import 'rejection_reason.dart';
 import 'user_operation.dart';
@@ -98,24 +100,66 @@ class WMTOperations extends WMTNetworking {
 
   /// Authorize operation with given PowerAuth authentication object.
   /// 
+  /// If the operation has a proximity check, the SDK automatically adjusts its timestamps
+  /// using server-synchronized time. If time is not yet synchronized, the SDK will
+  /// synchronize it before proceeding with the authorization.
+  /// 
   /// Params:
   /// - [operation] Operation to authorize.
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
   /// - [requestProcessor] You may modify the request headers via this processor.
   Future<void> authorize(WMTOnlineOperation operation, PowerAuthAuthentication authentication, { WMTRequestProcessor? requestProcessor }) async {
 
-    final opProxyCheck = operation.proximityCheck;
+    final proximityCheck = operation.proximityCheck;
     Object? proximityRequest;
-    if (opProxyCheck != null) {
-      proximityRequest = { 
-        "otp": opProxyCheck.totp,
-        "type": opProxyCheck.type.serialized,
-        "timestampReceived": opProxyCheck.timestampReceived.millisecondsSinceEpoch,
-        // we do not synchronize time here for simplicity, just take the value
-        "timestampSent": await powerAuth.timeSynchronizationService.currentTime()
-      };
+    if (proximityCheck != null) {
+      await ensureTimeSynchronized();
+      proximityRequest = await buildProximityCheckRequestData(proximityCheck);
     }
 
+    await _postAuthorize(operation, proximityRequest, authentication, requestProcessor);
+  }
+
+  /// Ensures that the local time is synchronized with the PowerAuth server.
+  ///
+  /// If the time is not synchronized yet, it synchronizes it. Throws when the synchronization fails.
+  Future<void> ensureTimeSynchronized() async {
+    final timeService = powerAuth.timeSynchronizationService;
+    if (await timeService.isTimeSynchronized()) {
+      Log.debug("Proximity check: time already synchronized.");
+      return;
+    }
+    Log.info("Proximity check: time not synchronized, synchronizing before authorize.");
+    await timeService.synchronizeTime();
+  }
+
+  /// Builds the proximity check request data with timestamps adjusted to the server-synchronized time.
+  ///
+  /// Must only be called when the time is synchronized with the server (see [ensureTimeSynchronized]).
+  Future<Map<String, Object>> buildProximityCheckRequestData(WMTOperationProximityCheck proximityCheck) async {
+    final timeService = powerAuth.timeSynchronizationService;
+    final localTimeAdjustment = await timeService.localTimeAdjustment();
+    final adjustedReceived = proximityCheck.timestampReceived.millisecondsSinceEpoch + localTimeAdjustment;
+    final timestampSent = await timeService.currentTime();
+
+    Log.debug(() =>
+      "Proximity check timestamps: "
+      "timestampReceived=${proximityCheck.timestampReceived.millisecondsSinceEpoch}, "
+      "adjustedReceived=$adjustedReceived, "
+      "timestampSent(serverTime)=$timestampSent, "
+      "localTimeAdjustment=${localTimeAdjustment}ms"
+    );
+
+    return { 
+      "otp": proximityCheck.totp,
+      "type": proximityCheck.type.serialized,
+      "timestampReceived": adjustedReceived,
+      "timestampSent": timestampSent
+    };
+  }
+
+  /// Posts the authorize request to the server.
+  Future<void> _postAuthorize(WMTOnlineOperation operation, Object? proximityRequest, PowerAuthAuthentication authentication, WMTRequestProcessor? requestProcessor) async {
     await postSigned(
       { "requestObject": { "id": operation.id, "data": operation.data, "proximityCheck": proximityRequest, "mobileTokenData": operation.mobileTokenData } },
       authentication,

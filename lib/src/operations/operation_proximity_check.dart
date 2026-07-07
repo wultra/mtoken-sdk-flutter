@@ -19,6 +19,10 @@ import 'package:meta/meta.dart';
 
 /// Object that is used to hold data about a proximity check.
 /// Data shall be assigned to the operation when obtained.
+///
+/// The SDK automatically adjusts [timestampReceived] using server-synchronized time
+/// during the operation authorization, so consumers only need to create this object
+/// with [totp] and [type].
 class WMTOperationProximityCheck {
     
   /// The actual Time-based one time password.
@@ -28,56 +32,66 @@ class WMTOperationProximityCheck {
   final WMTProximityCheckType type;
 
   /// Timestamp when the operation was scanned (qrCode) or delivered to the device (deeplink).
+  ///
+  /// Captured automatically as the current system time at creation. The SDK adjusts
+  /// this value to the server time internally during operation authorization.
   final DateTime timestampReceived;
 
-  /// Private constructor to create an instance of [WMTOperationProximityCheck].
-  WMTOperationProximityCheck._({
-    required this.totp,
-    required this.type,
-    required this.timestampReceived,
-  });
-
-  /// If you need to create an instance with a specific timestamp, you can use this factory constructor, 
-  /// but we recommend accounting for the time synchronization to avoid potential issues with time discrepancies.
+  /// Creates a new instance of [WMTOperationProximityCheck].
   ///
-  /// Recommended usage is with [withSynchronizedTime] factory method instead, as it ensures that the timestamp 
-  /// is synchronized with the server time.
+  /// The [timestampReceived] is captured automatically as the current system time. The SDK
+  /// adjusts it using server-synchronized time during operation authorization.
   ///
   /// Params:
   /// - [totp] is the actual TOTP value.
   /// - [type] is the type of the proximity check.
-  /// - [timestampReceived] is the time when the TOTP was received.
+  WMTOperationProximityCheck({
+    required this.totp,
+    required this.type,
+  }) : timestampReceived = DateTime.now();
+
+  /// Creates a WMTOperationProximityCheck, ignoring the provided [timestampReceived] parameter.
+  ///
+  /// The [timestampReceived] parameter is ignored — the SDK captures the current time at creation
+  /// and adjusts it to server time internally during operation authorization. Custom timestamps
+  /// are not supported because the SDK can only correct the system clock offset, not arbitrary
+  /// values provided by the consumer.
+  ///
+  /// Params:
+  /// - [totp] is the actual TOTP value.
+  /// - [type] is the type of the proximity check.
+  /// - [timestampReceived] Ignored. The SDK uses the current time and adjusts it during operation authorization.
+  @Deprecated("Use WMTOperationProximityCheck(totp: totp, type: type) instead. The SDK now handles time synchronization internally during authorize.")
   factory WMTOperationProximityCheck.create({
     required String totp,
     required WMTProximityCheckType type,
     required DateTime timestampReceived,
   }) {
-    return WMTOperationProximityCheck._(
+    return WMTOperationProximityCheck(
       totp: totp,
       type: type,
-      timestampReceived: timestampReceived,
     );
   }
 
-  /// Creates a new instance of [WMTOperationProximityCheck] with [timestampReceived] automatically 
-  /// set to current timestamp from server synchronized time.
+  /// Deprecated. Previously synchronized [timestampReceived] with the PowerAuth server.
   /// 
-  /// This is a convenience method that uses the PowerAuth instance to get the current time for the [timestampReceived] field.
+  /// This is no longer needed — the SDK now handles time synchronization internally during
+  /// operation authorization. This method simply creates a [WMTOperationProximityCheck]
+  /// with the current time as the timestamp; the [powerAuth] parameter is ignored.
   ///
   /// Params:
   /// - [totp] is the actual TOTP value.
   /// - [type] is the type of the proximity check.
-  /// - [powerAuth] is the PowerAuth instance used to get the synchronized time.
+  /// - [powerAuth] is the PowerAuth instance (no longer used).
+  @Deprecated("No longer needed. The SDK automatically synchronizes time during authorization. Use WMTOperationProximityCheck(totp: totp, type: type) instead.")
   static Future<WMTOperationProximityCheck> withSynchronizedTime({
     required String totp,
     required WMTProximityCheckType type,
     required PowerAuth powerAuth,
   }) async {
-    final date = DateTime.fromMillisecondsSinceEpoch(await powerAuth.timeSynchronizationService.currentTime());
-    return WMTOperationProximityCheck._(
+    return WMTOperationProximityCheck(
       totp: totp,
       type: type,
-      timestampReceived: date,
     );
   }
 }
