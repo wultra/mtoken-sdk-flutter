@@ -113,8 +113,8 @@ class WMTOperations extends WMTNetworking {
     final proximityCheck = operation.proximityCheck;
     Object? proximityRequest;
     if (proximityCheck != null) {
-      await ensureTimeSynchronized();
-      proximityRequest = await buildProximityCheckRequestData(proximityCheck);
+      await _ensureTimeSynchronized();
+      proximityRequest = await _buildProximityCheckRequestData(proximityCheck);
     }
 
     await _postAuthorize(operation, proximityRequest, authentication, requestProcessor);
@@ -123,7 +123,7 @@ class WMTOperations extends WMTNetworking {
   /// Ensures that the local time is synchronized with the PowerAuth server.
   ///
   /// If the time is not synchronized yet, it synchronizes it. Throws when the synchronization fails.
-  Future<void> ensureTimeSynchronized() async {
+  Future<void> _ensureTimeSynchronized() async {
     final timeService = powerAuth.timeSynchronizationService;
     if (await timeService.isTimeSynchronized()) {
       Log.debug("Proximity check: time already synchronized.");
@@ -135,8 +135,8 @@ class WMTOperations extends WMTNetworking {
 
   /// Builds the proximity check request data with timestamps adjusted to the server-synchronized time.
   ///
-  /// Must only be called when the time is synchronized with the server (see [ensureTimeSynchronized]).
-  Future<Map<String, Object>> buildProximityCheckRequestData(WMTOperationProximityCheck proximityCheck) async {
+  /// Must only be called when the time is synchronized with the server (see [_ensureTimeSynchronized]).
+  Future<Map<String, Object>> _buildProximityCheckRequestData(WMTOperationProximityCheck proximityCheck) async {
     final timeService = powerAuth.timeSynchronizationService;
     final localTimeAdjustment = await timeService.localTimeAdjustment();
     final adjustedReceived = proximityCheck.timestampReceived.millisecondsSinceEpoch + localTimeAdjustment;

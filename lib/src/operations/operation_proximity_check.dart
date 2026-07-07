@@ -24,7 +24,6 @@ import 'package:meta/meta.dart';
 /// during the operation authorization, so consumers only need to create this object
 /// with [totp] and [type].
 class WMTOperationProximityCheck {
-    
   /// The actual Time-based one time password.
   final String totp;
 
@@ -45,10 +44,8 @@ class WMTOperationProximityCheck {
   /// Params:
   /// - [totp] is the actual TOTP value.
   /// - [type] is the type of the proximity check.
-  WMTOperationProximityCheck({
-    required this.totp,
-    required this.type,
-  }) : timestampReceived = DateTime.now();
+  WMTOperationProximityCheck({required this.totp, required this.type})
+    : timestampReceived = DateTime.now();
 
   /// Creates a WMTOperationProximityCheck, ignoring the provided [timestampReceived] parameter.
   ///
@@ -61,20 +58,19 @@ class WMTOperationProximityCheck {
   /// - [totp] is the actual TOTP value.
   /// - [type] is the type of the proximity check.
   /// - [timestampReceived] Ignored. The SDK uses the current time and adjusts it during operation authorization.
-  @Deprecated("Use WMTOperationProximityCheck(totp: totp, type: type) instead. The SDK now handles time synchronization internally during authorize.")
+  @Deprecated(
+    "Use WMTOperationProximityCheck(totp: totp, type: type) instead. The SDK now handles time synchronization internally during authorize.",
+  )
   factory WMTOperationProximityCheck.create({
     required String totp,
     required WMTProximityCheckType type,
     required DateTime timestampReceived,
   }) {
-    return WMTOperationProximityCheck(
-      totp: totp,
-      type: type,
-    );
+    return WMTOperationProximityCheck(totp: totp, type: type);
   }
 
   /// Deprecated. Previously synchronized [timestampReceived] with the PowerAuth server.
-  /// 
+  ///
   /// This is no longer needed — the SDK now handles time synchronization internally during
   /// operation authorization. This method simply creates a [WMTOperationProximityCheck]
   /// with the current time as the timestamp; the [powerAuth] parameter is ignored.
@@ -83,22 +79,20 @@ class WMTOperationProximityCheck {
   /// - [totp] is the actual TOTP value.
   /// - [type] is the type of the proximity check.
   /// - [powerAuth] is the PowerAuth instance (no longer used).
-  @Deprecated("No longer needed. The SDK automatically synchronizes time during authorization. Use WMTOperationProximityCheck(totp: totp, type: type) instead.")
+  @Deprecated(
+    "No longer needed. The SDK automatically synchronizes time during authorization. Use WMTOperationProximityCheck(totp: totp, type: type) instead.",
+  )
   static Future<WMTOperationProximityCheck> withSynchronizedTime({
     required String totp,
     required WMTProximityCheckType type,
     required PowerAuth powerAuth,
   }) async {
-    return WMTOperationProximityCheck(
-      totp: totp,
-      type: type,
-    );
+    return WMTOperationProximityCheck(totp: totp, type: type);
   }
 }
 
 /// Type of the Proximity check.
 enum WMTProximityCheckType {
-
   /// TOTP delivered via QR code.
   qrCode("QR_CODE"),
 
