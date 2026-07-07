@@ -49,8 +49,6 @@ void main() {
   late int localTimeAdjustment;
   late int serverTime;
   late bool synchronizeTimeFails;
-  late bool rejectInvalidProximityTimestamps;
-  late bool invalidProximityTimestampFailureTriggered;
 
   // The proximityCheck request data captured from the signed authorize request body.
   Map<String, dynamic>? capturedProximityRequest;
@@ -59,10 +57,8 @@ void main() {
     channelCalls = [];
     timeSynchronized = true;
     localTimeAdjustment = 0;
-    serverTime = DateTime.now().millisecondsSinceEpoch;
+    serverTime = DateTime.now().millisecondsSinceEpoch + 60000; 
     synchronizeTimeFails = false;
-    rejectInvalidProximityTimestamps = false;
-    invalidProximityTimestampFailureTriggered = false;
     capturedProximityRequest = null;
 
     operations = WMTOperations(
@@ -99,22 +95,6 @@ void main() {
                   (body["requestObject"]
                           as Map<String, dynamic>)["proximityCheck"]
                       as Map<String, dynamic>?;
-              if (rejectInvalidProximityTimestamps) {
-                final timestampReceived =
-                    capturedProximityRequest?["timestampReceived"] as int?;
-                final timestampSent =
-                    capturedProximityRequest?["timestampSent"] as int?;
-                if (timestampReceived != null &&
-                    timestampSent != null &&
-                    timestampReceived > timestampSent) {
-                  invalidProximityTimestampFailureTriggered = true;
-                  throw PlatformException(
-                    code: "PROXIMITY_TIME_INVALID",
-                    message:
-                        "timestampReceived must not be after timestampSent",
-                  );
-                }
-              }
               throw PlatformException(
                 code: "TEST_ABORT",
                 message: "Aborting before network call",
@@ -277,21 +257,27 @@ void main() {
     );
 
     test("uses server-synchronized time as timestampSent", () async {
-      serverTime = 1700000000000;
-      final operation =
-          _TestOperation()
-            ..proximityCheck = WMTOperationProximityCheck(
-              totp: "123456",
-              type: WMTProximityCheckType.qrCode,
-            );
+      // Use a fixed past server time to produce a deterministic, recognizable value.
+      const expectedServerTime = 1700000000000; // ~2023-11-14
 
+      // Create the proximity check first to capture timestampReceived (= device's DateTime.now()).
+      final proximityCheck = WMTOperationProximityCheck(
+        totp: "123456",
+        type: WMTProximityCheckType.qrCode,
+      );
+      final receivedAt = proximityCheck.timestampReceived.millisecondsSinceEpoch;
+
+      localTimeAdjustment = expectedServerTime - receivedAt;
+      serverTime = expectedServerTime;
+
+      final operation = _TestOperation()..proximityCheck = proximityCheck;
       final data = await authorizeAndCaptureRequest(operation);
 
-      expect(data?["timestampSent"], 1700000000000);
+      expect(data?["timestampSent"], expectedServerTime);
     });
 
     test(
-      "fails when device time changes after receive",
+      "throws WMTException when device time changes after receive",
       () async {
         final proximityCheck = WMTOperationProximityCheck(
           totp: "123456",
@@ -303,15 +289,15 @@ void main() {
 
         // Simulate the device clock moving 5 minutes behind after the QR code
         // was received but before authorize builds the request.
-        rejectInvalidProximityTimestamps = true;
         localTimeAdjustment = 5 * 60 * 1000;
         serverTime = receivedAt + 1000;
 
         await expectLater(
           operations.authorize(operation, PowerAuthAuthentication.possession()),
-          throwsA(anything),
+          throwsA(isA<WMTException>()),
         );
-        expect(invalidProximityTimestampFailureTriggered, isTrue);
+        // The SDK should reject before reaching the signing step.
+        expect(channelCalls, isNot(contains("requestSignature")));
       },
     );
   });
