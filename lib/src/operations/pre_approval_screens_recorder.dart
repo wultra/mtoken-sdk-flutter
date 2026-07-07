@@ -49,8 +49,9 @@ class WMTPreApprovalScreenAction {
 /// Records user navigation through pre-approval screens.
 ///
 /// Each "visit" captures an opening timestamp and, when closed, a closing
-/// timestamp and the action that ended the visit. Timestamps use
-/// PowerAuth time synchronization when available.
+/// timestamp and the action that ended the visit. Timestamps are captured
+/// in local device time and synchronized against the server time
+/// (via PowerAuth time synchronization) when [build] is called.
 ///
 /// This helper implements [WMTMobileTokenDataRecord] and tracks which
 /// screens were displayed, when they were opened/closed, and what action
@@ -60,11 +61,11 @@ class WMTPreApprovalScreenAction {
 /// Example usage:
 /// ```dart
 /// final recorder = WMTPreApprovalScreensRecorder(powerAuth: sdk);
-/// await recorder.begin('screen1');
+/// recorder.begin('screen1');
 /// // ... user interacts ...
-/// await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
-/// await recorder.begin('screen2');
-/// await recorder.end('screen2', WMTPreApprovalScreenAction.scan);
+/// recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+/// recorder.begin('screen2');
+/// recorder.end('screen2', WMTPreApprovalScreenAction.scan);
 ///
 /// final builder = WMTMobileTokenDataBuilder();
 /// await builder.putRecord(recorder);
@@ -78,20 +79,26 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   final List<_Visit> _visits = [];
   _Visit? _openVisit;
 
-  final Future<DateTime> Function() _now;
+  final DateTime Function() _now;
+  final Future<int> Function() _localTimeAdjustmentMs;
 
-  /// Creates a new recorder that uses PowerAuth synchronized time.
+  /// Creates a new recorder.
   ///
-  /// The [powerAuth] instance is used to obtain the current synchronized
-  /// time for each timestamp. Falls back to local time if synchronization
-  /// is not available.
+  /// Timestamps are captured in local device time. When [build] is called,
+  /// the [powerAuth] instance provides the local time adjustment against
+  /// the server and all timestamps are shifted by it. If the time is not
+  /// synchronized, the adjustment is zero and local time is used as-is.
   ///
-  /// An optional [timeProvider] can be injected for deterministic testing,
-  /// bypassing PowerAuth time synchronization.
+  /// An optional [timeProvider] and [timeAdjustmentProvider] can be injected
+  /// for deterministic testing, bypassing the device clock and PowerAuth
+  /// time synchronization.
   WMTPreApprovalScreensRecorder({
     required PowerAuth powerAuth,
-    Future<DateTime> Function()? timeProvider,
-  }) : _now = timeProvider ?? (() => _synchronizedTime(powerAuth));
+    DateTime Function()? timeProvider,
+    Future<int> Function()? timeAdjustmentProvider,
+  }) : _now = timeProvider ?? DateTime.now,
+       _localTimeAdjustmentMs = timeAdjustmentProvider ??
+           (() => powerAuth.timeSynchronizationService.localTimeAdjustment());
 
   /// Opens a new visit for [id].
   ///
@@ -101,7 +108,7 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   /// Does nothing if [id] is empty.
   ///
   /// Returns this recorder for chaining.
-  Future<WMTPreApprovalScreensRecorder> begin(String id) async {
+  WMTPreApprovalScreensRecorder begin(String id) {
     if (id.isEmpty) return this;
 
     if (_openVisit != null) {
@@ -111,7 +118,7 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
 
     _openVisit = _Visit(
       screen: id,
-      timestampOpened: (await _now()).toUtc().toIso8601String(),
+      timestampOpened: _now(),
     );
     return this;
   }
@@ -122,10 +129,10 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   /// has the same [id] and is still unclosed (no `timestampClosed` / `action`).
   ///
   /// Returns this recorder for chaining.
-  Future<WMTPreApprovalScreensRecorder> end(String id, WMTPreApprovalScreenAction action) async {
+  WMTPreApprovalScreensRecorder end(String id, WMTPreApprovalScreenAction action) {
     // Currently open visit matches this id → close & append
     if (_openVisit != null && _openVisit!.screen == id) {
-      _openVisit!.timestampClosed = (await _now()).toUtc().toIso8601String();
+      _openVisit!.timestampClosed = _now();
       _openVisit!.action = action.name;
       _visits.add(_openVisit!);
       _openVisit = null;
@@ -136,7 +143,7 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
     if (_visits.isNotEmpty) {
       final last = _visits.last;
       if (last.screen == id && last.timestampClosed == null && last.action == null) {
-        last.timestampClosed = (await _now()).toUtc().toIso8601String();
+        last.timestampClosed = _now();
         last.action = action.name;
       }
     }
@@ -148,22 +155,29 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
   ///
   /// If a visit is still open, it is auto-closed (with `timestampClosed`
   /// but no action) and appended.
+  ///
+  /// All timestamps are shifted by the PowerAuth local time adjustment
+  /// against the server, so the resulting payload is in synchronized time
+  /// even when the visits were recorded before the time was synchronized.
   @override
   Future<dynamic> build() async {
     if (_openVisit != null) {
       Log.warn('PreApprovalScreensRecorder is building unended visit for screen: ${_openVisit!.screen}, ending it automatically with no action.');
-      _openVisit!.timestampClosed = (await _now()).toUtc().toIso8601String();
+      _openVisit!.timestampClosed = _now();
       _visits.add(_openVisit!);
       _openVisit = null;
     }
 
+    final adjustment = await _timeAdjustment();
+
     return _visits.map((v) {
       final map = <String, dynamic>{
         'screen': v.screen,
-        'timestampOpened': v.timestampOpened,
+        'timestampOpened': _serialize(v.timestampOpened, adjustment),
       };
-      if (v.timestampClosed != null) {
-        map['timestampClosed'] = v.timestampClosed;
+      final closed = v.timestampClosed;
+      if (closed != null) {
+        map['timestampClosed'] = _serialize(closed, adjustment);
       }
       if (v.action != null) {
         map['action'] = v.action;
@@ -178,17 +192,27 @@ class WMTPreApprovalScreensRecorder implements WMTMobileTokenDataRecord {
     _openVisit = null;
   }
 
-  /// PowerAuth-synchronized current time (fallback: local clock).
-  static Future<DateTime> _synchronizedTime(PowerAuth powerAuth) async {
-    final ms = await powerAuth.timeSynchronizationService.currentTime();
-    return DateTime.fromMillisecondsSinceEpoch(ms);
+  /// Local time adjustment against the server (fallback: zero).
+  Future<Duration> _timeAdjustment() async {
+    try {
+      final ms = await _localTimeAdjustmentMs();
+      Log.debug('PreApprovalScreensRecorder is adjusting timestamps by $ms ms (local time adjustment against the server).');
+      return Duration(milliseconds: ms);
+    } catch (e) {
+      Log.warn('PreApprovalScreensRecorder failed to obtain local time adjustment, timestamps will use unadjusted device time: $e');
+      return Duration.zero;
+    }
+  }
+
+  static String _serialize(DateTime timestamp, Duration adjustment) {
+    return timestamp.add(adjustment).toUtc().toIso8601String();
   }
 }
 
 class _Visit {
   final String screen;
-  final String timestampOpened;
-  String? timestampClosed;
+  final DateTime timestampOpened;
+  DateTime? timestampClosed;
   String? action;
 
   _Visit({required this.screen, required this.timestampOpened});

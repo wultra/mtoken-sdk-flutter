@@ -18,6 +18,8 @@ import 'user_operation_attribute.dart';
 import 'pre_approval_element.dart';
 import 'pre_approval_controls.dart';
 
+import '../core/logger.dart';
+
 /// Operation UI model that contains data for screens for pre and/or post approved operation.
 class WMTUserOperationUIData {
   /// Confirm and Reject buttons should be flipped both in position and style.
@@ -59,7 +61,8 @@ class WMTUserOperationUIData {
           .map((s) => WMTPreApprovalScreen.fromJson(s as Map<String, dynamic>))
           .toList();
     } else if (json['preApprovalScreen'] != null) {
-      screens = [WMTPreApprovalScreen._fromLegacyJson(json['preApprovalScreen'] as Map<String, dynamic>)];
+      final legacy = WMTPreApprovalScreen._fromLegacyJson(json['preApprovalScreen'] as Map<String, dynamic>);
+      screens = legacy != null ? [legacy] : null;
     }
 
     return WMTUserOperationUIData(
@@ -134,52 +137,50 @@ class WMTPreApprovalScreen {
   /// Converts the legacy single pre-approval screen format to the new model.
   ///
   /// Legacy `items` are mapped to [WMTPreApprovalElementListItem] elements
-  /// and `approvalType` is mapped to [WMTPreApprovalControls].
+  /// and `approvalType` is mapped to [WMTPreApprovalControls]. Any other
+  /// keys are ignored (no merging with new-model fields) and [image] is
+  /// always set to the fallback sentinel.
   ///
-  /// Only enters the legacy branch when no new-model markers are present
-  /// (`elements`, `controls`, `id`, `backButton`, `image`).
-  factory WMTPreApprovalScreen._fromLegacyJson(Map<String, dynamic> json) {
-    // Detect if this is actually a new-model payload
-    final hasNewModel = json.containsKey('elements') ||
-        json.containsKey('controls') ||
-        json.containsKey('id') ||
-        json.containsKey('backButton') ||
-        json.containsKey('image');
+  /// Returns `null` when the payload cannot be parsed.
+  static WMTPreApprovalScreen? _fromLegacyJson(Map<String, dynamic> json) {
+    try {
+      final legacyItems = (json['items'] as List<dynamic>?)?.map((item) => item as String).toList();
+      final legacyApprovalType = json['approvalType'] as String?;
 
-    if (hasNewModel) {
-      return WMTPreApprovalScreen.fromJson(json);
-    }
+      // Convert legacy items to ListItem elements with fallback icon
+      List<WMTPreApprovalElement>? elements;
+      if (legacyItems != null && legacyItems.isNotEmpty) {
+        elements = legacyItems.map((item) => WMTPreApprovalElementListItem(
+          text: item,
+          icon: _fallbackIcon,
+        )).toList();
+      }
 
-    final legacyItems = (json['items'] as List<dynamic>?)?.map((item) => item as String).toList();
-    final legacyApprovalType = json['approvalType'] as String?;
+      // Convert legacy approvalType to controls (only SLIDER triggers controls)
+      WMTPreApprovalControls? controls;
+      if (legacyApprovalType == 'SLIDER') {
+        controls = WMTPreApprovalControls(
+          flip: true,
+          decline: WMTPreApprovalDecline(type: WMTPreApprovalDeclineType.back),
+          approve: WMTPreApprovalApprove(type: WMTPreApprovalApproveType.slider),
+        );
+      }
 
-    // Convert legacy items to ListItem elements with fallback icon
-    List<WMTPreApprovalElement>? elements;
-    if (legacyItems != null && legacyItems.isNotEmpty) {
-      elements = legacyItems.map((item) => WMTPreApprovalElementListItem(
-        text: item,
-        icon: _fallbackIcon,
-      )).toList();
-    }
-
-    // Convert legacy approvalType to controls (only SLIDER triggers controls)
-    WMTPreApprovalControls? controls;
-    if (legacyApprovalType == 'SLIDER') {
-      controls = WMTPreApprovalControls(
-        flip: true,
-        decline: WMTPreApprovalDecline(type: WMTPreApprovalDeclineType.back),
-        approve: WMTPreApprovalApprove(type: WMTPreApprovalApproveType.slider),
+      final screen = WMTPreApprovalScreen(
+        type: json['type'] as String,
+        heading: json['heading'] as String,
+        message: json['message'] as String,
+        image: _fallbackImage,
+        elements: elements,
+        controls: controls,
       );
-    }
 
-    return WMTPreApprovalScreen(
-      type: json['type'] as String,
-      heading: json['heading'] as String,
-      message: json['message'] as String,
-      image: _fallbackImage,
-      elements: elements,
-      controls: controls,
-    );
+      Log.warn('Using legacy pre-approval format. Consider updating backend to the new preApprovalScreens model.');
+      return screen;
+    } catch (e) {
+      Log.error('Failed to parse legacy pre-approval screen: $e');
+      return null;
+    }
   }
 
   /// Sentinel injected as [image] during legacy conversion because the legacy

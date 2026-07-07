@@ -137,14 +137,21 @@ void main() {
 
   group('WMTPreApprovalScreensRecorder', () {
 
-    late WMTPreApprovalScreensRecorder Function({Future<DateTime> Function()? timeProvider}) createRecorder;
+    late WMTPreApprovalScreensRecorder Function({
+      DateTime Function()? timeProvider,
+      Future<int> Function()? timeAdjustmentProvider,
+    }) createRecorder;
 
     setUp(() {
       final mockPA = mockPowerAuth();
-      createRecorder = ({Future<DateTime> Function()? timeProvider}) =>
+      createRecorder = ({
+        DateTime Function()? timeProvider,
+        Future<int> Function()? timeAdjustmentProvider,
+      }) =>
           WMTPreApprovalScreensRecorder(
             powerAuth: mockPA,
-            timeProvider: timeProvider ?? () async => DateTime.now(),
+            timeProvider: timeProvider ?? DateTime.now,
+            timeAdjustmentProvider: timeAdjustmentProvider ?? () async => 0,
           );
     });
 
@@ -155,8 +162,8 @@ void main() {
 
     test('records a single screen visit', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 1);
@@ -168,10 +175,10 @@ void main() {
 
     test('records multiple screen visits', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
-      await recorder.begin('screen2');
-      await recorder.end('screen2', WMTPreApprovalScreenAction.scan);
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen2');
+      recorder.end('screen2', WMTPreApprovalScreenAction.scan);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 2);
@@ -183,8 +190,8 @@ void main() {
 
     test('appends open visit as-is when switching screens', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.begin('screen2'); // should append screen1 as-is (no timestampClosed)
+      recorder.begin('screen1');
+      recorder.begin('screen2'); // should append screen1 as-is (no timestampClosed)
 
       final visits = await recorder.build() as List;
       expect(visits.length, 2);
@@ -201,7 +208,7 @@ void main() {
 
     test('build auto-closes open visit', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
+      recorder.begin('screen1');
 
       final visits = await recorder.build() as List;
       expect(visits.length, 1);
@@ -212,10 +219,10 @@ void main() {
 
     test('duplicate begin for same screen is a no-op', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.begin('screen1'); // duplicate, ignored
+      recorder.begin('screen1');
+      recorder.begin('screen1'); // duplicate, ignored
 
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 1);
@@ -223,10 +230,10 @@ void main() {
 
     test('end with non-matching id falls back to last unclosed visit', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.begin('screen2'); // pushes screen1 as-is (unclosed)
-      await recorder.end('screen1', WMTPreApprovalScreenAction.back); // fallback to screen1 in visits
-      await recorder.end('screen2', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.begin('screen2'); // pushes screen1 as-is (unclosed)
+      recorder.end('screen1', WMTPreApprovalScreenAction.back); // fallback to screen1 in visits
+      recorder.end('screen2', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 2);
@@ -239,9 +246,9 @@ void main() {
 
     test('end with non-matching id and no fallback is a no-op', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.end('screen2', WMTPreApprovalScreenAction.back); // no match, ignored
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.end('screen2', WMTPreApprovalScreenAction.back); // no match, ignored
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 1);
@@ -250,7 +257,7 @@ void main() {
 
     test('begin with empty id is a no-op', () async {
       final recorder = createRecorder();
-      await recorder.begin('');
+      recorder.begin('');
 
       final visits = await recorder.build() as List;
       expect(visits, isEmpty);
@@ -258,8 +265,8 @@ void main() {
 
     test('reset clears all visits', () async {
       final recorder = createRecorder();
-      await recorder.begin('screen1');
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
       recorder.reset();
 
       final visits = await recorder.build() as List;
@@ -269,18 +276,18 @@ void main() {
     test('all action types work', () async {
       final recorder = createRecorder();
 
-      await recorder.begin('s1');
-      await recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
-      await recorder.begin('s2');
-      await recorder.end('s2', WMTPreApprovalScreenAction.back);
-      await recorder.begin('s3');
-      await recorder.end('s3', WMTPreApprovalScreenAction.close);
-      await recorder.begin('s4');
-      await recorder.end('s4', WMTPreApprovalScreenAction.reject);
-      await recorder.begin('s5');
-      await recorder.end('s5', WMTPreApprovalScreenAction.scan);
-      await recorder.begin('s6');
-      await recorder.end('s6', WMTPreApprovalScreenAction.custom('CUSTOM_ACTION'));
+      recorder.begin('s1');
+      recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('s2');
+      recorder.end('s2', WMTPreApprovalScreenAction.back);
+      recorder.begin('s3');
+      recorder.end('s3', WMTPreApprovalScreenAction.close);
+      recorder.begin('s4');
+      recorder.end('s4', WMTPreApprovalScreenAction.reject);
+      recorder.begin('s5');
+      recorder.end('s5', WMTPreApprovalScreenAction.scan);
+      recorder.begin('s6');
+      recorder.end('s6', WMTPreApprovalScreenAction.custom('CUSTOM_ACTION'));
 
       final visits = await recorder.build() as List;
       expect(visits.length, 6);
@@ -294,10 +301,10 @@ void main() {
 
     test('chaining works', () async {
       final recorder = createRecorder();
-      await recorder.begin('s1');
-      await recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
-      await recorder.begin('s2');
-      await recorder.end('s2', WMTPreApprovalScreenAction.scan);
+      recorder.begin('s1');
+      recorder.end('s1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('s2');
+      recorder.end('s2', WMTPreApprovalScreenAction.scan);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 2);
@@ -307,8 +314,8 @@ void main() {
       final builder = WMTMobileTokenDataBuilder();
       final recorder = createRecorder();
 
-      await recorder.begin('screen1');
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
       await builder.putRecord(recorder);
       builder.put('customKey', 'customValue');
@@ -323,12 +330,12 @@ void main() {
     test('recorder can be reused after reset', () async {
       final recorder = createRecorder();
 
-      await recorder.begin('old');
-      await recorder.end('old', WMTPreApprovalScreenAction.close);
+      recorder.begin('old');
+      recorder.end('old', WMTPreApprovalScreenAction.close);
       recorder.reset();
 
-      await recorder.begin('new');
-      await recorder.end('new', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('new');
+      recorder.end('new', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits.length, 1);
@@ -337,14 +344,83 @@ void main() {
 
     test('timestamps are ISO 8601 strings', () async {
       final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
-      final recorder = createRecorder(timeProvider: () async => fixedTime);
+      final recorder = createRecorder(timeProvider: () => fixedTime);
 
-      await recorder.begin('screen1');
-      await recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
 
       final visits = await recorder.build() as List;
       expect(visits[0]['timestampOpened'], '2025-06-15T10:30:00.000Z');
       expect(visits[0]['timestampClosed'], '2025-06-15T10:30:00.000Z');
+    });
+
+    test('build applies time adjustment to all timestamps', () async {
+      final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
+      final recorder = createRecorder(
+        timeProvider: () => fixedTime,
+        timeAdjustmentProvider: () async => 90000, // +1.5 minutes
+      );
+
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+      recorder.begin('screen2');
+
+      final visits = await recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:31:30.000Z');
+      expect(visits[0]['timestampClosed'], '2025-06-15T10:31:30.000Z');
+      expect(visits[1]['timestampOpened'], '2025-06-15T10:31:30.000Z');
+      expect(visits[1]['timestampClosed'], '2025-06-15T10:31:30.000Z');
+    });
+
+    test('build applies negative time adjustment', () async {
+      final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
+      final recorder = createRecorder(
+        timeProvider: () => fixedTime,
+        timeAdjustmentProvider: () async => -60000, // -1 minute
+      );
+
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+
+      final visits = await recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:29:00.000Z');
+      expect(visits[0]['timestampClosed'], '2025-06-15T10:29:00.000Z');
+    });
+
+    test('build falls back to unadjusted time when adjustment fails', () async {
+      final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
+      final recorder = createRecorder(
+        timeProvider: () => fixedTime,
+        timeAdjustmentProvider: () async => throw Exception('not available'),
+      );
+
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+
+      final visits = await recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:30:00.000Z');
+      expect(visits[0]['timestampClosed'], '2025-06-15T10:30:00.000Z');
+    });
+
+    test('repeated build reflects updated time adjustment', () async {
+      final fixedTime = DateTime.utc(2025, 6, 15, 10, 30, 0);
+      var adjustment = 0;
+      final recorder = createRecorder(
+        timeProvider: () => fixedTime,
+        timeAdjustmentProvider: () async => adjustment,
+      );
+
+      recorder.begin('screen1');
+      recorder.end('screen1', WMTPreApprovalScreenAction.continueAction);
+
+      // First build: time not synchronized yet (zero adjustment)
+      var visits = await recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:30:00.000Z');
+
+      // Second build: time synchronized in the meantime
+      adjustment = 30000;
+      visits = await recorder.build() as List;
+      expect(visits[0]['timestampOpened'], '2025-06-15T10:30:30.000Z');
     });
   });
 }

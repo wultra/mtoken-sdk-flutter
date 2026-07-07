@@ -311,6 +311,38 @@ void main() {
       expect(uiData.preApprovalScreens!.first.image, 'fallback_image');
     });
 
+    test('legacy conversion ignores new-model keys in singular payload', () {
+      final json = jsonDecode('''{
+        "preApprovalScreen": {
+          "type": "INFO",
+          "heading": "Info",
+          "message": "Message",
+          "id": "screen1",
+          "image": "custom_image",
+          "elements": [{"type": "ALERT", "text": "ignored"}]
+        }
+      }''') as Map<String, dynamic>;
+      final uiData = WMTUserOperationUIData.fromJson(json);
+      final screen = uiData.preApprovalScreens!.first;
+
+      // Singular payload is always legacy-converted; new-model keys are ignored
+      expect(screen.id, isNull);
+      expect(screen.image, 'fallback_image');
+      expect(screen.elements, isNull);
+      expect(screen.controls, isNull);
+    });
+
+    test('malformed legacy payload results in null screens without throwing', () {
+      final json = jsonDecode('''{
+        "preApprovalScreen": {
+          "type": "INFO"
+        }
+      }''') as Map<String, dynamic>;
+      final uiData = WMTUserOperationUIData.fromJson(json);
+
+      expect(uiData.preApprovalScreens, isNull);
+    });
+
     test('new format takes priority over legacy', () {
       final json = jsonDecode('''{
         "preApprovalScreens": [

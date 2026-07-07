@@ -268,6 +268,7 @@ Types:
 - `WARNING`
 - `INFO`
 - `QR_SCAN` – this type indicates that the `WMTOperationProximityCheck` must be used
+- `UNKNOWN` – fallback value assigned by the SDK when the server sends an unrecognized screen type
 
 A pre-approval screen can contain the following building blocks:
 
@@ -362,6 +363,8 @@ The `WMTPreApprovalScreensRecorder` exposes the following methods:
 - `end(id, action)` – closes the current visit if the given id matches. If no visit is open, but the most recent recorded visit has the same id and is still unclosed, it is finalized instead.
 - `reset()` – resets recorded visits.
 
+Timestamps are captured in local device time and shifted by the PowerAuth server time adjustment when the record is built (when you call `putRecord`). This ensures the payload contains server-synchronized timestamps even when the device clock is off or the time was not yet synchronized while the user navigated the screens. For best accuracy, pass the recorder to the builder at authorization time, not earlier.
+
 ```dart
 // Create MobileTokenData builder instance
 final builder = WMTMobileTokenDataBuilder();
@@ -370,9 +373,9 @@ final builder = WMTMobileTokenDataBuilder();
 final screenRecorder = WMTPreApprovalScreensRecorder(powerAuth: powerAuth);
 
 // Display UI for the PreApproval screen and record that it was shown
-await screenRecorder.begin(screen.id);
+screenRecorder.begin(screen.id);
 // Record when user leaves the PreApproval screen
-await screenRecorder.end(screen.id, WMTPreApprovalScreenAction.continueAction);
+screenRecorder.end(screen.id, WMTPreApprovalScreenAction.continueAction);
 
 // ... repeat for all screens from operation.ui.preApprovalScreens
 
