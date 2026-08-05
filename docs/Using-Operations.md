@@ -4,6 +4,7 @@
 - [Introduction](#introduction)
 - [Getting an Instance](#getting-an-instance)
 - [Retrieve Pending Operations](#retrieve-pending-operations)
+- [Periodic Polling](#periodic-polling)
 - [Approve an Operation](#approve-an-operation)
 - [Reject an Operation](#reject-an-operation)
 - [Operation detail](#operation-detail)
@@ -48,6 +49,37 @@ After you retrieve the pending operations, you can render them in the UI, for ex
 <!-- begin box warning -->
 Note: The language of the UI data inside the operation depends on the configuration of the [accept language](./Language-UserAgent-Configuration.md).
 <!-- end -->
+
+## Periodic Polling
+
+The operations service can periodically refresh pending operations. Polling starts immediately by default and uses a seven-second interval with a minimum of five seconds.
+
+```dart
+operations.listener = MyOperationsListener();
+operations.startPollingOperations();
+
+// Stop polling when it is no longer needed.
+operations.stopPollingOperations();
+```
+
+Implement `WMTOperationsListener` to observe loading, errors, and changes. The listener is called for manual `getOperations` requests as well as polling requests.
+
+```dart
+class MyOperationsListener implements WMTOperationsListener {
+  void operationsChanged(List<WMTUserOperation> operations, List<WMTUserOperation> removed, List<WMTUserOperation> added) {}
+  void operationsLoading(bool loading) {}
+  void operationsFailed(Object error) {}
+}
+```
+
+To delay the first request or change the interval:
+
+```dart
+operations.startPollingOperations(
+  interval: const Duration(seconds: 10),
+  delayStart: true,
+);
+```
 
 ## Approve an Operation
 
