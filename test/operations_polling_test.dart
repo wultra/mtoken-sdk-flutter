@@ -142,7 +142,7 @@ void main() {
 
   test("starts immediately, ignores duplicate starts and stops", () async {
     operations.tokenHandler = (_) async => <dynamic>[];
-    final WMTRequestProcessor requestProcessor = (_) {};
+    void requestProcessor(_) {}
 
     operations.startPollingOperations(requestProcessor: requestProcessor);
     expect(operations.isPollingOperations, isTrue);
