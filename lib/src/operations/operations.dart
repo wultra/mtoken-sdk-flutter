@@ -72,7 +72,10 @@ class WMTOperations extends WMTNetworking {
 
     final request = _getOperations(requestProcessor);
     _operationsRequest = request;
-    listener?.operationsLoading(true);
+    _notifyListener(
+      "operationsLoading",
+      (listener) => listener.operationsLoading(true),
+    );
     return request;
   }
 
@@ -102,16 +105,22 @@ class WMTOperations extends WMTNetworking {
       );
       if (requestGeneration == _operationsGeneration) {
         _lastFetchResult = WMTGetOperationsResult.success(operations);
-        _notifyChange(_operationsRegister.replace(operations));
+        _publishOperationsChange(_operationsRegister.replace(operations));
       }
       return operations;
     } catch (error) {
       _lastFetchResult = WMTGetOperationsResult.failure(error);
-      listener?.operationsFailed(error);
+      _notifyListener(
+        "operationsFailed",
+        (listener) => listener.operationsFailed(error),
+      );
       rethrow;
     } finally {
       _operationsRequest = null;
-      listener?.operationsLoading(false);
+      _notifyListener(
+        "operationsLoading",
+        (listener) => listener.operationsLoading(false),
+      );
     }
   }
 
@@ -271,7 +280,10 @@ class WMTOperations extends WMTNetworking {
       "/operation/authorize",
       requestProcessor: requestProcessor,
     );
-    _notifyMutation(_operationsRegister.remove(operation.id));
+    _publishOperationsChange(
+      _operationsRegister.remove(operation.id),
+      invalidatesPendingRequest: true,
+    );
   }
 
   /// Reject operation with a reason.
@@ -288,7 +300,10 @@ class WMTOperations extends WMTNetworking {
       "/operation/cancel",
       requestProcessor: requestProcessor,
     );
-    _notifyMutation(_operationsRegister.remove(operationId));
+    _publishOperationsChange(
+      _operationsRegister.remove(operationId),
+      invalidatesPendingRequest: true,
+    );
   }
 
   /// Sign offline QR operation with provided authentication.
@@ -326,16 +341,48 @@ class WMTOperations extends WMTNetworking {
     final operation = processResponse("operation claim", () {
       return WMTUserOperation.fromJson(response);
     });
-    _notifyMutation(_operationsRegister.add(operation));
+    _publishOperationsChange(
+      _operationsRegister.add(operation),
+      invalidatesPendingRequest: true,
+    );
     return operation;
   }
 
-  void _notifyMutation(OperationsChange? change) {
-    _operationsGeneration++;
-    _notifyChange(change);
+  /// Publishes an operations change and optionally invalidates a pending list request.
+  void _publishOperationsChange(
+    OperationsChange? change, {
+    bool invalidatesPendingRequest = false,
+  }) {
+    if (invalidatesPendingRequest) _operationsGeneration++;
+    if (change == null) return;
+    _notifyListener(
+      "operationsChanged",
+      (listener) => listener.operationsChanged(
+        change.operations,
+        change.removed,
+        change.added,
+      ),
+    );
   }
 
-  void _notifyChange(OperationsChange? change) {
-    if (change != null) listener?.operationsChanged(change.operations, change.removed, change.added);
+  /// Invokes a listener callback without affecting the operation result on failure.
+  void _notifyListener(
+    String callback,
+    void Function(WMTOperationsListener listener) notify,
+  ) {
+    final currentListener = listener;
+    if (currentListener == null) return;
+
+    try {
+      notify(currentListener);
+    } catch (error, stackTrace) {
+      try {
+        Log.error(
+          () => "WMTOperationsListener.$callback failed: $error\n$stackTrace",
+        );
+      } catch (_) {
+        // Listener failures must not change an operation result.
+      }
+    }
   }
 }

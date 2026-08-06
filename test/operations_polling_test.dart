@@ -93,6 +93,29 @@ void main() {
     expect(operations.isLoadingOperations, isFalse);
   });
 
+  test("listener failures do not change operation results", () async {
+    operations.listener = _ThrowingOperationsListener();
+    operations.tokenHandler =
+        (endpoint) async =>
+            endpoint.endsWith("claim")
+                ? _operationJson("2")
+                : [_operationJson("1")];
+
+    final fetched = await operations.getOperations();
+    expect(fetched.map((operation) => operation.id), ["1"]);
+    expect(operations.lastFetchResult?.isSuccess, isTrue);
+    expect(operations.isLoadingOperations, isFalse);
+
+    final claimed = await operations.claim("2");
+    expect(claimed.id, "2");
+
+    final requestError = StateError("request failed");
+    operations.tokenHandler = (_) => Future.error(requestError);
+    await expectLater(operations.getOperations(), throwsA(same(requestError)));
+    expect(operations.lastFetchResult?.error, same(requestError));
+    expect(operations.isLoadingOperations, isFalse);
+  });
+
   test("updates registered operations after successful mutations", () async {
     operations.tokenHandler =
         (endpoint) async =>
@@ -228,6 +251,23 @@ class _OperationsListener implements WMTOperationsListener {
 
   @override
   void operationsLoading(bool value) => loading.add(value);
+}
+
+class _ThrowingOperationsListener implements WMTOperationsListener {
+  @override
+  void operationsChanged(
+    List<WMTUserOperation> operations,
+    List<WMTUserOperation> removed,
+    List<WMTUserOperation> added,
+  ) => throw StateError("operationsChanged failed");
+
+  @override
+  void operationsFailed(Object error) =>
+      throw StateError("operationsFailed failed");
+
+  @override
+  void operationsLoading(bool loading) =>
+      throw StateError("operationsLoading failed");
 }
 
 Map<String, dynamic> _operationJson(String id) => {
