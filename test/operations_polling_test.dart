@@ -121,12 +121,33 @@ void main() {
     expect(listener.changes, hasLength(4));
   });
 
+  test("does not publish a list response made stale by a mutation", () async {
+    operations.tokenHandler = (_) async => [_operationJson("1")];
+    await operations.getOperations();
+
+    final staleResponse = Completer<dynamic>();
+    operations.tokenHandler = (_) => staleResponse.future;
+    final listRequest = operations.getOperations();
+
+    operations.signedHandler = (_) async => {};
+    await operations.reject("1", WMTRejectionReason.unknown());
+
+    staleResponse.complete([_operationJson("1")]);
+
+    expect((await listRequest).map((operation) => operation.id), ["1"]);
+    expect(operations.tokenRequests, 2);
+    expect(listener.changes.last.operations, isEmpty);
+    expect(listener.changes.skip(2).expand((change) => change.added), isEmpty);
+  });
+
   test("starts immediately, ignores duplicate starts and stops", () async {
     operations.tokenHandler = (_) async => <dynamic>[];
+    final WMTRequestProcessor requestProcessor = (_) {};
 
-    operations.startPollingOperations();
+    operations.startPollingOperations(requestProcessor: requestProcessor);
     expect(operations.isPollingOperations, isTrue);
     expect(operations.tokenRequests, 1);
+    expect(operations.lastRequestProcessor, same(requestProcessor));
 
     operations.startPollingOperations(interval: const Duration(seconds: 10));
     expect(operations.tokenRequests, 1);
@@ -154,6 +175,7 @@ class _TestOperations extends WMTOperations {
   Future<dynamic> Function(String endpoint)? tokenHandler;
   Future<dynamic> Function(String endpoint)? signedHandler;
   int tokenRequests = 0;
+  WMTRequestProcessor? lastRequestProcessor;
 
   @override
   Future<dynamic> postSignedWithToken(
@@ -164,6 +186,7 @@ class _TestOperations extends WMTOperations {
     WMTRequestProcessor? requestProcessor,
   }) {
     tokenRequests++;
+    lastRequestProcessor = requestProcessor;
     return tokenHandler!(endpointPath);
   }
 

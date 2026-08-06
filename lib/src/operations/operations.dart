@@ -35,12 +35,14 @@ class WMTOperations extends WMTNetworking {
 
   final _operationsRegister = OperationsRegister();
   Future<List<WMTUserOperation>>? _operationsRequest;
+  int _operationsGeneration = 0;
   Timer? _pollingTimer;
 
   /// Listener for operation list loading and changes.
   WMTOperationsListener? listener;
 
   WMTGetOperationsResult? _lastFetchResult;
+
 
   /// Last operation list result. The value is not persisted.
   WMTGetOperationsResult? get lastFetchResult => _lastFetchResult;
@@ -74,8 +76,11 @@ class WMTOperations extends WMTNetworking {
     return request;
   }
 
-  Future<List<WMTUserOperation>> _getOperations(WMTRequestProcessor? requestProcessor) async {
+  Future<List<WMTUserOperation>> _getOperations(
+    WMTRequestProcessor? requestProcessor,
+  ) async {
     try {
+      final requestGeneration = _operationsGeneration;
       final response = await postSignedWithToken(
         {},
         PowerAuthAuthentication.possession(),
@@ -84,12 +89,21 @@ class WMTOperations extends WMTNetworking {
         requestProcessor: requestProcessor,
       );
 
-      final operations = processResponse("operations list", () {
-        final list = response as List<dynamic>;
-        return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
-      });
-      _lastFetchResult = WMTGetOperationsResult.success(operations);
-      _notifyChange(_operationsRegister.replace(operations));
+      final operations = List<WMTUserOperation>.unmodifiable(
+        processResponse("operations list", () {
+          final list = response as List<dynamic>;
+          return list
+              .map(
+                (item) =>
+                    WMTUserOperation.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
+        }),
+      );
+      if (requestGeneration == _operationsGeneration) {
+        _lastFetchResult = WMTGetOperationsResult.success(operations);
+        _notifyChange(_operationsRegister.replace(operations));
+      }
       return operations;
     } catch (error) {
       _lastFetchResult = WMTGetOperationsResult.failure(error);
@@ -116,7 +130,9 @@ class WMTOperations extends WMTNetworking {
   }
 
   /// Starts periodic operation polling.
-  void startPollingOperations({ Duration interval = const Duration(seconds: 7), bool delayStart = false }) {
+  ///
+  /// - [requestProcessor] You may modify the request headers via this processor.
+  void startPollingOperations({ Duration interval = const Duration(seconds: 7), bool delayStart = false, WMTRequestProcessor? requestProcessor }) {
     if (isPollingOperations) {
       Log.warn("Operation polling is already running.");
       return;
@@ -126,8 +142,8 @@ class WMTOperations extends WMTNetworking {
     if (adjustedInterval != interval) {
       Log.warn("Operation polling interval must not be below ${_minimumPollingInterval.inSeconds} seconds.");
     }
-    _pollingTimer = Timer.periodic(adjustedInterval, (_) => refreshOperations());
-    if (!delayStart) refreshOperations();
+    _pollingTimer = Timer.periodic(adjustedInterval, (_) => refreshOperations(requestProcessor: requestProcessor));
+    if (!delayStart) refreshOperations(requestProcessor: requestProcessor);
     Log.info("Operation polling started with ${adjustedInterval.inMilliseconds} milliseconds interval.");
   }
 
@@ -157,7 +173,7 @@ class WMTOperations extends WMTNetworking {
       return WMTUserOperation.fromJson(response);
     });
   }
-  
+
   /// Retrieves the history of user operations with their current status.
   /// 
   /// Params:
@@ -255,7 +271,7 @@ class WMTOperations extends WMTNetworking {
       "/operation/authorize",
       requestProcessor: requestProcessor,
     );
-    _notifyChange(_operationsRegister.remove(operation.id));
+    _notifyMutation(_operationsRegister.remove(operation.id));
   }
 
   /// Reject operation with a reason.
@@ -272,11 +288,11 @@ class WMTOperations extends WMTNetworking {
       "/operation/cancel",
       requestProcessor: requestProcessor,
     );
-    _notifyChange(_operationsRegister.remove(operationId));
+    _notifyMutation(_operationsRegister.remove(operationId));
   }
 
   /// Sign offline QR operation with provided authentication.
-  /// 
+  ///
   /// Note that the operation will be signed even if the authentication object is
   /// not valid as it cannot be verified on the server.
   ///
@@ -285,14 +301,14 @@ class WMTOperations extends WMTNetworking {
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
   /// - [uriId] Custom signature URI ID of the operation. Use URI ID under which the operation was
   /// created on the server. Default value is `/operation/authorize/offline`.
-  /// 
+  ///
   /// Returns OTP code to display to the user
   Future<String> authorizeOffline(WMTQROperation operation, PowerAuthAuthentication authentication, {String uriId = "/operation/authorize/offline"}) async {
     return await powerAuth.offlineSignature(authentication, uriId, operation.nonce, operation.dataForOfflineSining);
   }
 
   /// Assigns the 'non-personalized' operation to the user.
-  /// 
+  ///
   /// Params:
   ///  - [operationId] ID of the operation which will be claimed to belong to the user.
   ///  - [requestProcessor] You may modify the request via this processor. It's highly recommended to only modify HTTP headers.
@@ -310,8 +326,13 @@ class WMTOperations extends WMTNetworking {
     final operation = processResponse("operation claim", () {
       return WMTUserOperation.fromJson(response);
     });
-    _notifyChange(_operationsRegister.add(operation));
+    _notifyMutation(_operationsRegister.add(operation));
     return operation;
+  }
+
+  void _notifyMutation(OperationsChange? change) {
+    _operationsGeneration++;
+    _notifyChange(change);
   }
 
   void _notifyChange(OperationsChange? change) {
