@@ -71,7 +71,6 @@ void main() {
     test("testReject", () async {
       final op = await helper.createOperation();
 
-      // try to reject with invalid password
       try {
         await wmt.operations.reject(op.operationId, WMTRejectionReason.unknown());
       } catch (e) {
@@ -172,7 +171,7 @@ void main() {
       // claim the operation
       final claimed = await wmt.operations.claim(op.operationId);
 
-      expect(claimed.ui?.preApprovalScreen?.type, "QR_SCAN");
+      expect(claimed.ui?.preApprovalScreens?.first.type, "QR_SCAN");
 
       final totp = (await helper.getOperation(op.operationId)).proximityOtp;
       expect(totp, isNotNull);

@@ -45,6 +45,11 @@ class WMTRejectionReason {
     return WMTRejectionReason._("UNEXPECTED_OPERATION");
   }
 
+  /// The operation was rejected on the PreApproval screen.
+  factory WMTRejectionReason.preApproval() {
+    return WMTRejectionReason._("PREAPPROVAL");
+  }
+
   /// Represents a custom reason for rejection, allowing for flexibility in specifying rejection reasons.
   /// [reason] A string describing the custom rejection reason, e.g., `POSSIBLE_FRAUD`.
   factory WMTRejectionReason.custom(String reason) {
