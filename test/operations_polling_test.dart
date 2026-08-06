@@ -16,12 +16,15 @@
 
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 import 'package:mtoken_sdk_flutter/src/networking/networking.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   late _TestOperations operations;
   late _OperationsListener listener;
 
@@ -188,6 +191,36 @@ void main() {
 
     await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(operations.tokenRequests, 0);
+  });
+
+  test("mobile token dispose stops polling and detaches listener", () async {
+    const channel = MethodChannel("powerauth_plugin");
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (_) async => null);
+
+    try {
+      final powerAuth = PowerAuth("mobile-token-dispose-test");
+      await powerAuth.configure(
+        configuration: PowerAuthConfiguration(
+          configuration: "test",
+          baseEndpointUrl: "https://test.wultra.com",
+        ),
+      );
+      final mobileToken = powerAuth.createMobileToken();
+      mobileToken.operations.listener = listener;
+      mobileToken.operations.startPollingOperations(delayStart: true);
+
+      expect(mobileToken.operations.isPollingOperations, isTrue);
+
+      mobileToken.dispose();
+      mobileToken.dispose();
+
+      expect(mobileToken.operations.isPollingOperations, isFalse);
+      expect(mobileToken.operations.listener, isNull);
+    } finally {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, null);
+    }
   });
 }
 

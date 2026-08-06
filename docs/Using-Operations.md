@@ -62,6 +62,13 @@ operations.startPollingOperations();
 operations.stopPollingOperations();
 ```
 
+When the mobile token instance is no longer needed, dispose it to stop operation
+polling and detach the operations listener.
+
+```dart
+mtoken.dispose();
+```
+
 Implement `WMTOperationsListener` to observe loading, errors, and changes. The listener is called for manual `getOperations` requests as well as polling requests.
 
 ```dart
