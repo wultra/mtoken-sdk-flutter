@@ -43,7 +43,6 @@ class WMTOperations extends WMTNetworking {
 
   WMTGetOperationsResult? _lastFetchResult;
 
-
   /// Last operation list result. The value is not persisted.
   WMTGetOperationsResult? get lastFetchResult => _lastFetchResult;
 
@@ -68,7 +67,10 @@ class WMTOperations extends WMTNetworking {
   /// Returns list of operations.
   Future<List<WMTUserOperation>> getOperations({ WMTRequestProcessor? requestProcessor }) {
     final currentRequest = _operationsRequest;
-    if (currentRequest != null) return currentRequest;
+    if (currentRequest != null) {
+      Log.warn("getOperations requested, but another request is already running.");
+      return currentRequest;
+    }
 
     final request = _getOperations(requestProcessor);
     _operationsRequest = request;
@@ -161,6 +163,15 @@ class WMTOperations extends WMTNetworking {
     _pollingTimer?.cancel();
     _pollingTimer = null;
     Log.info("Operation polling stopped.");
+  }
+
+  /// Stops polling, detaches the listener and clears cached operation state so
+  /// that sensitive operation data does not linger in memory.
+  void dispose() {
+    stopPollingOperations();
+    listener = null;
+    _operationsRegister.clear();
+    _lastFetchResult = null;
   }
 
   /// Retrieves operation detail based on operation ID.
@@ -400,13 +411,10 @@ class WMTOperations extends WMTNetworking {
     try {
       notify(currentListener);
     } catch (error, stackTrace) {
-      try {
-        Log.error(
-          () => "WMTOperationsListener.$callback failed: $error\n$stackTrace",
-        );
-      } catch (_) {
-        // Listener failures must not change an operation result.
-      }
+      // Listener failures must not change an operation result.
+      Log.error(
+        () => "WMTOperationsListener.$callback failed: $error\n$stackTrace",
+      );
     }
   }
 }

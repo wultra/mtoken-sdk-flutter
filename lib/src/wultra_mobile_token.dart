@@ -112,11 +112,11 @@ class WultraMobileToken {
 
   /// Releases resources held by this mobile token instance.
   ///
-  /// Stops operation polling and detaches the operations listener so the
-  /// polling timer cannot keep discarded application state alive.
+  /// Stops operation polling, detaches the operations listener and clears
+  /// cached operation state so the polling timer cannot keep discarded
+  /// application state alive.
   void dispose() {
-    operations.stopPollingOperations();
-    operations.listener = null;
+    operations.dispose();
     Log.info("Mobile Token object disposed.");
   }
 }
