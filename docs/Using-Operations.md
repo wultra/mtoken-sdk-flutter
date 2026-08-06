@@ -107,11 +107,14 @@ The `mobileTokenData` is completely optional, and the structure is customer-spec
 
 ## Reject an Operation
 
-To reject an operation use `reject`. Operation rejection is confirmed by the possession factor, so there is no need to create the `PowerAuthAuthentication` object. You can simply use it like in the following example.
+To reject an operation use `reject` (by operation ID) or `rejectOperation` (with the full operation). Operation rejection is confirmed by the possession factor, so there is no need to create the `PowerAuthAuthentication` object.
 
 ```dart
-// Reject operation with some reason
-mtoken.operations.reject(operation.id, WMTRejectionReason.incorrectData());
+// Reject by operation ID
+await mtoken.operations.reject(operation.id, WMTRejectionReason.incorrectData());
+
+// Reject with the full operation object (which might also include mobileTokenData)
+await mtoken.operations.rejectOperation(operation, WMTRejectionReason.incorrectData());
 ```
 
 ## Operation Detail
@@ -234,7 +237,7 @@ Visually, the operation should be displayed as an info page with all the attribu
 
 ## Creating a Custom Operation
 
-In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `WMTOnlineOperation` interface in your custom class and then feed created objects to both `authorize` and `reject` methods.
+In some specific scenarios, you might need to approve or reject an operation that you received through a different channel than `getOperations`. In such cases, you can implement the `WMTOnlineOperation` interface in your custom class and then feed created objects to both `authorize` and `rejectOperation` methods.
 
 Definition of the `WMTOnlineOperation`:
 
@@ -297,7 +300,8 @@ These sentinels are only injected during legacy conversion — new-format payloa
 
 ## Mobile Token Data
 
-With PowerAuth Server **1.10+**, you can pass additional, customer-specific metadata during operation authorization or rejection using the `mobileTokenData` property.
+With PowerAuth Server **1.10+**, you can pass additional, customer-specific metadata during operation authorization using the `mobileTokenData` property.
+Since PowerAuth Server **2.0+**, you can also pass `mobileTokenData` when rejecting an operation.
 
 This feature is especially useful for **fraud detection systems (FDS)**, customer risk evaluation, or other backend-specific business logic.
 

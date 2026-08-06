@@ -71,7 +71,6 @@ void main() {
     test("testReject", () async {
       final op = await helper.createOperation();
 
-      // try to reject with invalid password
       try {
         await wmt.operations.reject(op.operationId, WMTRejectionReason.unknown());
       } catch (e) {

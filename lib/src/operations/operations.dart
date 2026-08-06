@@ -175,14 +175,33 @@ class WMTOperations extends WMTNetworking {
     );
   }
 
-  /// Reject operation with a reason.
+  /// Reject operation by ID with a reason.
+  ///
+  /// This overload doesn't attach `mobileTokenData` to the request. If you need to reject with
+  /// `mobileTokenData` attached, use [rejectOperation] and pass the full [WMTOnlineOperation] instead.
   /// 
   /// Params: 
   /// - [operationId] ID of the operation.
   /// - [reason] Reason for the rejection.
-  /// - [mobileTokenData] Optional mobile token data to send with the rejection (e.g. pre-approval screen visit records).
   /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> reject(String operationId, WMTRejectionReason reason, { Object? mobileTokenData, WMTRequestProcessor? requestProcessor }) async {
+  Future<void> reject(String operationId, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) {
+    return _reject(operationId, null, reason, requestProcessor: requestProcessor);
+  }
+
+  /// Reject operation with a reason.
+  ///
+  /// The operation's [WMTOnlineOperation.mobileTokenData] (if any) is automatically attached
+  /// to the rejection request (available with PowerAuth Server 2.0+).
+  /// 
+  /// Params: 
+  /// - [operation] Operation to reject.
+  /// - [reason] Reason for the rejection.
+  /// - [requestProcessor] You may modify the request headers via this processor.
+  Future<void> rejectOperation(WMTOnlineOperation operation, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) {
+    return _reject(operation.id, operation.mobileTokenData, reason, requestProcessor: requestProcessor);
+  }
+
+  Future<void> _reject(String operationId, Object? mobileTokenData, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) async {
     final requestObject = <String, dynamic>{ "id": operationId, "reason": reason.serialized };
     if (mobileTokenData != null) {
       requestObject["mobileTokenData"] = mobileTokenData;
