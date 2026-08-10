@@ -94,11 +94,12 @@ packages:
   flutter_powerauth_mobile_sdk_plugin:
     dependency: transitive
     description:
-      name: flutter_powerauth_mobile_sdk_plugin
-      sha256: "2e86c8087bafc963e21a0a9f63b68ab79f380a657ce803d268faf50b3a6947d6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
+      path: "."
+      ref: "issues/93-add-docs"
+      resolved-ref: "7dc70a2046466e32b5716d46b66f4d3d7242064a"
+      url: "https://github.com/wultra/flutter-powerauth-mobile-sdk.git"
+    source: git
+    version: "0.0.1-dev"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -327,5 +328,5 @@ packages:
     source: hosted
     version: "3.1.0"
 sdks:
-  dart: ">=3.10.0-0 <4.0.0"
-  flutter: ">=3.18.0-18.0.pre.54"
+  dart: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"

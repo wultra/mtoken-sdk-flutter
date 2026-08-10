@@ -19,7 +19,7 @@ Future<void> exampleAuthorizeOperation(PowerAuth powerAuth) async {
 
   // Make sure that PowerAuth is initialized and activated
 
-  final mtoken = powerAuth.createMobileToken(); // create the WultraMobileToken instance
+  final mtoken = await powerAuth.createMobileToken(); // create the WultraMobileToken instance
 
   try {
     final operations = await mtoken.operations.getOperations(); // get operation list

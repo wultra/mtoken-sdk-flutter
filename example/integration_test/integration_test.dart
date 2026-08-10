@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:example/test_utils/integration_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
@@ -22,7 +24,7 @@ void main() {
       sdk = PowerAuth(IntegrationHelper.randomString(30));
       helper = IntegrationHelper(sdk);
       await helper.configure();
-      wmt = sdk.createMobileToken();
+      wmt = await sdk.createMobileToken();
       await helper.prepareActiveActivation(await credentials.validPasswordObject());
       expect(await sdk.hasValidActivation(), isTrue);
     });
@@ -142,8 +144,16 @@ void main() {
       final qrOperation = WMTQROperation.fromQRString(qrData.operationQrCodeData);
 
       // verify the parsed data
-      final verified = await sdk.verifyServerSignedData(qrOperation.signedData, qrOperation.signature.signatureString, qrOperation.signature.signingKey == WMTSigningKey.master);
-      expect(verified, isTrue);
+      final verificationKey = switch (qrOperation.signature.signingKey) {
+        WMTSigningKey.master => PowerAuthSignatureKeyId.masterEc,
+        WMTSigningKey.personalized => PowerAuthSignatureKeyId.serverEc,
+        WMTSigningKey.personalizedMac => PowerAuthSignatureKeyId.macPersonalized,
+      };
+      await sdk.verifyDigitalSignature(
+        qrOperation.signature.signature,
+        Uint8List.fromList(utf8.encode(qrOperation.signedData)),
+        verificationKey,
+      );
 
       // get the OTP via the offline signing
       final otp = await wmt.operations.authorizeOffline(qrOperation, await credentials.knowledge());
@@ -279,7 +289,7 @@ void main() {
 
       // Test default behavior (libraryDefault)
 
-      tempMtoken = sdk.createMobileToken();
+      tempMtoken = await sdk.createMobileToken();
 
       await tempMtoken.operations.getOperations(requestProcessor: (headers) {
         final userAgent = headers.value("user-agent")!;
@@ -293,7 +303,7 @@ void main() {
       });
 
       // Test custom user agent
-      tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.custom(testUserAgent));
+      tempMtoken = await sdk.createMobileToken(userAgent: WMTUserAgent.custom(testUserAgent));
 
       await tempMtoken.inbox.getMessageList(0, 50, false, requestProcessor: (headers) {
         expect(headers.value("user-agent"), testUserAgent);
@@ -301,7 +311,7 @@ void main() {
 
       // Test system default
 
-      tempMtoken = sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
+      tempMtoken = await sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
 
       await tempMtoken.push.register(WMTPushPlatform.fcm("test"), requestProcessor: (headers) {
         expect(headers.value("user-agent")?.startsWith("Dart"), isTrue); // default user agent is something like "Dart/2.14 (dart:io)"

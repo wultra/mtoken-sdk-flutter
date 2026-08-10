@@ -224,7 +224,7 @@ class WMTFallbackField extends WMTQROperationDataField {
 
 /// Model class for offline QR operation signature.
 class WMTQROperationSignature {
-  /// Defines which key has been used for ECDSA signature calculation.
+  /// Defines which key has been used for signature calculation.
   WMTSigningKey signingKey;
 
   /// Raw signature data.
@@ -240,18 +240,22 @@ class WMTQROperationSignature {
   });
 }
 
-/// Defines which key was used for ECDSA signature calculation.
+/// Defines which key was used for signature calculation.
 enum WMTSigningKey {
   /// Master server key was used for ECDSA signature calculation.
   master,
 
-  // Personalized server's private key was used for ECDSA signature calculation.
-  personalized();
+  /// Personalized server's private key was used for ECDSA signature calculation.
+  personalized,
+
+  /// Personalized MAC key was used for KMAC-256 signature calculation.
+  personalizedMac();
 
   static WMTSigningKey? fromSerialized(String serialized) {
     switch (serialized) {
       case "0": return WMTSigningKey.master;
       case "1": return WMTSigningKey.personalized;
+      case "2": return WMTSigningKey.personalizedMac;
       default: return null;
     }
   }

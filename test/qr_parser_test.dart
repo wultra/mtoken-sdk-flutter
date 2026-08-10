@@ -1,5 +1,8 @@
 // ignore_for_file: prefer_adjacent_string_concatenation
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 
@@ -137,11 +140,22 @@ void main() {
         expect(() => WMTQROperationParser.parse(code.makeData()), throwsA(isA<WMTException>()));
       }
 
-      for (var sk in ["", "2", "X"]) {
+      for (var sk in ["", "3", "X"]) {
           final code = TestQRData();
           code.signingKey = sk;
           expect(() => WMTQROperationParser.parse(code.makeData()), throwsA(isA<WMTException>()));
       }
+    });
+
+    test("testPersonalizedMacSignature", () {
+      final code = TestQRData();
+      code.signingKey = "2";
+      code.signature = base64Encode(Uint8List(32));
+
+      final operation = WMTQROperationParser.parse(code.makeData());
+
+      expect(WMTSigningKey.personalizedMac, operation.signature.signingKey);
+      expect(32, operation.signature.signature.length);
     });
 
     test("testAttributeStringEscaping", () {

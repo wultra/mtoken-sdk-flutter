@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import '../core/logger.dart';
 import '../utils/response_processor.dart';
@@ -228,7 +231,8 @@ class WMTOperations extends WMTNetworking {
   /// 
   /// Returns OTP code to display to the user
   Future<String> authorizeOffline(WMTQROperation operation, PowerAuthAuthentication authentication, {String uriId = "/operation/authorize/offline"}) async {
-    return await powerAuth.offlineSignature(authentication, uriId, operation.nonce, operation.dataForOfflineSining);
+    final body = Uint8List.fromList(utf8.encode(operation.dataForOfflineSining));
+    return await powerAuth.offlineSignature(authentication, uriId, operation.nonce, body);
   }
 
   /// Assigns the 'non-personalized' operation to the user.

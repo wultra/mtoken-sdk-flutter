@@ -8,14 +8,14 @@ The PowerAuth Flutter SDK is a required dependency that will be automatically in
 
 | WMT Version | PowerAuth Flutter SDK |
 |-------------|--------------------|
-| `2.0.x`     | `^1.3.0`           |
+| `2.0.x`     | `2.0.0-dev` (`issues/93-add-docs`) |
 | `1.0.x`     | `^1.1.0`           |
 
 ## Supported Platforms
 
-The library is available for the following __Flutter 3.3.0+__ platforms:
+The library is available for the following __Flutter 3.44.0+__ platforms:
 
-- __Android 5.0 (API 21)__ and newer
+- __Android 6.0 (API 23)__ and newer
 - __iOS 13.4__ and newer
 
 ## How To Install
@@ -47,15 +47,28 @@ flutter pub get
 In `android/app/build.gradle`, make sure to set the minimum SDK version:
 
 ```gradle
-minSdkVersion 21
+compileSdkVersion 37
+minSdkVersion 23
 ```
 
-Also, make sure to enable Java 11:
+Also, make sure to enable Java 17:
 
 ```gradle
 compileOptions {
-    sourceCompatibility JavaVersion.VERSION_11
-    targetCompatibility JavaVersion.VERSION_11
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+}
+```
+
+While PowerAuth 2.0 is unreleased, add its snapshot repository to `android/build.gradle`:
+
+```gradle
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
+    }
 }
 ```
 
@@ -81,12 +94,12 @@ cd ..
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 
-void createMtokenInstance() {
+Future<void> createMtokenInstance() async {
   final powerAuth = PowerAuth("my-instance");
   // note that an activated PowerAuth instance is required. How to activate the PowerAuth instance, follow https://github.com/wultra/flutter-powerauth-mobile-sdk documentation.
 
   // Then, use PowerAuth's helper function to create the mtoken instance:
-  final mtoken = powerAuth.createMobileToken();
+  final mtoken = await powerAuth.createMobileToken();
 }
 ```
 

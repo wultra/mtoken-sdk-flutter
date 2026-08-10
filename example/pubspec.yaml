@@ -4,7 +4,7 @@ publish_to: 'none' # Example
 version: 0.0.1-dev
 
 environment:
-  sdk: ^3.8.1
+  sdk: ^3.12.0
 dependencies:
   flutter:
     sdk: flutter

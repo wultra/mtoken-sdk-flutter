@@ -112,7 +112,10 @@ class WMTQROperationParser {
     }
     final signatureBase64 = signaturePayload.substring(1);
     final signatureByteArray = base64Decode(signatureBase64);
-    if (signatureByteArray.length < 64 || signatureByteArray.length > 255) {
+    final isValidLength = signingKey == WMTSigningKey.personalizedMac
+        ? signatureByteArray.length == 32
+        : signatureByteArray.length >= 64 && signatureByteArray.length <= 255;
+    if (!isValidLength) {
       throw Log.errorAndException("Invalid offline operation signature data (length ${signatureByteArray.length})");
     }
     return WMTQROperationSignature(

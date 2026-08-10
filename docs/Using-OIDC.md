@@ -27,7 +27,7 @@ The integration communicates with the [OpenID Connect Standard](https://openid.n
 The instance of the `WMTOIDC` can be accessed after creating the main object of the SDK:
 
 ```dart
-final mtoken = powerAuthInstance.createMobileToken();
+final mtoken = await powerAuthInstance.createMobileToken();
 final oidc = mtoken.oidc;
 ```
 
