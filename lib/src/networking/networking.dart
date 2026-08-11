@@ -155,7 +155,7 @@ class WMTNetworking {
 
       Log.info(" -> OUTGOING POST ${url}");
       Log.verbose(() => _getHeadersString(request.headers));
-      Log.debug(utf8.decode(bodyToSend, allowMalformed: true));
+      Log.debug(payloadSerialized);
 
       final response = await request.close();
       final responseBytes = Uint8List.fromList(await response.expand((chunk) => chunk).toList());
