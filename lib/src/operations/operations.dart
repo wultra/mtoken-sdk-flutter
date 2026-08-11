@@ -35,7 +35,7 @@ class WMTOperations extends WMTNetworking {
 
   final _operationsRegister = OperationsRegister();
   Future<List<WMTUserOperation>>? _operationsRequest;
-  int _operationsGeneration = 0;
+  int _operationsMutationVersion = 0;
   Timer? _pollingTimer;
 
   /// Listener for operation list loading and changes.
@@ -84,8 +84,8 @@ class WMTOperations extends WMTNetworking {
   Future<List<WMTUserOperation>> _getOperations(
     WMTRequestProcessor? requestProcessor,
   ) async {
+    final requestMutationVersion = _operationsMutationVersion;
     try {
-      final requestGeneration = _operationsGeneration;
       final response = await postSignedWithToken(
         {},
         PowerAuthAuthentication.possession(),
@@ -105,17 +105,19 @@ class WMTOperations extends WMTNetworking {
               .toList();
         }),
       );
-      if (requestGeneration == _operationsGeneration) {
+      if (requestMutationVersion == _operationsMutationVersion) {
         _lastFetchResult = WMTGetOperationsResult.success(operations);
         _publishOperationsChange(_operationsRegister.replace(operations));
       }
       return operations;
     } catch (error) {
-      _lastFetchResult = WMTGetOperationsResult.failure(error);
-      _notifyListener(
-        "operationsFailed",
-        (listener) => listener.operationsFailed(error),
-      );
+      if (requestMutationVersion == _operationsMutationVersion) {
+        _lastFetchResult = WMTGetOperationsResult.failure(error);
+        _notifyListener(
+          "operationsFailed",
+          (listener) => listener.operationsFailed(error),
+        );
+      }
       rethrow;
     } finally {
       _operationsRequest = null;
@@ -388,7 +390,7 @@ class WMTOperations extends WMTNetworking {
     OperationsChange? change, {
     bool invalidatesPendingRequest = false,
   }) {
-    if (invalidatesPendingRequest) _operationsGeneration++;
+    if (invalidatesPendingRequest) _operationsMutationVersion++;
     if (change == null) return;
     _notifyListener(
       "operationsChanged",

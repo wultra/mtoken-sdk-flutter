@@ -40,9 +40,11 @@ class OperationsRegister {
             .where((operation) => !newIds.contains(operation.id))
             .toList();
 
+    //remove operations that are not in the new list and add new operations
     _operations
-      ..clear()
-      ..addAll(operations);
+      ..removeWhere((operation) => !newIds.contains(operation.id))
+      ..addAll(added);
+
     return _change(removed, added);
   }
 

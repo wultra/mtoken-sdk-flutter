@@ -81,10 +81,10 @@ void main() {
         ];
     await operations.getOperations();
     expect(listener.changes.last.operations.map((operation) => operation.id), [
-      "3",
       "2",
+      "3",
     ]);
-    expect(listener.changes.last.operations.first.name, "updated");
+    expect(listener.changes.last.operations.last.name, "test");
     expect(listener.changes.last.removed, isEmpty);
     expect(listener.changes.last.added, isEmpty);
 
@@ -166,6 +166,50 @@ void main() {
     expect(listener.changes.skip(2).expand((change) => change.added), isEmpty);
   });
 
+  test("preserves existing operation instances during refresh", () async {
+    operations.tokenHandler = (_) async => [_operationJson("1")];
+    final original = (await operations.getOperations()).single;
+    final proximityCheck = WMTOperationProximityCheck(
+      totp: "12345678",
+      type: WMTProximityCheckType.qrCode,
+    );
+    final mobileTokenData = <String, Object>{"custom": true};
+    original.proximityCheck = proximityCheck;
+    original.mobileTokenData = mobileTokenData;
+
+    operations.tokenHandler =
+        (_) async => [{..._operationJson("1"), "name": "updated"}];
+    final refreshed = (await operations.getOperations()).single;
+
+    final registered = listener.changes.last.operations.single;
+    expect(registered, same(original));
+    expect(registered.proximityCheck, same(proximityCheck));
+    expect(registered.mobileTokenData, same(mobileTokenData));
+    expect(registered.name, "test");
+    expect(refreshed, isNot(same(original)));
+    expect(refreshed.name, "updated");
+  });
+
+  test("does not publish an error from a stale list request", () async {
+    operations.tokenHandler = (_) async => [_operationJson("1")];
+    await operations.getOperations();
+    final successfulResult = operations.lastFetchResult;
+
+    final staleResponse = Completer<dynamic>();
+    operations.tokenHandler = (_) => staleResponse.future;
+    final listRequest = operations.getOperations();
+
+    operations.signedHandler = (_) async => {};
+    await operations.reject("1", WMTRejectionReason.unknown());
+
+    final staleError = StateError("stale failure");
+    staleResponse.completeError(staleError);
+
+    await expectLater(listRequest, throwsA(same(staleError)));
+    expect(operations.lastFetchResult, same(successfulResult));
+    expect(listener.errors, isEmpty);
+  });
+
   test("starts immediately, ignores duplicate starts and stops", () async {
     operations.tokenHandler = (_) async => <dynamic>[];
     void requestProcessor(_) {}
@@ -191,6 +235,24 @@ void main() {
 
     await Future<void>.delayed(const Duration(milliseconds: 30));
     expect(operations.tokenRequests, 0);
+  });
+
+  test("dispose prevents an in-flight polling request from restoring state", () async {
+    final response = Completer<dynamic>();
+    operations.tokenHandler = (_) => response.future;
+
+    operations.startPollingOperations();
+    final pendingRequest = operations.getOperations();
+    expect(operations.isLoadingOperations, isTrue);
+
+    operations.dispose();
+    expect(operations.isPollingOperations, isFalse);
+    expect(operations.lastFetchResult, isNull);
+
+    response.complete([_operationJson("1")]);
+    await pendingRequest;
+
+    expect(operations.lastFetchResult, isNull);
   });
 
   test("mobile token dispose stops polling and detaches listener", () async {
