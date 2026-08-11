@@ -96,7 +96,7 @@ packages:
     description:
       path: "."
       ref: "issues/93-add-docs"
-      resolved-ref: "7dc70a2046466e32b5716d46b66f4d3d7242064a"
+      resolved-ref: "925652d6d786506f931ca68a0218dc1d25c34a7b"
       url: "https://github.com/wultra/flutter-powerauth-mobile-sdk.git"
     source: git
     version: "0.0.1-dev"
