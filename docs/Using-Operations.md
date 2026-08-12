@@ -60,16 +60,13 @@ The operations service can periodically refresh pending operations. Polling star
 operations.listener = MyOperationsListener();
 operations.startPollingOperations();
 
-// Stop polling when it is no longer needed.
+// Stop polling to cancel the internal timer when it is no longer needed.
 operations.stopPollingOperations();
 ```
 
-When the mobile token instance is no longer needed, dispose it to stop operation
-polling and detach the operations listener.
-
-```dart
-mtoken.dispose();
-```
+<!-- begin box info -->
+Note: Always call `stopPollingOperations()` when polling is no longer needed, for example when disposing the state that started it. This cancels and removes the internal timer so it cannot retain discarded application state. Detach `operations.listener` separately if the listener is no longer needed.
+<!-- end -->
 
 Implement `WMTOperationsListener` to observe loading, errors, and changes. The listener is called for manual `getOperations` requests as well as polling requests.
 

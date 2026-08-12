@@ -109,16 +109,6 @@ class WultraMobileToken {
       oidc.acceptLanguage = lang;
       Log.info("Accept language set to ${lang} for all services.");
   }
-
-  /// Releases resources held by this mobile token instance.
-  ///
-  /// Stops operation polling, detaches the operations listener and clears
-  /// cached operation state so the polling timer cannot keep discarded
-  /// application state alive.
-  void dispose() {
-    operations.dispose();
-    Log.info("Mobile Token object disposed.");
-  }
 }
 
 extension PowerAuthExtension on PowerAuth {

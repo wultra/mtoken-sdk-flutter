@@ -133,25 +133,6 @@ void main() {
       }
     });
 
-    test("testDisposeDoesNotRestoreStateFromInFlightPollingRequest", () async {
-      await helper.createOperation();
-
-      wmt.operations.startPollingOperations();
-      expect(wmt.operations.isLoadingOperations, isTrue);
-
-      wmt.dispose();
-      expect(wmt.operations.isPollingOperations, isFalse);
-      expect(wmt.operations.lastFetchResult, isNull);
-
-      await (() async {
-        while (wmt.operations.isLoadingOperations) {
-          await Future<void>.delayed(const Duration(milliseconds: 100));
-        }
-      })().timeout(const Duration(seconds: 10));
-
-      expect(wmt.operations.lastFetchResult, isNull);
-    });
-
     test("testDetail", () async {
       final op = await helper.createOperation();
       final detail = await wmt.operations.getDetail(op.operationId);

@@ -62,8 +62,6 @@ class OperationsRegister {
     return _change([_operations.removeAt(index)], []);
   }
 
-  void clear() => _operations.clear();
-
   OperationsChange _change(
     List<WMTUserOperation> removed,
     List<WMTUserOperation> added,

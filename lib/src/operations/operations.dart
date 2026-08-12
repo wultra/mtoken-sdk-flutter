@@ -167,15 +167,6 @@ class WMTOperations extends WMTNetworking {
     Log.info("Operation polling stopped.");
   }
 
-  /// Stops polling, detaches the listener and clears cached operation state so
-  /// that sensitive operation data does not linger in memory.
-  void dispose() {
-    stopPollingOperations();
-    listener = null;
-    _operationsRegister.clear();
-    _lastFetchResult = null;
-  }
-
   /// Retrieves operation detail based on operation ID.
   /// 
   /// - [operationId] ID of the operation.
