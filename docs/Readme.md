@@ -1,6 +1,6 @@
 # Wultra Mobile Token Flutter SDK
 
-__Wultra Mobile Token Flutter SDK__ is a high-level SDK for operation approval.
+__Wultra Mobile Token SDK__ provides APIs for secure operation approval, push notifications, inbox messages, and OIDC flows.
 
 ## Introduction
  
@@ -8,18 +8,21 @@ With Wultra Mobile Token (WMT) SDK, you can integrate an out-of-band operation a
 
 To understand the Wultra Mobile Token SDK purpose on a business level better, you can visit our own [Mobile Token application](https://www.wultra.com/mobile-token). We use (native) Wultra Mobile Token SDK in our mobile token application as well.
 
-What you can do with Wultra Mobile Token SDK:
+**With this SDK, you can:**
 
-- Retrieve the list or detail of user operations.
-- Approve or reject operations with PowerAuth transaction signing.
-- Get operation history for a given user.
-- Register an existing PowerAuth activation to receive push notifications.
-- Fetch messages from the user's inbox.
+- [Retrieve, approve, or reject operations pending approval for a given user.](Using-Operations.md)
+- [Claim anonymous operations.](Using-Operations.md#claim-the-operation)
+- [Retrieve operation history.](Using-Operations.md#operation-history)
+- [Do offline authorization.](Using-Operations.md#off-line-authorization)
+- [Register an existing PowerAuth activation to receive push notifications.](Using-Push.md)
+- [Manage users' inbox messages.](Using-Inbox.md)
+- [Handle OpenID Connect (OIDC) authentication flows.](Using-OIDC.md)
+- [Explore more.](#integration-tutorials)
 
 Remarks:
 
 - This library does not contain any UI.
-- We also provide an [Android](https://github.com/wultra/mtoken-sdk-android), [iOS](https://github.com/wultra/mtoken-sdk-ios) and [Mobile JS](https://github.com/wultra/mtoken-sdk-js) version of this library.
+- We also provide an [Android](https://github.com/wultra/mtoken-sdk-android), [iOS](https://github.com/wultra/mtoken-sdk-ios), and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
 
 ## Open Source Code
 
@@ -54,7 +57,7 @@ All sources are licensed using the Apache 2.0 license. You can use them with no 
 
 ## Contact
 
-If you need any assistance, do not hesitate to drop us a line at [hello@wultra.com](mailto:hello@wultra.com) or our official [wultra.com/discord](wultra.com/discord) channel.
+If you need any assistance, do not hesitate to drop us a line at [hello@wultra.com](mailto:hello@wultra.com) or our official [wultra.com/discord](https://wultra.com/discord) channel.
 
 ### Security Disclosure
 
