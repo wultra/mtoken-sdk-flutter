@@ -158,7 +158,11 @@ class WMTNetworking {
       Log.debug(payloadSerialized);
 
       final response = await request.close();
-      final responseBytes = Uint8List.fromList(await response.expand((chunk) => chunk).toList());
+      final responseBytesBuilder = BytesBuilder(copy: false);
+      await for (final chunk in response) {
+        responseBytesBuilder.add(chunk);
+      }
+      final responseBytes = responseBytesBuilder.takeBytes();
       final clearResponseBytes = encryptor != null && response.statusCode == 200
           ? await encryptor.decryptResponse(responseBytes)
           : responseBytes;
