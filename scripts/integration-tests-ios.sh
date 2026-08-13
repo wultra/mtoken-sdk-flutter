@@ -23,10 +23,8 @@ xcrun simctl boot "$SIM_ID"
 xcrun simctl bootstatus "$SIM_ID" -b
 
 pushd "$SCRIPT_FOLDER/../example"
-pushd "ios"
-pod install # install pods to shave some time off the test run
-popd
 
-flutter test -v -d "$SIM_ID" -r expanded integration_test/integration_test.dart --ignore-timeouts
+flutter build ios --config-only --no-pub integration_test/integration_test.dart
+xcodebuild test -quiet -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
 
 popd
