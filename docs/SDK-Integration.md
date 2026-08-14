@@ -60,18 +60,6 @@ compileOptions {
 }
 ```
 
-While PowerAuth 2.0 is unreleased, add its snapshot repository to `android/build.gradle`:
-
-```gradle
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
-    }
-}
-```
-
 #### iOS
 
 In `ios/Podfile`, ensure the platform version is at least 13.4:
