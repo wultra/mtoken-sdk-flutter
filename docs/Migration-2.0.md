@@ -4,9 +4,9 @@ This guide provides instructions for migrating from **Wultra Mobile Token SDK fo
 
 ## PowerAuth Mobile Flutter SDK 2.0
 
-Version 2.0.x uses the upcoming PowerAuth Mobile Flutter SDK 2.0 from the `issues/93-add-docs` branch. It requires Flutter 3.44, Dart 3.12, Android 6.0 (API 23), Android compile SDK 37, and Java 17. See the [PowerAuth 1.4 to 2.0 migration guide](https://github.com/wultra/flutter-powerauth-mobile-sdk/blob/issues/93-add-docs/docs/Migration-from-1.4-to-2.0.md) for configuration, protocol algorithm, and activation upgrade requirements.
+Version 2.0.x uses the upcoming PowerAuth Mobile Flutter SDK 2.0 from the `develop-pqa` branch. It requires Flutter 3.44, Dart 3.12, Android 6.0 (API 23), Android compile SDK 37, and Java 17. See the [PowerAuth 1.4 to 2.0 migration guide](https://github.com/wultra/flutter-powerauth-mobile-sdk/blob/develop-pqa/docs/Migration-from-1.4-to-2.0.md) for configuration, protocol algorithm, and activation upgrade requirements.
 
-Until the native Android SDK 2.0 is released, Android builds also need Wultra's Maven snapshot repository. The example project uses the verified minimum API 37 toolchain: AGP 9.1.1, Gradle 9.3.1, JDK 17, and built-in Kotlin.
+The example project uses the verified minimum API 37 toolchain: AGP 9.1.1, Gradle 9.3.1, JDK 17, and built-in Kotlin.
 
 PowerAuth configuration is now asynchronous, so creating the Mobile Token instance must be awaited:
 

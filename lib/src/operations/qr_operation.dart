@@ -249,13 +249,13 @@ enum WMTSigningKey {
   personalized,
 
   /// Personalized MAC key was used for KMAC-256 signature calculation.
-  personalizedMac();
+  macPersonalized();
 
   static WMTSigningKey? fromSerialized(String serialized) {
     switch (serialized) {
       case "0": return WMTSigningKey.master;
       case "1": return WMTSigningKey.personalized;
-      case "2": return WMTSigningKey.personalizedMac;
+      case "2": return WMTSigningKey.macPersonalized;
       default: return null;
     }
   }

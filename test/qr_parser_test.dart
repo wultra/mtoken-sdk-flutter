@@ -147,14 +147,14 @@ void main() {
       }
     });
 
-    test("testPersonalizedMacSignature", () {
+    test("testMacPersonalizedSignature", () {
       final code = TestQRData();
       code.signingKey = "2";
       code.signature = base64Encode(Uint8List(32));
 
       final operation = WMTQROperationParser.parse(code.makeData());
 
-      expect(WMTSigningKey.personalizedMac, operation.signature.signingKey);
+      expect(WMTSigningKey.macPersonalized, operation.signature.signingKey);
       expect(32, operation.signature.signature.length);
     });
 

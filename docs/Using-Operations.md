@@ -160,7 +160,7 @@ final qrOperation = WMTQROperationParser.parse(scannedCode); // this method can 
 final signingKey = switch (qrOperation.signature.signingKey) {
     WMTSigningKey.master => PowerAuthSignatureKeyId.masterEc,
     WMTSigningKey.personalized => PowerAuthSignatureKeyId.serverEc,
-    WMTSigningKey.personalizedMac => PowerAuthSignatureKeyId.macPersonalized,
+    WMTSigningKey.macPersonalized => PowerAuthSignatureKeyId.macPersonalized,
 };
 await powerAuth.verifyDigitalSignature(
     qrOperation.signature.signature,

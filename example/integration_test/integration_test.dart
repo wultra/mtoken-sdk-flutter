@@ -147,7 +147,7 @@ void main() {
       final verificationKey = switch (qrOperation.signature.signingKey) {
         WMTSigningKey.master => PowerAuthSignatureKeyId.masterEc,
         WMTSigningKey.personalized => PowerAuthSignatureKeyId.serverEc,
-        WMTSigningKey.personalizedMac => PowerAuthSignatureKeyId.macPersonalized,
+        WMTSigningKey.macPersonalized => PowerAuthSignatureKeyId.macPersonalized,
       };
       await sdk.verifyDigitalSignature(
         qrOperation.signature.signature,

@@ -112,7 +112,7 @@ class WMTQROperationParser {
     }
     final signatureBase64 = signaturePayload.substring(1);
     final signatureByteArray = base64Decode(signatureBase64);
-    final isValidLength = signingKey == WMTSigningKey.personalizedMac
+    final isValidLength = signingKey == WMTSigningKey.macPersonalized
         ? signatureByteArray.length == 32
         : signatureByteArray.length >= 64 && signatureByteArray.length <= 255;
     if (!isValidLength) {
