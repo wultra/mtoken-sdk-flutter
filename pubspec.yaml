@@ -1,7 +1,6 @@
 name: mtoken_sdk_flutter
 description: "PowerAuth based Mobile Token SDK for Flutter (Android and iOS)"
 version: 0.0.1-dev
-publish_to: none # Uses an unreleased PowerAuth SDK branch.
 homepage: https://www.wultra.com/products/mobile-first-authentication
 
 environment:
@@ -11,10 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_powerauth_mobile_sdk_plugin:
-    git:
-      url: https://github.com/wultra/flutter-powerauth-mobile-sdk.git
-      ref: develop-pqa
+  flutter_powerauth_mobile_sdk_plugin: 2.0.0-beta.1
   meta: ^1.16.0
 
 dev_dependencies:
