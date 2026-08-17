@@ -21,7 +21,7 @@ void main() {
       sdk = PowerAuth(IntegrationHelper.randomString(30));
       helper = IntegrationHelper(sdk);
       await helper.configure();
-      wmt = sdk.createMobileToken();
+      wmt = await sdk.createMobileToken();
     });
 
     tearDown(() async {

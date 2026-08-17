@@ -34,7 +34,7 @@ Note: Before using `WMTOperations`, you need to have a `PowerAuth` object availa
 The instance of the `WMTOperations` can be accessed after creating the main object of the SDK:
 
 ```dart
-final mtoken = powerAuthInstance.createMobileToken();
+final mtoken = await powerAuthInstance.createMobileToken();
 final operations = mtoken.operations;
 ```
 
@@ -193,12 +193,16 @@ In case the user is not online, you can use off-line authorizations. In this ope
 ```dart
 final qrOperation = WMTQROperationParser.parse(scannedCode); // this method can throw a WMTException if the QR code is invalid
 // verify the signature against the powerauth instance
-final verified = await powerAuth.verifyServerSignedData(qrOperation.signedData, qrOperation.signature.signatureString, qrOperation.signature.signingKey == WMTSigningKey.master);
-if (verified) {
-    // process offline operation
-} else {
-    // invalid offline operation
-}
+final signingKey = switch (qrOperation.signature.signingKey) {
+    WMTSigningKey.master => PowerAuthSignatureKeyId.masterEc,
+    WMTSigningKey.personalized => PowerAuthSignatureKeyId.serverEc,
+    WMTSigningKey.macPersonalized => PowerAuthSignatureKeyId.macPersonalized,
+};
+await powerAuth.verifyDigitalSignature(
+    qrOperation.signature.signature,
+    Uint8List.fromList(utf8.encode(qrOperation.signedData)),
+    signingKey,
+); // throws PowerAuthException with wrongSignature when the signature is invalid
 ```
 
 ### Authorizing Scanned QR Operation

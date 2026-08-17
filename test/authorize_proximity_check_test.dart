@@ -85,11 +85,11 @@ void main() {
               return localTimeAdjustment;
             case "currentTime":
               return serverTime;
-            case "requestSignature":
+            case "authenticationHeaderForRequestWithBody":
               // Capture the request body that would be signed and sent to the server,
               // then abort so no real HTTP request is made.
               final body =
-                  jsonDecode(call.arguments["body"] as String)
+                  jsonDecode(utf8.decode(call.arguments["body"] as List<int>))
                       as Map<String, dynamic>;
               capturedProximityRequest =
                   (body["requestObject"]
@@ -120,7 +120,7 @@ void main() {
       operations.authorize(operation, PowerAuthAuthentication.possession()),
       throwsA(anything),
     );
-    expect(channelCalls, contains("requestSignature"));
+    expect(channelCalls, contains("authenticationHeaderForRequestWithBody"));
     return capturedProximityRequest;
   }
 
@@ -172,7 +172,7 @@ void main() {
         throwsA(isA<PowerAuthException>()),
       );
       // the flow must fail before signing the request
-      expect(channelCalls, isNot(contains("requestSignature")));
+      expect(channelCalls, isNot(contains("authenticationHeaderForRequestWithBody")));
     });
 
     test(
@@ -297,7 +297,7 @@ void main() {
           throwsA(isA<WMTException>()),
         );
         // The SDK should reject before reaching the signing step.
-        expect(channelCalls, isNot(contains("requestSignature")));
+        expect(channelCalls, isNot(contains("authenticationHeaderForRequestWithBody")));
       },
     );
   });

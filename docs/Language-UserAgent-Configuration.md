@@ -11,7 +11,7 @@ Note: Content language capabilities are limited by the implementation of the ser
 
 ### Usage
 
-You can specify the language in the `WultraMobileToken` constructor or `createMobileToken` factory method of the `PowerAuth` class.
+You can specify the language with the asynchronous `WultraMobileToken.create` or `PowerAuth.createMobileToken` helper.
 
 If you need to change the language at runtime, you can use the `setAcceptLanguage` method.
 
@@ -26,7 +26,7 @@ The user agent is sent with every request to the server (as a standard `User-Age
 
 ### Usage
 
-You can specify the user-agent in the `WultraMobileToken` constructor or `createMobileToken` factory method of the `PowerAuth` class.
+You can specify the user-agent with the asynchronous `WultraMobileToken.create` or `PowerAuth.createMobileToken` helper.
 
 User-agent can be overridden on the per-call basis in the `requestProcessor` parameter for each API call of the SDK.
 
@@ -38,7 +38,10 @@ The default value will look like: `MobileTokenFlutter/1.0.0 my.company.example/2
 
 ```dart
 // create the WultraMobileToken instance set to french and with custom user agent
-final mtoken = powerAuth.createMobileToken(acceptLanguage: "fr", userAgent: "MyCustomUserAgent");
+final mtoken = await powerAuth.createMobileToken(
+  acceptLanguage: "fr",
+  userAgent: WMTUserAgent.custom("MyCustomUserAgent"),
+);
 
 // If needed, you can change the language at runtime
 mtoken.setAcceptLanguage("de"); // set "requested content" to german language

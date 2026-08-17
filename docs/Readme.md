@@ -49,6 +49,7 @@ The code of the library is open source and you can freely browse it in our GitHu
 
 | Version | Flutter PowerAuth Flutter SDK | Flutter Version | Support Status  |
 |---------|-------------------------------|-----------------|-----------------|
+| `2.0.x` | `2.0.0-beta.1`                  | `3.44.0+`  | In development  |
 | `1.0.x` | `^1.1.0`                      | `3.3.0+`        | Fully supported |
 
 ## License

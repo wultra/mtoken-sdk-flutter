@@ -194,7 +194,8 @@ class IntegrationHelper {
   // --- HELPER FUNCTIONS ---
 
   Future<Map<String, dynamic>> callSDKEndpoint(String endpoint, String body, Map<String, String>? headers) async {
-    final url = Uri.parse("${sdk.configuration?.baseEndpointUrl}/$endpoint");
+    final configuration = await sdk.configuration;
+    final url = Uri.parse("${configuration.baseEndpointUrl}/$endpoint");
     final response = await http.post(url, headers: headers, body: body);
     return jsonDecode(response.body) as Map<String, dynamic>;
   }

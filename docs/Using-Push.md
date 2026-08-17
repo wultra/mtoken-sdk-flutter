@@ -25,7 +25,7 @@ Note: `WMTPush` only registers the device to receive push notifications, it does
 The instance of the `WMTPush` can be accessed after creating the main object of the SDK:
 
 ```dart
-final mtoken = powerAuthInstance.createMobileToken();
+final mtoken = await powerAuthInstance.createMobileToken();
 final push = mtoken.push;
 ```
 

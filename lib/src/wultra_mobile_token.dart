@@ -58,12 +58,13 @@ class WultraMobileToken {
   ///             Note that user-agent can be overriden by request processor in each API call.
   ///             The default value is [WMTUserAgent.libraryDefault], which is a user agent that contains the library name and version. 
   /// 
-  /// Can throw when a null or invalid `baseEndpointUrl` is set in the `PowerAuth` instance.
-  factory WultraMobileToken.create({required PowerAuth powerAuth, String? acceptLanguage, WMTUserAgent? userAgent}) {
+  /// Can throw when an invalid `baseEndpointUrl` is set in the `PowerAuth` instance.
+  static Future<WultraMobileToken> create({required PowerAuth powerAuth, String? acceptLanguage, WMTUserAgent? userAgent}) async {
 
-    final baseURL = powerAuth.configuration?.baseEndpointUrl;
+    final configuration = await powerAuth.configuration;
+    final baseURL = configuration.baseEndpointUrl;
 
-    if (baseURL == null || baseURL.isEmpty) {
+    if (baseURL.isEmpty) {
       throw ArgumentError("PowerAuth configuration must contain a valid base endpoint URL.");
     }
 
@@ -127,7 +128,7 @@ extension PowerAuthExtension on PowerAuth {
   /// [userAgent] Optionally sets the User agent that will be used in a HTTP hader.
   ///             Note that user-agent can be overriden by request processor in each API call.
   ///             The default value is [WMTUserAgent.libraryDefault], which is a user agent that contains the library name and version.
-  WultraMobileToken createMobileToken({String? acceptLanguage, WMTUserAgent? userAgent}) {
+  Future<WultraMobileToken> createMobileToken({String? acceptLanguage, WMTUserAgent? userAgent}) {
     return WultraMobileToken.create(powerAuth: this, acceptLanguage: acceptLanguage, userAgent: userAgent);
   }
 }

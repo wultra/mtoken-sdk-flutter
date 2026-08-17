@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "cc7",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wultra/cc7",
+      "state" : {
+        "revision" : "9e894cb278cc41a412f1f4d21fef34f396de7f8a",
+        "version" : "0.7.2"
+      }
+    },
+    {
+      "identity" : "powerauth-mobile-sdk",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wultra/powerauth-mobile-sdk",
+      "state" : {
+        "revision" : "a088233c6926d7c0bf246b3fa2d765210d5b3502",
+        "version" : "2.0.0"
+      }
+    }
+  ],
+  "version" : 2
+}

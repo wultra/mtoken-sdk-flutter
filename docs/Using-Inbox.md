@@ -25,7 +25,7 @@ Note: Before using `WMTInbox`, you need to have a `PowerAuth` object available a
 The instance of the `WMTInbox` can be accessed after creating the main object of the SDK:
 
 ```dart
-final mtoken = powerAuthInstance.createMobileToken();
+final mtoken = await powerAuthInstance.createMobileToken();
 final inbox = mtoken.inbox;
 ```
 
