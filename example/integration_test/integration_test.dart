@@ -4,10 +4,13 @@ import 'dart:async';
 import 'package:example/test_utils/integration_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
-import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
 
+import 'native_test.dart';
+
 void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group("integration tests", () {
 
@@ -17,7 +20,9 @@ void main() {
     @protected late ActivationCredentials credentials;
 
     setUpAll(() async {
-      WMTLogger.verbosity = WMTLoggerVerbosity.debug;
+      WMTLogger.verbosity = IntegrationHelper.loggingEnabled
+          ? WMTLoggerVerbosity.debug
+          : WMTLoggerVerbosity.none;
       credentials = ActivationCredentials();
     });
 

@@ -22,13 +22,17 @@ import 'package:http/http.dart' as http;
 import '../../config.dart';
 
 class IntegrationHelper {
-    
+
+  static const loggingEnabled = bool.fromEnvironment("INTEGRATION_TEST_LOGGING");
+
   final jsonMediaType = "application/json; charset=UTF-8";
   final PowerAuth sdk;
+  final bool logHttpTraffic;
   CreatedActivation? createdActivation;
   String? userId;
 
-  IntegrationHelper(this.sdk);
+  IntegrationHelper(this.sdk, {bool? logHttpTraffic})
+      : logHttpTraffic = logHttpTraffic ?? loggingEnabled;
 
   Future<void> cleanup() async {
 
@@ -207,7 +211,9 @@ class IntegrationHelper {
 
     http.Response response;
 
-    print("IntegrationHelper HTTP: Call to $stringUrl, method $method, payload: $payload");
+    if (logHttpTraffic) {
+      print("IntegrationHelper HTTP: Call to $stringUrl, method $method, payload: $payload");
+    }
 
     switch (method) {
       case HtptMethod.get:
@@ -226,7 +232,9 @@ class IntegrationHelper {
         response = await http.post(url, headers: headers, body: payload);
         break;
     }
-    print("IntegrationHelper HTTP: Response status: ${response.statusCode}, body: ${response.body}");
+    if (logHttpTraffic) {
+      print("IntegrationHelper HTTP: Response status: ${response.statusCode}, body: ${response.body}");
+    }
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
 
