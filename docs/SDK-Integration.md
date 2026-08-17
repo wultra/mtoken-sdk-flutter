@@ -68,10 +68,11 @@ The SDK supports both Swift Package Manager and CocoaPods. Swift Package Manager
 flutter config --enable-swift-package-manager
 ```
 
-Set the Runner target's minimum deployment version to iOS 13.4 or newer in Xcode, then let Flutter resolve the packages:
+Set the Runner target's minimum deployment version to iOS 13.4 or newer in Xcode. Resolve the Dart dependencies, then build the app; Flutter and Xcode resolve the Swift packages during the iOS build:
 
 ```bash
 flutter pub get
+flutter build ios
 ```
 
 No CocoaPods installation or `Podfile` is required when Swift Package Manager is enabled.

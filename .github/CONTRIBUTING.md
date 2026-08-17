@@ -56,7 +56,7 @@ Before you run the tests, make sure:
 - the `example/.env` file is set up correctly. You can use the `.env-example` file as a reference.
   - variables needed can be provided by the Wultra team or your own development team in case of self-hosted environments
 - dependencies in the `example` directory are installed by running `flutter pub get`.
-- iOS dependencies are resolved through Swift Package Manager automatically during the Flutter or Xcode build.
+- iOS dependencies are resolved through Swift Package Manager automatically during the Flutter or Xcode build. Run `flutter config --enable-swift-package-manager` once on your machine before building for iOS.
 
 ### Unit Tests
 
