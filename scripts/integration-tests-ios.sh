@@ -7,6 +7,22 @@ set -u # stop when undefined variable is used
 # path to the script folder
 SCRIPT_FOLDER=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+# Pass --verbose to include SDK and IntegrationHelper HTTP logs.
+TEST_LOGGING=false
+if [ "$#" -gt 1 ]; then
+  echo "Usage: $0 [--verbose]" >&2
+  exit 2
+fi
+
+case "${1:-}" in
+  "") ;;
+  --verbose) TEST_LOGGING=true ;;
+  *)
+    echo "Usage: $0 [--verbose]" >&2
+    exit 2
+    ;;
+esac
+
 # list available iOS Simulators
 xcrun simctl list devices available
 
@@ -24,7 +40,7 @@ xcrun simctl bootstatus "$SIM_ID" -b
 
 pushd "$SCRIPT_FOLDER/../example"
 
-flutter build ios --config-only --no-pub integration_test/integration_test.dart
+flutter build ios --config-only --no-pub --dart-define=INTEGRATION_TEST_LOGGING="$TEST_LOGGING" integration_test/integration_test.dart
 xcodebuild build-for-testing -quiet -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
 xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
 

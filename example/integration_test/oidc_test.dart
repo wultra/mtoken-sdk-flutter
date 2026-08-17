@@ -12,7 +12,9 @@ void main() {
     @protected late WultraMobileToken wmt;
 
     setUpAll(() async {
-      WMTLogger.verbosity = WMTLoggerVerbosity.debug;
+      WMTLogger.verbosity = IntegrationHelper.loggingEnabled
+          ? WMTLoggerVerbosity.debug
+          : WMTLoggerVerbosity.none;
     });
 
     setUp(() async {

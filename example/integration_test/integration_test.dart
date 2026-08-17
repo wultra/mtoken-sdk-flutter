@@ -19,7 +19,9 @@ void main() {
     @protected late ActivationCredentials credentials;
 
     setUpAll(() async {
-      WMTLogger.verbosity = WMTLoggerVerbosity.debug;
+      WMTLogger.verbosity = IntegrationHelper.loggingEnabled
+          ? WMTLoggerVerbosity.debug
+          : WMTLoggerVerbosity.none;
       credentials = ActivationCredentials();
     });
 
