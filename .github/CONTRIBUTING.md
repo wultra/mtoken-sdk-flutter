@@ -26,7 +26,6 @@ Before you start development, make sure you have the following prerequisites:
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) installed.
 - [Android Studio](https://developer.android.com/studio) installed for Android development.
 - [Xcode](https://developer.apple.com/xcode/) (for iOS development) installed on your Mac.
-- [CocoaPods](https://guides.cocoapods.org/using/getting-started.html) installed for iOS development.
 - Flutter-capable IDE installed (Visual Studio Code with Flutter Extension is recommended).
 
 ## Project Structure
@@ -57,7 +56,7 @@ Before you run the tests, make sure:
 - the `example/.env` file is set up correctly. You can use the `.env-example` file as a reference.
   - variables needed can be provided by the Wultra team or your own development team in case of self-hosted environments
 - dependencies in the `example` directory are installed by running `flutter pub get`.
-- CocoaPods dependencies are installed for iOS by running `pod install` in the `example/ios` directory.
+- iOS dependencies are resolved through Swift Package Manager automatically during the Flutter or Xcode build.
 
 ### Unit Tests
 
