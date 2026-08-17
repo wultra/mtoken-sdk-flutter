@@ -25,6 +25,7 @@ xcrun simctl bootstatus "$SIM_ID" -b
 pushd "$SCRIPT_FOLDER/../example"
 
 flutter build ios --config-only --no-pub integration_test/integration_test.dart
-xcodebuild test -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
+xcodebuild build-for-testing -quiet -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
+xcodebuild test-without-building -workspace ios/Runner.xcworkspace -scheme Runner -destination "platform=iOS Simulator,id=$SIM_ID" -parallel-testing-enabled NO
 
 popd
