@@ -16,12 +16,15 @@
 
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import '../core/logger.dart';
 import '../utils/response_processor.dart';
 import '../networking/networking.dart';
 import 'online_operation.dart';
+import 'operations_listener.dart';
+import 'operations_register.dart';
 import 'operation_proximity_check.dart';
 import 'qr_operation.dart';
 import 'rejection_reason.dart';
@@ -29,6 +32,27 @@ import 'user_operation.dart';
 
 /// Operations networking layer for Wultra Mobile Token API.
 class WMTOperations extends WMTNetworking {
+
+  static const _minimumPollingInterval = Duration(seconds: 5);
+
+  final _operationsRegister = OperationsRegister();
+  Future<List<WMTUserOperation>>? _operationsRequest;
+  int _operationsMutationVersion = 0;
+  Timer? _pollingTimer;
+
+  /// Listener for operation list loading and changes.
+  WMTOperationsListener? listener;
+
+  WMTGetOperationsResult? _lastFetchResult;
+
+  /// Last operation list result. The value is not persisted.
+  WMTGetOperationsResult? get lastFetchResult => _lastFetchResult;
+
+  /// Whether an operation list request is running.
+  bool get isLoadingOperations => _operationsRequest != null;
+
+  /// Whether periodic operation polling is running.
+  bool get isPollingOperations => _pollingTimer != null;
 
   /// Constructor that initializes the operations networking layer.
   /// 
@@ -43,20 +67,106 @@ class WMTOperations extends WMTNetworking {
   /// - [requestProcessor] You may modify the request headers via this processor.
   /// 
   /// Returns list of operations.
-  Future<List<WMTUserOperation>> getOperations({ WMTRequestProcessor? requestProcessor }) async {
+  Future<List<WMTUserOperation>> getOperations({ WMTRequestProcessor? requestProcessor }) {
+    final currentRequest = _operationsRequest;
+    if (currentRequest != null) {
+      Log.warn("getOperations requested, but another request is already running.");
+      return currentRequest;
+    }
 
-    final response = await postSignedWithToken(
-      {}, 
-      PowerAuthAuthentication.possession(), 
-      "/api/auth/token/app/operation/list", 
-      "possession_universal",
-      requestProcessor: requestProcessor,
+    final request = _getOperations(requestProcessor);
+    _operationsRequest = request;
+    _notifyListener(
+      "operationsLoading",
+      (listener) => listener.operationsLoading(true),
     );
+    return request;
+  }
 
-    return processResponse("operations list", () {
-      final list = response as List<dynamic>;
-      return list.map((item) => WMTUserOperation.fromJson(item as Map<String, dynamic>)).toList();
-    });
+  Future<List<WMTUserOperation>> _getOperations(
+    WMTRequestProcessor? requestProcessor,
+  ) async {
+    final requestMutationVersion = _operationsMutationVersion;
+    try {
+      final response = await postSignedWithToken(
+        {},
+        PowerAuthAuthentication.possession(),
+        "/api/auth/token/app/operation/list",
+        "possession_universal",
+        requestProcessor: requestProcessor,
+      );
+
+      final operations = List<WMTUserOperation>.unmodifiable(
+        processResponse("operations list", () {
+          final list = response as List<dynamic>;
+          return list
+              .map(
+                (item) =>
+                    WMTUserOperation.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
+        }),
+      );
+      if (requestMutationVersion == _operationsMutationVersion) {
+        _lastFetchResult = WMTGetOperationsResult.success(operations);
+        _publishOperationsChange(_operationsRegister.replace(operations));
+      }
+      return operations;
+    } catch (error) {
+      if (requestMutationVersion == _operationsMutationVersion) {
+        _lastFetchResult = WMTGetOperationsResult.failure(error);
+        _notifyListener(
+          "operationsFailed",
+          (listener) => listener.operationsFailed(error),
+        );
+      }
+      rethrow;
+    } finally {
+      _operationsRequest = null;
+      _notifyListener(
+        "operationsLoading",
+        (listener) => listener.operationsLoading(false),
+      );
+    }
+  }
+
+  /// Refreshes operations unless a list request is already running.
+  void refreshOperations({ WMTRequestProcessor? requestProcessor }) {
+    if (isLoadingOperations) return;
+    unawaited(_refreshOperations(requestProcessor));
+  }
+
+  Future<void> _refreshOperations(WMTRequestProcessor? requestProcessor) async {
+    try {
+      await getOperations(requestProcessor: requestProcessor);
+    } catch (_) {
+      // The listener receives the error.
+    }
+  }
+
+  /// Starts periodic operation polling.
+  ///
+  /// - [requestProcessor] You may modify the request headers via this processor.
+  void startPollingOperations({ Duration interval = const Duration(seconds: 7), bool delayStart = false, WMTRequestProcessor? requestProcessor }) {
+    if (isPollingOperations) {
+      Log.warn("Operation polling is already running.");
+      return;
+    }
+
+    final adjustedInterval = interval < _minimumPollingInterval ? _minimumPollingInterval : interval;
+    if (adjustedInterval != interval) {
+      Log.warn("Operation polling interval must not be below ${_minimumPollingInterval.inSeconds} seconds.");
+    }
+    _pollingTimer = Timer.periodic(adjustedInterval, (_) => refreshOperations(requestProcessor: requestProcessor));
+    if (!delayStart) refreshOperations(requestProcessor: requestProcessor);
+    Log.info("Operation polling started with ${adjustedInterval.inMilliseconds} milliseconds interval.");
+  }
+
+  /// Stops periodic operation polling.
+  void stopPollingOperations() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+    Log.info("Operation polling stopped.");
   }
 
   /// Retrieves operation detail based on operation ID.
@@ -78,7 +188,7 @@ class WMTOperations extends WMTNetworking {
       return WMTUserOperation.fromJson(response);
     });
   }
-  
+
   /// Retrieves the history of user operations with their current status.
   /// 
   /// Params:
@@ -176,6 +286,10 @@ class WMTOperations extends WMTNetworking {
       "/operation/authorize",
       requestProcessor: requestProcessor,
     );
+    _publishOperationsChange(
+      _operationsRegister.remove(operation.id),
+      invalidatesPendingRequest: true,
+    );
   }
 
   /// Reject operation by ID with a reason.
@@ -216,10 +330,14 @@ class WMTOperations extends WMTNetworking {
       "/operation/cancel",
       requestProcessor: requestProcessor,
     );
+    _publishOperationsChange(
+      _operationsRegister.remove(operationId),
+      invalidatesPendingRequest: true,
+    );
   }
 
   /// Sign offline QR operation with provided authentication.
-  /// 
+  ///
   /// Note that the operation will be signed even if the authentication object is
   /// not valid as it cannot be verified on the server.
   ///
@@ -228,7 +346,7 @@ class WMTOperations extends WMTNetworking {
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
   /// - [uriId] Custom signature URI ID of the operation. Use URI ID under which the operation was
   /// created on the server. Default value is `/operation/authorize/offline`.
-  /// 
+  ///
   /// Returns OTP code to display to the user
   Future<String> authorizeOffline(WMTQROperation operation, PowerAuthAuthentication authentication, {String uriId = "/operation/authorize/offline"}) async {
     final body = Uint8List.fromList(utf8.encode(operation.dataForOfflineSining));
@@ -236,7 +354,7 @@ class WMTOperations extends WMTNetworking {
   }
 
   /// Assigns the 'non-personalized' operation to the user.
-  /// 
+  ///
   /// Params:
   ///  - [operationId] ID of the operation which will be claimed to belong to the user.
   ///  - [requestProcessor] You may modify the request via this processor. It's highly recommended to only modify HTTP headers.
@@ -251,8 +369,48 @@ class WMTOperations extends WMTNetworking {
       requestProcessor: requestProcessor,
     );
 
-    return processResponse("operation claim", () {
+    final operation = processResponse("operation claim", () {
       return WMTUserOperation.fromJson(response);
     });
+    _publishOperationsChange(
+      _operationsRegister.add(operation),
+      invalidatesPendingRequest: true,
+    );
+    return operation;
+  }
+
+  /// Publishes an operations change and optionally invalidates a pending list request.
+  void _publishOperationsChange(
+    OperationsChange? change, {
+    bool invalidatesPendingRequest = false,
+  }) {
+    if (invalidatesPendingRequest) _operationsMutationVersion++;
+    if (change == null) return;
+    _notifyListener(
+      "operationsChanged",
+      (listener) => listener.operationsChanged(
+        change.operations,
+        change.removed,
+        change.added,
+      ),
+    );
+  }
+
+  /// Invokes a listener callback without affecting the operation result on failure.
+  void _notifyListener(
+    String callback,
+    void Function(WMTOperationsListener listener) notify,
+  ) {
+    final currentListener = listener;
+    if (currentListener == null) return;
+
+    try {
+      notify(currentListener);
+    } catch (error, stackTrace) {
+      // Listener failures must not change an operation result.
+      Log.error(
+        () => "WMTOperationsListener.$callback failed: $error\n$stackTrace",
+      );
+    }
   }
 }
