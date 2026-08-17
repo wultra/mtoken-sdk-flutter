@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:example/test_utils/integration_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
@@ -40,6 +42,98 @@ void main() {
       await helper.createOperation();
       final operations = await wmt.operations.getOperations();
       expect(operations.length, 1);
+    });
+
+    test("testOperationPolling", () async {
+      final completed = Completer<void>();
+      var loadingCount = 0;
+      wmt.operations.listener = _PollingListener(
+        onLoading: (loading) {
+          if (loading) loadingCount++;
+          if (!loading && loadingCount == 2 && !completed.isCompleted) {
+            completed.complete();
+          }
+        },
+        onError: (error) {
+          if (!completed.isCompleted) completed.completeError(error);
+        },
+      );
+
+      wmt.operations.startPollingOperations(interval: const Duration(seconds: 5));
+      try {
+        await completed.future.timeout(const Duration(seconds: 15));
+      } finally {
+        wmt.operations.stopPollingOperations();
+      }
+      expect(loadingCount, 2);
+      expect(wmt.operations.isPollingOperations, isFalse);
+    });
+
+    test("testOperationPollingDetectsAddedAndRemovedOperations", () async {
+      final operation = await helper.createOperation();
+      final added = Completer<void>();
+      final removed = Completer<void>();
+      List<WMTUserOperation>? latestOperations;
+
+      wmt.operations.listener = _PollingListener(
+        onChanged: (operations, removedOperations, addedOperations) {
+          latestOperations = operations;
+          if (!added.isCompleted && addedOperations.any((item) => item.id == operation.operationId)) {
+            added.complete();
+          }
+          if (!removed.isCompleted && removedOperations.any((item) => item.id == operation.operationId)) {
+            removed.complete();
+          }
+        },
+        onError: (error) {
+          if (!added.isCompleted) added.completeError(error);
+          if (!removed.isCompleted) removed.completeError(error);
+        },
+      );
+
+      wmt.operations.startPollingOperations(interval: const Duration(seconds: 5));
+      try {
+        await added.future.timeout(const Duration(seconds: 10));
+        expect(latestOperations?.map((item) => item.id), contains(operation.operationId));
+
+        await helper.cancelOperation(operation.operationId, "CANCELED_BY_TEST");
+        await removed.future.timeout(const Duration(seconds: 10));
+        expect(latestOperations?.map((item) => item.id), isNot(contains(operation.operationId)));
+      } finally {
+        wmt.operations.stopPollingOperations();
+      }
+    });
+
+    test("testOperationPollingDelayedStartAndDuplicateStart", () async {
+      final loadingEvents = <bool>[];
+      final requestFinished = Completer<void>();
+
+      wmt.operations.listener = _PollingListener(
+        onLoading: (loading) {
+          loadingEvents.add(loading);
+          if (!loading && !requestFinished.isCompleted) requestFinished.complete();
+        },
+        onError: (error) {
+          if (!requestFinished.isCompleted) requestFinished.completeError(error);
+        },
+      );
+
+      wmt.operations.startPollingOperations(
+        interval: const Duration(seconds: 5),
+        delayStart: true,
+      );
+      wmt.operations.startPollingOperations();
+      try {
+        await Future<void>.delayed(const Duration(seconds: 1));
+        expect(loadingEvents, isEmpty);
+        expect(wmt.operations.isLoadingOperations, isFalse);
+
+        await requestFinished.future.timeout(const Duration(seconds: 7));
+        expect(loadingEvents, [true, false]);
+        expect(wmt.operations.lastFetchResult?.isSuccess, isTrue);
+      } finally {
+        wmt.operations.stopPollingOperations();
+      }
     });
 
     test("testDetail", () async {
@@ -412,4 +506,23 @@ void main() {
       expect(messageDetail.read, isTrue);
     });
   });
+}
+
+class _PollingListener implements WMTOperationsListener {
+  final void Function(List<WMTUserOperation>, List<WMTUserOperation>, List<WMTUserOperation>)? onChanged;
+  final void Function(bool)? onLoading;
+  final void Function(Object)? onError;
+
+  _PollingListener({ this.onChanged, this.onLoading, this.onError });
+
+  @override
+  void operationsChanged(List<WMTUserOperation> operations, List<WMTUserOperation> removed, List<WMTUserOperation> added) {
+    onChanged?.call(operations, removed, added);
+  }
+
+  @override
+  void operationsFailed(Object error) => onError?.call(error);
+
+  @override
+  void operationsLoading(bool loading) => onLoading?.call(loading);
 }
