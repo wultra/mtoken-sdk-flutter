@@ -31,7 +31,7 @@ Open `pubspec.yaml` and add:
 
 ```yaml
 dependencies:
-  mtoken_sdk_flutter: ^1.0.0  # Check pub.dev for latest version
+  mtoken_sdk_flutter: ^2.0.0-beta.1  # Check pub.dev for latest version
 ```
 
 Then run:
