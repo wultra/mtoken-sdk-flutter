@@ -7,14 +7,16 @@ description: Review pull requests in the Mobile Token SDK for Flutter. Use when 
 
 ## Review contract
 
-Confirm the pull request target, head, and checkout before review. This
-repository normally merges to `develop`; releases use `release/a.b.x`. Default
-to approval. Raise only a demonstrated defect introduced by the PR, with
-path/line, concrete impact, and exact corrective direction. Do not provide
-formatting, style, CI, speculative, or generic testing advice. Do not post any
-GitHub review/comment without user approval; begin all postable content with
-`🤖`. Grammar is reviewable only in public documentation/Dartdoc and only if
-the PR base is not a release branch.
+Review only PR and repository content already available. Do not run or suggest
+commands, scripts, builds, tests, linters, formatters, validation tasks, or Git
+operations. Determine the pull request target and head from available content
+only. This repository normally merges to `develop`; releases use
+`release/a.b.x`. Default to approval. Raise only a demonstrated defect
+introduced by the PR, with path/line, concrete impact, and exact corrective
+direction. Do not provide formatting, style, CI, speculative, or generic
+testing advice. Do not post any GitHub review/comment without user approval;
+begin all postable content with `🤖`. Grammar is reviewable only in public
+documentation/Dartdoc and only if the PR base is not a release branch.
 
 Public user-visible API/flow changes require associated docs and changelog
 updates. `pubspec.yaml` declares the package version: release-to-`develop`
@@ -38,8 +40,9 @@ The public export is `lib/mtoken_sdk_flutter.dart`. The SDK is pure Dart over
 Treat `README.md`, `docs/`, `CHANGELOG.md`, and `pubspec.yaml` as public
 release surfaces. Tests under `test/` include deserialization, operations
 polling, QR parsing, proximity/PAC, pre-approval, mobile-token data, and logs;
-`example/integration_test/` is the platform integration host. CI runs
-`flutter analyze`, `flutter test`, and Android/iOS integration workflows.
+`example/integration_test/` is the platform integration host. Tests and tracked
+analysis/test/integration workflow definitions may be inspected as evidence,
+but never executed or suggested as validation.
 
 ## Security and protocol review
 
@@ -76,5 +79,5 @@ For a public API change, confirm export from
 operations/OIDC/network decoding behavior, look for focused coverage in the
 corresponding test (`operations_polling_test.dart`, `deserialization_test.dart`,
 `qr_parser_test.dart`, `pac_utils_test.dart`, or `pre_approval_test.dart`).
-Use `flutter analyze`, `flutter test`, and the relevant example integration
-test for validation when needed; do not report lack of unrelated CI work.
+Assess that coverage by reading it only; do not report lack of unrelated CI
+work.
