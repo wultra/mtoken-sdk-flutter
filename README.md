@@ -33,10 +33,6 @@ To understand the Wultra Mobile Token SDK purpose on a business level better, yo
 > - This library does not contain any UI.
 > - We also provide an [Android](https://github.com/wultra/mtoken-sdk-android), [iOS](https://github.com/wultra/mtoken-sdk-ios), and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
 
-## Support and compatibility
-
-For currently supported versions and compatibility with the PowerAuth Mobile Flutter or Flutter itself, [visit documentation](docs).
-
 ## Documentation
 
 The documentation is available at the [Wultra Developer Portal](https://developers.wultra.com/components/mtoken-sdk-flutter/) or inside the [docs](docs) folder.
