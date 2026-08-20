@@ -1,3 +1,8 @@
+---
+name: code-review
+description: Review pull requests in the Mobile Token SDK for Flutter. Use when reviewing Dart APIs, native bridges, operations, OIDC, push, security, or release changes.
+---
+
 # mToken Flutter SDK review
 
 ## Review contract
