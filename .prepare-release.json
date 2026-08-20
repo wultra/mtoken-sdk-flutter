@@ -23,12 +23,6 @@
             "devChange": true
         },
         {
-            "description": "Example app pubspec file in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "version_replace",
-            "match": "mtoken_sdk_flutter: ^%VERSION%"
-        },
-        {
             "description": "Changelogs for pub.dev and Wultra documentation.",
             "paths": ["CHANGELOG.md", "docs/Changelog.md"],
             "type": "tba_replace",
@@ -40,18 +34,6 @@
             "paths": ["CHANGELOG.md", "docs/Changelog.md"],
             "type": "verify_not_containing",
             "match": "- TBA"
-        },
-        {
-            "description": "Compatibility in the documentation.",
-            "path": "docs/Readme.md",
-            "type": "versionstream_verify",
-            "match": "| `%VERSION_STREAM%`"
-        },
-        {
-            "description": "Compatibility in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "versionstream_verify",
-            "match": "| `%VERSION_STREAM%`"
         }
     ],
     "scripts": [
