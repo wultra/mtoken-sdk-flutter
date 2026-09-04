@@ -5,48 +5,35 @@
         "name": "mtoken-sdk-flutter",
         "type": "flutter"
     },
+    "scriptVersion": 2,
+    "devVersion": "0.0.1-dev",
     "files": [
         {
             "description": "Main package definition file.",
             "path": "pubspec.yaml",
             "type": "version_replace",
-            "match": "\nversion: %VERSION%\n"
+            "match": "\nversion: %VERSION%\n",
+            "devChange": true
         },
         {
             "description": "Version file used in the SDK code.",
             "path": "lib/src/core/version.dart",
             "type": "version_replace",
-            "match": "const wmtSdkVersion = \"%VERSION%\";"
+            "match": "const wmtSdkVersion = \"%VERSION%\";",
+            "devChange": true
         },
         {
-            "description": "Example app pubspec file in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "version_replace",
-            "match": "mtoken_sdk_flutter: ^%VERSION%"
+            "description": "Changelogs for pub.dev and Wultra documentation.",
+            "paths": ["CHANGELOG.md", "docs/Changelog.md"],
+            "type": "tba_replace",
+            "match": "## TBA",
+            "devChangelog": true
         },
         {
-            "description": "Changelog for the pub.dev.",
-            "path": "CHANGELOG.md",
-            "type": "version_verify",
-            "match": "## %VERSION%"
-        },
-        {
-            "description": "Changelog for the wultra documentation.",
-            "path": "docs/Changelog.md",
-            "type": "version_verify",
-            "match": "## %VERSION%"
-        },
-        {
-            "description": "Compatibility in the documentation.",
-            "path": "docs/Readme.md",
-            "type": "versionstream_verify",
-            "match": "| `%VERSION_STREAM%`"
-        },
-        {
-            "description": "Compatibility in the documentation.",
-            "path": "docs/SDK-Integration.md",
-            "type": "versionstream_verify",
-            "match": "| `%VERSION_STREAM%`"
+            "description": "Verify that the changelogs do not contain a TBA placeholder.",
+            "paths": ["CHANGELOG.md", "docs/Changelog.md"],
+            "type": "verify_not_containing",
+            "match": "- TBA"
         }
     ],
     "scripts": [

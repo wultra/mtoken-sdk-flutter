@@ -1,5 +1,11 @@
 # Wultra Mobile Token Flutter SDK
 
+[![Documentation](https://img.shields.io/badge/Documentation-Public-orange)](https://developers.wultra.com/components/mtoken-sdk-flutter/)
+[![Pub Version](https://img.shields.io/pub/v/mtoken_sdk_flutter)](https://pub.dev/packages/mtoken_sdk_flutter)
+[![Pub Points](https://img.shields.io/pub/points/mtoken_sdk_flutter)](https://pub.dev/packages/mtoken_sdk_flutter)
+[![Pub Monthly Downloads](https://img.shields.io/pub/dm/mtoken_sdk_flutter)](https://pub.dev/packages/mtoken_sdk_flutter)
+[![License](https://img.shields.io/github/license/wultra/mtoken-sdk-flutter)](LICENSE)  
+
 __Wultra Mobile Token SDK__ provides APIs for secure operation approval, push notifications, inbox messages, and OIDC flows.
 
 <!-- begin remove -->
@@ -26,10 +32,6 @@ To understand the Wultra Mobile Token SDK purpose on a business level better, yo
 > [!NOTE]
 > - This library does not contain any UI.
 > - We also provide an [Android](https://github.com/wultra/mtoken-sdk-android), [iOS](https://github.com/wultra/mtoken-sdk-ios), and [React Native/Cordova](https://github.com/wultra/mtoken-sdk-js) versions of this library.
-
-## Support and compatibility
-
-For currently supported versions and compatibility with the PowerAuth Mobile Flutter or Flutter itself, [visit documentation](docs).
 
 ## Documentation
 

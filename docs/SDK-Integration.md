@@ -4,13 +4,6 @@
 
 The PowerAuth Flutter SDK is a required dependency that will be automatically installed (if not already specified in your project).
 
-### Compatible PowerAuth Mobile Flutter SDK Versions
-
-| WMT Version | PowerAuth Flutter SDK |
-|-------------|--------------------|
-| `2.0.x`     | `2.0.0-beta.1`       |
-| `1.0.x`     | `^1.1.0`           |
-
 ## Supported Platforms
 
 The library is available for the following __Flutter 3.44.0+__ platforms:
@@ -31,7 +24,8 @@ Open `pubspec.yaml` and add:
 
 ```yaml
 dependencies:
-  mtoken_sdk_flutter: ^1.0.0  # Check pub.dev for latest version
+  # Replace VERSION_DEFINITION with the actual package version.
+  mtoken_sdk_flutter: VERSION_DEFINITION
 ```
 
 Then run:
