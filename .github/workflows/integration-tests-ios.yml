@@ -19,6 +19,8 @@ jobs:
         with:
           channel: stable
           version: latest
+      - name: Enable Swift Package Manager
+        run: flutter config --enable-swift-package-manager
       - name: Create .env file
         run: echo -e "${{ secrets.ENV_FILE }}" > example/.env
       - name: Get Flutter Dependencies

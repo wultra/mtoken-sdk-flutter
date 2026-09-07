@@ -2,7 +2,7 @@
 
 ## TBA
 
-- TBA
+- Made Swift Package Manager the recommended integration method for iOS, while retaining CocoaPods support [(#31)](https://github.com/wultra/mtoken-sdk-flutter/issues/31)
 
 ## 2.0.0-beta.1
 

@@ -56,19 +56,22 @@ compileOptions {
 
 #### iOS
 
-In `ios/Podfile`, ensure the platform version is at least 13.4:
-
-```ruby
-platform :ios, '13.4'
-```
-
-Then install pods:
+The SDK supports both Swift Package Manager and CocoaPods. Swift Package Manager is recommended for new projects. Ensure its support is enabled in Flutter:
 
 ```bash
-cd ios
-pod install
-cd ..
+flutter config --enable-swift-package-manager
 ```
+
+Set the Runner target's minimum deployment version to iOS 13.4 or newer in Xcode. Resolve the Dart dependencies, then build the app; Flutter and Xcode resolve the Swift packages during the iOS build:
+
+```bash
+flutter pub get
+flutter build ios
+```
+
+No CocoaPods installation or `Podfile` is required when Swift Package Manager is enabled.
+
+Existing CocoaPods-based applications remain supported. When Swift Package Manager is disabled, Flutter uses the PowerAuth plugin's podspec and resolves its native `PowerAuth2` dependency through CocoaPods.
 
 #### 4. Import in your Dart files
 
