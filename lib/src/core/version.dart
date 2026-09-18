@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-const wmtSdkVersion = "2.0.0-beta.1";
+const wmtSdkVersion = "2.0.0";
