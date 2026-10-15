@@ -17,7 +17,6 @@
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
 import '../networking/networking.dart';
-import '../configuration.dart';
 
 /// Push networking layer for Wultra Mobile Token API.
 final class WMTPush extends WMTNetworking {

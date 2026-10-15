@@ -22,7 +22,6 @@ import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk
 import '../core/logger.dart';
 import '../utils/response_processor.dart';
 import '../networking/networking.dart';
-import '../configuration.dart';
 import 'online_operation.dart';
 import 'operations_listener.dart';
 import 'operations_register.dart';

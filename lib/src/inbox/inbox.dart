@@ -19,7 +19,6 @@ import 'inbox_message.dart';
 import '../utils/response_processor.dart';
 import 'inbox_count.dart';
 import '../networking/networking.dart';
-import '../configuration.dart';
 
 /// Inbox networking layer for Wultra Mobile Token API.
 class WMTInbox extends WMTNetworking {
