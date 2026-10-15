@@ -19,7 +19,6 @@ import 'dart:async';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mtoken_sdk_flutter/mtoken_sdk_flutter.dart';
-import 'package:mtoken_sdk_flutter/src/networking/networking.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -211,18 +210,33 @@ void main() {
 
   test("starts immediately, ignores duplicate starts and stops", () async {
     operations.tokenHandler = (_) async => <dynamic>[];
-    void requestProcessor(_) {}
 
-    operations.startPollingOperations(requestProcessor: requestProcessor);
+    operations.startPollingOperations();
     expect(operations.isPollingOperations, isTrue);
     expect(operations.tokenRequests, 1);
-    expect(operations.lastRequestProcessor, same(requestProcessor));
 
     operations.startPollingOperations(interval: const Duration(seconds: 10));
     expect(operations.tokenRequests, 1);
 
     operations.stopPollingOperations();
     expect(operations.isPollingOperations, isFalse);
+  });
+
+  testWidgets("polls repeatedly at the minimum interval and stops", (tester) async {
+    operations.tokenHandler = (_) async => <dynamic>[];
+    operations.startPollingOperations(
+      interval: const Duration(milliseconds: 10),
+      delayStart: true,
+    );
+    await tester.pump(const Duration(seconds: 4));
+    expect(operations.tokenRequests, 0);
+    await tester.pump(const Duration(seconds: 1));
+    expect(operations.tokenRequests, 1);
+    await tester.pump(const Duration(seconds: 5));
+    expect(operations.tokenRequests, 2);
+    operations.stopPollingOperations();
+    await tester.pump(const Duration(seconds: 5));
+    expect(operations.tokenRequests, 2);
   });
 
   test("delays polling and enforces the minimum interval", () async {
@@ -244,18 +258,15 @@ class _TestOperations extends WMTOperations {
   Future<dynamic> Function(String endpoint)? tokenHandler;
   Future<dynamic> Function(String endpoint)? signedHandler;
   int tokenRequests = 0;
-  WMTRequestProcessor? lastRequestProcessor;
 
   @override
   Future<dynamic> postSignedWithToken(
     Object requestData,
     PowerAuthAuthentication auth,
     String endpointPath,
-    String tokenName, {
-    WMTRequestProcessor? requestProcessor,
-  }) {
+    String tokenName,
+  ) {
     tokenRequests++;
-    lastRequestProcessor = requestProcessor;
     return tokenHandler!(endpointPath);
   }
 
@@ -264,9 +275,8 @@ class _TestOperations extends WMTOperations {
     Object requestData,
     PowerAuthAuthentication auth,
     String endpointPath,
-    String uriId, {
-    WMTRequestProcessor? requestProcessor,
-  }) {
+    String uriId,
+  ) {
     return signedHandler!(endpointPath);
   }
 }
