@@ -28,8 +28,8 @@ class WMTOIDC extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTOIDC(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
-      : super(powerAuth, baseUrl, "WMTOIDC", configuration: configuration);
+  WMTOIDC(PowerAuth powerAuth, String baseUrl, {super.configuration})
+      : super(powerAuth, baseUrl, "WMTOIDC");
 
   /// Retrieves configuration based on predefined [providerId].
   ///

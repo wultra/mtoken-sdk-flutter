@@ -27,8 +27,8 @@ final class WMTPush extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTPush(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
-      : super(powerAuth, baseUrl, "WMTPush", configuration: configuration);
+  WMTPush(PowerAuth powerAuth, String baseUrl, {super.configuration})
+      : super(powerAuth, baseUrl, "WMTPush");
 
   /// Registers the PowerAuth activation for push notifications on the PowerAuth backend.
   /// 

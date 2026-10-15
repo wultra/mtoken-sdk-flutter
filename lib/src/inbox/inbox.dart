@@ -29,8 +29,8 @@ class WMTInbox extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTInbox(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
-      : super(powerAuth, baseUrl, "WMTInbox", configuration: configuration);
+  WMTInbox(PowerAuth powerAuth, String baseUrl, {super.configuration})
+      : super(powerAuth, baseUrl, "WMTInbox");
 
   /// Get number of unread messages in the inbox.
   /// 

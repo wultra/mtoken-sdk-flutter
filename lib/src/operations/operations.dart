@@ -60,8 +60,8 @@ class WMTOperations extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTOperations(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
-      : super(powerAuth, baseUrl, "WMTOperations", configuration: configuration);
+  WMTOperations(PowerAuth powerAuth, String baseUrl, {super.configuration})
+      : super(powerAuth, baseUrl, "WMTOperations");
 
   /// Retrieves user operations that are pending for approval or rejection.
   /// 
