@@ -387,50 +387,55 @@ void main() {
 
       // Test default behavior (libraryDefault)
 
-      tempMtoken = await sdk.createMobileToken();
-
-      await tempMtoken.operations.getOperations(requestProcessor: (headers) {
-        final userAgent = headers.value("user-agent")!;
-        expect(userAgent.startsWith(expectedDefaultUserAgentProductName), isTrue);
-        expect(userAgent.contains(envInfo.systemVersion), isTrue);
-        expect(userAgent.contains(envInfo.systemName), isTrue);
-        expect(userAgent.contains(envInfo.deviceId), isTrue);
-        expect(userAgent.contains(envInfo.deviceManufacturer), isTrue);
-        expect(userAgent.contains(envInfo.applicationIdentifier!), isTrue);
-        expect(userAgent.contains(envInfo.applicationVersion!), isTrue);
-      });
+      tempMtoken = await sdk.createMobileToken(configuration: WMTConfiguration(
+        requestInterceptors: [(headers) {
+          final userAgent = headers.value("user-agent")!;
+          expect(userAgent.startsWith(expectedDefaultUserAgentProductName), isTrue);
+          expect(userAgent.contains(envInfo.systemVersion), isTrue);
+          expect(userAgent.contains(envInfo.systemName), isTrue);
+          expect(userAgent.contains(envInfo.deviceId), isTrue);
+          expect(userAgent.contains(envInfo.deviceManufacturer), isTrue);
+          expect(userAgent.contains(envInfo.applicationIdentifier!), isTrue);
+          expect(userAgent.contains(envInfo.applicationVersion!), isTrue);
+        }],
+      ));
+      await tempMtoken.operations.getOperations();
 
       // Test custom user agent
-      tempMtoken = await sdk.createMobileToken(userAgent: WMTUserAgent.custom(testUserAgent));
-
-      await tempMtoken.inbox.getMessageList(0, 50, false, requestProcessor: (headers) {
-        expect(headers.value("user-agent"), testUserAgent);
-      });
+      tempMtoken = await sdk.createMobileToken(configuration: WMTConfiguration(
+        userAgent: WMTUserAgent.custom(testUserAgent),
+        requestInterceptors: [(headers) {
+          expect(headers.value("user-agent"), testUserAgent);
+        }],
+      ));
+      await tempMtoken.inbox.getMessageList(0, 50, false);
 
       // Test system default
-
-      tempMtoken = await sdk.createMobileToken(userAgent: WMTUserAgent.systemDefault());
-
-      await tempMtoken.push.register(WMTPushPlatform.fcm("test"), requestProcessor: (headers) {
-        expect(headers.value("user-agent")?.startsWith("Dart"), isTrue); // default user agent is something like "Dart/2.14 (dart:io)"
-      });
+      tempMtoken = await sdk.createMobileToken(configuration: WMTConfiguration(
+        userAgent: WMTUserAgent.systemDefault(),
+        requestInterceptors: [(headers) {
+          expect(headers.value("user-agent")?.startsWith("Dart"), isTrue);
+        }],
+      ));
+      await tempMtoken.push.register(WMTPushPlatform.fcm("test"));
     });
 
     test("testAcceptLanguage", () async {
       const en = "en";
       const cs = "cs";
+      var expectedLanguage = cs;
+      final token = await sdk.createMobileToken(configuration: WMTConfiguration(
+        requestInterceptors: [(headers) {
+          expect(headers.value("accept-language"), expectedLanguage);
+        }],
+      ));
 
-      // set czech lang
-      wmt.setAcceptLanguage(cs);
-      await wmt.operations.getOperations(requestProcessor: (headers) {
-        expect(headers.value("accept-language"), cs);
-      });
+      token.setAcceptLanguage(cs);
+      await token.operations.getOperations();
 
-      // set eng lang
-      wmt.setAcceptLanguage(en);
-      await wmt.inbox.getMessageList(0, 50, false, requestProcessor: (headers) {
-        expect(headers.value("accept-language"), en);
-      });
+      expectedLanguage = en;
+      token.setAcceptLanguage(en);
+      await token.inbox.getMessageList(0, 50, false);
     });
 
     test("testPushRegistration", () async {

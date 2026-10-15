@@ -17,6 +17,7 @@
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
 import '../networking/networking.dart';
+import '../configuration.dart';
 
 /// Push networking layer for Wultra Mobile Token API.
 final class WMTPush extends WMTNetworking {
@@ -26,7 +27,8 @@ final class WMTPush extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTPush(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTPush");
+  WMTPush(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
+      : super(powerAuth, baseUrl, "WMTPush", configuration: configuration);
 
   /// Registers the PowerAuth activation for push notifications on the PowerAuth backend.
   /// 
@@ -34,7 +36,6 @@ final class WMTPush extends WMTNetworking {
   /// 
   /// Params:
   ///  - [data] Push platform and token.
-  ///  - [requestProcessor] You may modify the request headers via this processor.
   ///
   /// ----
   ///
@@ -50,13 +51,12 @@ final class WMTPush extends WMTNetworking {
   /// final pushData = WMTPushPlatform.fcm("your_fcm_token").supportLegacyServer();
   /// await wmt.push.register(pushData);
   /// ```
-  Future<void> register(WMTPushPlatform data, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> register(WMTPushPlatform data) async {
     await postSignedWithToken(
       { "requestObject": data.toRequestObject() },
       PowerAuthAuthentication.possession(),
       "/api/push/device/register/token",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
   }
 }

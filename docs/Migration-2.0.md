@@ -18,6 +18,45 @@ final mtoken = powerAuth.createMobileToken();
 final mtoken = await powerAuth.createMobileToken();
 ```
 
+## Mobile Token Configuration
+
+`WultraMobileToken.create()` and `PowerAuth.createMobileToken()` now take a single `WMTConfiguration` object. The `acceptLanguage` and `userAgent` arguments moved into it:
+
+```dart
+// Before
+final mtoken = await powerAuth.createMobileToken(
+  acceptLanguage: "fr",
+  userAgent: WMTUserAgent.custom("MyCustomUserAgent"),
+);
+
+// After
+final mtoken = await powerAuth.createMobileToken(
+  configuration: WMTConfiguration(
+    acceptLanguage: "fr",
+    userAgent: WMTUserAgent.custom("MyCustomUserAgent"),
+  ),
+);
+```
+
+The configuration is immutable. Use `setAcceptLanguage` or the service `acceptLanguage` and `userAgent` properties to change these headers at runtime.
+
+## Request Interceptors
+
+The `requestProcessor` argument of all service calls and operation polling and the `WMTRequestProcessor` type were removed. Move your processor to `WMTConfiguration.requestInterceptors`. It then applies to every request of `operations`, `push`, `inbox`, and `oidc`:
+
+```dart
+// Before
+await mtoken.operations.getOperations(requestProcessor: myProcessor);
+
+// After
+final mtoken = await powerAuth.createMobileToken(
+  configuration: WMTConfiguration(requestInterceptors: [myProcessor]),
+);
+await mtoken.operations.getOperations();
+```
+
+Interceptors must be synchronous. See [Request Interceptors](Language-UserAgent-Configuration.md#request-interceptors).
+
 ## Pre-Approval Screen API
 
 The singular `preApprovalScreen` property on `WMTUserOperationUIData` has been replaced by the plural `preApprovalScreens` list to support multi-screen pre-approval flows.

@@ -28,24 +28,23 @@ class WMTOIDC extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTOIDC(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTOIDC");
+  WMTOIDC(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
+      : super(powerAuth, baseUrl, "WMTOIDC", configuration: configuration);
 
   /// Retrieves configuration based on predefined [providerId].
   ///
   /// Encrypted with the ECIES application scope.
   ///
   /// [providerId] is the identification of the configuration record, used as a key for the configuration.
-  /// [requestProcessor] is an optional request processor for customizing the HTTP request.
   ///
   /// Returns a [WMTOIDCConfig] containing the OIDC provider configuration.
-  Future<WMTOIDCConfig> getConfig(String providerId, { WMTRequestProcessor? requestProcessor }) async {
+  Future<WMTOIDCConfig> getConfig(String providerId) async {
     final payload = jsonEncode({"providerId": providerId});
     
     final responseObject = await post(
       payload,
       "/api/config/oidc",
       {},
-      requestProcessor,
       e2ee: WMTE2EEConfiguration.applicationScope
     );
 

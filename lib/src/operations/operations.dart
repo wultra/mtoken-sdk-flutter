@@ -22,6 +22,7 @@ import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk
 import '../core/logger.dart';
 import '../utils/response_processor.dart';
 import '../networking/networking.dart';
+import '../configuration.dart';
 import 'online_operation.dart';
 import 'operations_listener.dart';
 import 'operations_register.dart';
@@ -59,22 +60,20 @@ class WMTOperations extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTOperations(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTOperations");
+  WMTOperations(PowerAuth powerAuth, String baseUrl, {WMTConfiguration? configuration})
+      : super(powerAuth, baseUrl, "WMTOperations", configuration: configuration);
 
   /// Retrieves user operations that are pending for approval or rejection.
   /// 
-  /// Params:
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  /// 
   /// Returns list of operations.
-  Future<List<WMTUserOperation>> getOperations({ WMTRequestProcessor? requestProcessor }) {
+  Future<List<WMTUserOperation>> getOperations() {
     final currentRequest = _operationsRequest;
     if (currentRequest != null) {
       Log.warn("getOperations requested, but another request is already running.");
       return currentRequest;
     }
 
-    final request = _getOperations(requestProcessor);
+    final request = _getOperations();
     _operationsRequest = request;
     _notifyListener(
       "operationsLoading",
@@ -83,9 +82,7 @@ class WMTOperations extends WMTNetworking {
     return request;
   }
 
-  Future<List<WMTUserOperation>> _getOperations(
-    WMTRequestProcessor? requestProcessor,
-  ) async {
+  Future<List<WMTUserOperation>> _getOperations() async {
     final requestMutationVersion = _operationsMutationVersion;
     try {
       final response = await postSignedWithToken(
@@ -93,7 +90,6 @@ class WMTOperations extends WMTNetworking {
         PowerAuthAuthentication.possession(),
         "/api/auth/token/app/operation/list",
         "possession_universal",
-        requestProcessor: requestProcessor,
       );
 
       final operations = List<WMTUserOperation>.unmodifiable(
@@ -131,23 +127,21 @@ class WMTOperations extends WMTNetworking {
   }
 
   /// Refreshes operations unless a list request is already running.
-  void refreshOperations({ WMTRequestProcessor? requestProcessor }) {
+  void refreshOperations() {
     if (isLoadingOperations) return;
-    unawaited(_refreshOperations(requestProcessor));
+    unawaited(_refreshOperations());
   }
 
-  Future<void> _refreshOperations(WMTRequestProcessor? requestProcessor) async {
+  Future<void> _refreshOperations() async {
     try {
-      await getOperations(requestProcessor: requestProcessor);
+      await getOperations();
     } catch (_) {
       // The listener receives the error.
     }
   }
 
   /// Starts periodic operation polling.
-  ///
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  void startPollingOperations({ Duration interval = const Duration(seconds: 7), bool delayStart = false, WMTRequestProcessor? requestProcessor }) {
+  void startPollingOperations({ Duration interval = const Duration(seconds: 7), bool delayStart = false }) {
     if (isPollingOperations) {
       Log.warn("Operation polling is already running.");
       return;
@@ -157,8 +151,8 @@ class WMTOperations extends WMTNetworking {
     if (adjustedInterval != interval) {
       Log.warn("Operation polling interval must not be below ${_minimumPollingInterval.inSeconds} seconds.");
     }
-    _pollingTimer = Timer.periodic(adjustedInterval, (_) => refreshOperations(requestProcessor: requestProcessor));
-    if (!delayStart) refreshOperations(requestProcessor: requestProcessor);
+    _pollingTimer = Timer.periodic(adjustedInterval, (_) => refreshOperations());
+    if (!delayStart) refreshOperations();
     Log.info("Operation polling started with ${adjustedInterval.inMilliseconds} milliseconds interval.");
   }
 
@@ -172,16 +166,14 @@ class WMTOperations extends WMTNetworking {
   /// Retrieves operation detail based on operation ID.
   /// 
   /// - [operationId] ID of the operation.
-  /// - [requestProcessor] You may modify the request headers via this processor.
   /// 
   /// Detail of the operation
-  Future<WMTUserOperation> getDetail(String operationId, { WMTRequestProcessor? requestProcessor }) async {
+  Future<WMTUserOperation> getDetail(String operationId) async {
     final response = await postSignedWithToken(
       { "requestObject": { "id": operationId } },
       PowerAuthAuthentication.possession(),
       "/api/auth/token/app/operation/detail",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
 
     return processResponse("operation detail", () {
@@ -193,16 +185,14 @@ class WMTOperations extends WMTNetworking {
   /// 
   /// Params:
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
-  /// - [requestProcessor] You may modify the request headers via this processor.
   /// 
   /// Returns list of operations.
-  Future<List<WMTUserOperation>> getHistory(PowerAuthAuthentication authentication, { WMTRequestProcessor? requestProcessor }) async {
+  Future<List<WMTUserOperation>> getHistory(PowerAuthAuthentication authentication) async {
     final response = await postSigned(
       {},
       authentication,
       "/api/auth/token/app/operation/history",
       "/operation/history",
-      requestProcessor: requestProcessor,
     );
 
     return processResponse("operations history", () {
@@ -220,8 +210,7 @@ class WMTOperations extends WMTNetworking {
   /// Params:
   /// - [operation] Operation to authorize.
   /// - [authentication] A multi-factor authentication object for signing. 2FA should be used (password or biometrics).
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> authorize(WMTOnlineOperation operation, PowerAuthAuthentication authentication, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> authorize(WMTOnlineOperation operation, PowerAuthAuthentication authentication) async {
 
     final proximityCheck = operation.proximityCheck;
     Object? proximityRequest;
@@ -230,7 +219,7 @@ class WMTOperations extends WMTNetworking {
       proximityRequest = await _buildProximityCheckRequestData(proximityCheck);
     }
 
-    await _postAuthorize(operation, proximityRequest, authentication, requestProcessor);
+    await _postAuthorize(operation, proximityRequest, authentication);
   }
 
   /// Ensures that the local time is synchronized with the PowerAuth server.
@@ -278,13 +267,12 @@ class WMTOperations extends WMTNetworking {
   }
 
   /// Posts the authorize request to the server.
-  Future<void> _postAuthorize(WMTOnlineOperation operation, Object? proximityRequest, PowerAuthAuthentication authentication, WMTRequestProcessor? requestProcessor) async {
+  Future<void> _postAuthorize(WMTOnlineOperation operation, Object? proximityRequest, PowerAuthAuthentication authentication) async {
     await postSigned(
       { "requestObject": { "id": operation.id, "data": operation.data, "proximityCheck": proximityRequest, "mobileTokenData": operation.mobileTokenData } },
       authentication,
       "/api/auth/token/app/operation/authorize",
       "/operation/authorize",
-      requestProcessor: requestProcessor,
     );
     _publishOperationsChange(
       _operationsRegister.remove(operation.id),
@@ -300,9 +288,8 @@ class WMTOperations extends WMTNetworking {
   /// Params: 
   /// - [operationId] ID of the operation.
   /// - [reason] Reason for the rejection.
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> reject(String operationId, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) {
-    return _reject(operationId, null, reason, requestProcessor: requestProcessor);
+  Future<void> reject(String operationId, WMTRejectionReason reason) {
+    return _reject(operationId, null, reason);
   }
 
   /// Reject operation with a reason.
@@ -313,12 +300,11 @@ class WMTOperations extends WMTNetworking {
   /// Params: 
   /// - [operation] Operation to reject.
   /// - [reason] Reason for the rejection.
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> rejectOperation(WMTOnlineOperation operation, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) {
-    return _reject(operation.id, operation.mobileTokenData, reason, requestProcessor: requestProcessor);
+  Future<void> rejectOperation(WMTOnlineOperation operation, WMTRejectionReason reason) {
+    return _reject(operation.id, operation.mobileTokenData, reason);
   }
 
-  Future<void> _reject(String operationId, Object? mobileTokenData, WMTRejectionReason reason, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> _reject(String operationId, Object? mobileTokenData, WMTRejectionReason reason) async {
     final requestObject = <String, dynamic>{ "id": operationId, "reason": reason.serialized };
     if (mobileTokenData != null) {
       requestObject["mobileTokenData"] = mobileTokenData;
@@ -328,7 +314,6 @@ class WMTOperations extends WMTNetworking {
       PowerAuthAuthentication.possession(),
       "/api/auth/token/app/operation/cancel",
       "/operation/cancel",
-      requestProcessor: requestProcessor,
     );
     _publishOperationsChange(
       _operationsRegister.remove(operationId),
@@ -357,16 +342,14 @@ class WMTOperations extends WMTNetworking {
   ///
   /// Params:
   ///  - [operationId] ID of the operation which will be claimed to belong to the user.
-  ///  - [requestProcessor] You may modify the request via this processor. It's highly recommended to only modify HTTP headers.
   /// 
   /// Returns operation detail
-  Future<WMTUserOperation> claim(String operationId, { WMTRequestProcessor? requestProcessor }) async {
+  Future<WMTUserOperation> claim(String operationId) async {
     final response = await postSignedWithToken(
       { "requestObject": { "id": operationId } },
       PowerAuthAuthentication.possession(),
       "/api/auth/token/app/operation/detail/claim",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
 
     final operation = processResponse("operation claim", () {
