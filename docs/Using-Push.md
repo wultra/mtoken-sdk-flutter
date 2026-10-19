@@ -1,4 +1,4 @@
-# Using Push
+# Using Push Service
 
 <!-- begin remove -->
 - [Introduction](#introduction)
