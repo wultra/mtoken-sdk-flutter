@@ -48,4 +48,4 @@ If the `WMTException` has a `responseError`, the `code` property can contain the
 
 ## Read Next
   
-- [Language and User-Agent Configuration](./Language-UserAgent-Configuration.md)
+- [Mobile Token Configuration](./Configuration.md)

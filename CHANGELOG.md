@@ -1,6 +1,6 @@
 ## TBA
 
-- `WultraMobileToken.create()` and `PowerAuth.createMobileToken()` now take a `WMTConfiguration` object. The `acceptLanguage` and `userAgent` arguments moved to `WMTConfiguration`. See [Migration](docs/Migration-2.0.md#mobile-token-configuration). [(#43)](https://github.com/wultra/mtoken-sdk-flutter/issues/43)
+- `WultraMobileToken.create()` and `PowerAuth.createMobileToken()` now take a `WMTConfiguration` object. The `acceptLanguage` and `userAgent` arguments moved to `WMTConfiguration`. See [Migration](docs/Migration-3.0.md#mobile-token-configuration). [(#43)](https://github.com/wultra/mtoken-sdk-flutter/issues/43)
 - Request interceptors in `WMTConfiguration.requestInterceptors` replace the `requestProcessor` argument of all service calls and operation polling. The `WMTRequestProcessor` type was removed. Interceptors apply to every request of `operations`, `push`, `inbox`, and `oidc`. [(#43)](https://github.com/wultra/mtoken-sdk-flutter/issues/43)
 - Made Swift Package Manager the recommended integration method for iOS, while retaining CocoaPods support [(#31)](https://github.com/wultra/mtoken-sdk-flutter/issues/31)
 
