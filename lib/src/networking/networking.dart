@@ -21,15 +21,17 @@ import 'dart:typed_data';
 import 'package:flutter_powerauth_mobile_sdk_plugin/flutter_powerauth_mobile_sdk_plugin.dart';
 import 'package:meta/meta.dart';
 import 'user_agent.dart';
+import '../configuration.dart';
 import 'response_error.dart';
 import '../core/exception.dart';
 import '../core/logger.dart';
 
-typedef WMTRequestProcessor = void Function(HttpHeaders);
-
 class WMTNetworking {
   
-  String _acceptLanguage = "en";
+  /// Immutable initial configuration shared with the owning Mobile Token.
+  final WMTConfiguration configuration;
+
+  late String _acceptLanguage = configuration.acceptLanguage;
 
   // Returns accept language for the outgoing requests.
   String get acceptLanguage => _acceptLanguage;
@@ -39,15 +41,16 @@ class WMTNetworking {
     Log.info("Accept language set to: ${language}.");
   }
 
-  WMTUserAgent userAgent = WMTUserAgent.libraryDefault();
+  late WMTUserAgent userAgent = configuration.userAgent;
 
   @protected
   final PowerAuth powerAuth;
   final String _baseUrl;
   final String _name;
 
-  WMTNetworking(this.powerAuth, String baseUrl, this._name)
-        : _baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl {
+  WMTNetworking(this.powerAuth, String baseUrl, this._name, {WMTConfiguration? configuration})
+        : configuration = configuration ?? WMTConfiguration(),
+          _baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl {
     Log.verbose("Networking initialized for ${_name} with base URL: ${_baseUrl}.");
   }
 
@@ -57,7 +60,6 @@ class WMTNetworking {
     PowerAuthAuthentication auth,
     String endpoindPath,
     String uriId,
-    { WMTRequestProcessor? requestProcessor }
   ) async {
     Log.verbose("Creating signed request for ${_name} with uriId: ${uriId}.");
     final body = jsonEncode(requestData);
@@ -72,7 +74,7 @@ class WMTNetworking {
       paHeader.name: paHeader.value
     };
 
-    return await post(body, endpoindPath, headers, requestProcessor);
+    return await post(body, endpoindPath, headers);
   }
 
   @internal
@@ -81,7 +83,6 @@ class WMTNetworking {
     PowerAuthAuthentication auth,
     String endpoindPath,
     String tokenName,
-    { WMTRequestProcessor? requestProcessor }
   ) async {
     Log.verbose("Creating token signed request for ${_name}.");
     final body = jsonEncode(requestData);
@@ -92,7 +93,7 @@ class WMTNetworking {
       paHeader.name: paHeader.value
     };
 
-    return await post(body, endpoindPath, headers, requestProcessor);
+    return await post(body, endpoindPath, headers);
   }
 
   @internal
@@ -100,7 +101,6 @@ class WMTNetworking {
     String payloadSerialized,
     String endpointPath,
     Map<String, String> headers,
-    WMTRequestProcessor? requestProcessor,
     { WMTE2EEConfiguration? e2ee }
   ) async {
 
@@ -147,11 +147,17 @@ class WMTNetworking {
         bodyToSend = encrypted.requestBody;
       }
 
-      request.add(bodyToSend);
-
-      if (requestProcessor != null) {
-        requestProcessor(request.headers);
+      // Headers must remain mutable until all interceptors have run.
+      for (final interceptor in configuration.requestInterceptors) {
+        // An async closure is assignable to the void typedef, but its changes would apply after dispatch.
+        final Object? result = (interceptor as Function)(request.headers);
+        if (result is Future) {
+          result.ignore();
+          throw WMTException(description: "Request interceptor must be synchronous and must not return a Future.");
+        }
       }
+
+      request.add(bodyToSend);
 
       Log.info(" -> OUTGOING POST ${url}");
       Log.verbose(() => _getHeadersString(request.headers));
@@ -190,7 +196,8 @@ class WMTNetworking {
       Log.error("Error during POST request to ${url}: ${e.toString()}");
       rethrow;
     } finally {
-      client.close();
+      // An interceptor can fail while the request is still open.
+      client.close(force: true);
       await encryptor?.release();
     }
   }

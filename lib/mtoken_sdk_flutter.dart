@@ -16,6 +16,7 @@
 
 // Core class
 export 'src/wultra_mobile_token.dart';
+export 'src/configuration.dart';
 
 // Operations
 export 'src/operations/operations.dart';
@@ -57,6 +58,7 @@ export 'src/core/logger.dart' show WMTLogger, WMTLoggerVerbosity, WMTLogListener
 export 'src/core/exception.dart';
 
 // Networking
+export 'src/networking/request_interceptor.dart';
 export 'src/networking/known_rest_api_error.dart';
 export 'src/networking/user_agent.dart';
 export 'src/networking/response_error.dart';

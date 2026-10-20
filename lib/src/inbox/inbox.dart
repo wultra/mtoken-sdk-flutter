@@ -28,21 +28,20 @@ class WMTInbox extends WMTNetworking {
   /// Params:
   /// - [powerAuth] is the PowerAuth instance used for signing requests.
   /// - [baseUrl] is the base URL of the Wultra Mobile Token API (usually ending with /enrollment-server).
-  WMTInbox(PowerAuth powerAuth, String baseUrl) : super(powerAuth, baseUrl, "WMTInbox");
+  WMTInbox(PowerAuth powerAuth, String baseUrl, {super.configuration})
+      : super(powerAuth, baseUrl, "WMTInbox");
 
   /// Get number of unread messages in the inbox.
   /// 
   /// Params:
-  /// - [requestProcessor] You may modify the request headers via this processor.
   /// 
   /// Returns the count of unread messages in the inbox.
-  Future<WMTInboxCount> getUnreadCount({ WMTRequestProcessor? requestProcessor }) async {
+  Future<WMTInboxCount> getUnreadCount() async {
     final response = await postSignedWithToken(
       {},
       PowerAuthAuthentication.possession(),
       "/api/inbox/count",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
 
     return WMTInboxCount.fromJson(response as Map<String, dynamic>);
@@ -54,16 +53,14 @@ class WMTInbox extends WMTNetworking {
   /// - [pageNumber] Page number. First page is `0`, second `1`, etc.
   /// - [pageSize] Size of the page.
   /// - [onlyUnread] Get only unread messages.
-  /// - [requestProcessor] You may modify the request headers via this processor.
   ///
   /// Returns a list of messages in the inbox.
-  Future<List<WMTInboxMessage>> getMessageList(int pageNumber, int pageSize, bool onlyUnread, { WMTRequestProcessor? requestProcessor }) async {
+  Future<List<WMTInboxMessage>> getMessageList(int pageNumber, int pageSize, bool onlyUnread) async {
     final response = await postSignedWithToken(
       { "requestObject": { "page": pageNumber, "size": pageSize, "onlyUnread": onlyUnread } },
       PowerAuthAuthentication.possession(),
       "/api/inbox/message/list",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
 
     return processResponse("inbox message list", () {
@@ -76,16 +73,14 @@ class WMTInbox extends WMTNetworking {
    /// 
    /// Params:
    /// - [messageId] Message identifier.
-   /// - [requestProcessor] You may modify the request headers via this processor.
    ///
    /// Returns the message detail
-  Future<WMTInboxMessage> getMessageDetail(String messageId, { WMTRequestProcessor? requestProcessor }) async{
+  Future<WMTInboxMessage> getMessageDetail(String messageId) async{
     final response = await postSignedWithToken(
       { "requestObject": { "id": messageId } },
       PowerAuthAuthentication.possession(),
       "/api/inbox/message/detail",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
 
     return processResponse("inbox detail", () {
@@ -97,27 +92,23 @@ class WMTInbox extends WMTNetworking {
   /// 
   /// Params:
   ///  - [messageId] Message identifier.
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> markRead(String messageId, { WMTRequestProcessor? requestProcessor }) async {
+  Future<void> markRead(String messageId) async {
     await postSignedWithToken(
       { "requestObject": { "id": messageId } },
       PowerAuthAuthentication.possession(),
       "/api/inbox/message/read",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
   }
 
   /// Marks all unread messages in the inbox as read.
   /// 
-  /// - [requestProcessor] You may modify the request headers via this processor.
-  Future<void> markAllRead({ WMTRequestProcessor? requestProcessor }) async {
+  Future<void> markAllRead() async {
     await postSignedWithToken(
       {},
       PowerAuthAuthentication.possession(),
       "/api/inbox/message/read-all",
       "possession_universal",
-      requestProcessor: requestProcessor,
     );
   }
 }

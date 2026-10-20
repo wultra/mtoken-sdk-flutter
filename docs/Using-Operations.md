@@ -49,7 +49,7 @@ final list = await mtoken.operations.getOperations();
 After you retrieve the pending operations, you can render them in the UI, for example, as a list of items with a detail of the operation shown after a tap.
 
 <!-- begin box warning -->
-Note: The language of the UI data inside the operation depends on the configuration of the [accept language](./Language-UserAgent-Configuration.md).
+Note: The language of the UI data inside the operation depends on the configuration of the [accept language](./Configuration.md#content-language).
 <!-- end -->
 
 ## Periodic Polling
