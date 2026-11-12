@@ -117,6 +117,9 @@ final auth = PowerAuthAuthentication.biometry(biometricPrompt: PowerAuthBiometri
 await mtoken.operations.authorize(operation, auth);
 ```
 
+> [!NOTE]
+> If the approval fails, call `fetchActivationStatus` on your `PowerAuth` instance to detect whether the activation is blocked and how many attempts are left.
+
 ### Passing Additional Mobile Token Data
 
 With PowerAuth server 1.10+, you can pass additional customer-specific data during operation authorization using the `mobileTokenData` property. This can be useful for fraud detection systems (FDS) or other custom business logic.
