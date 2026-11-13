@@ -31,6 +31,11 @@ android {
         versionName = flutter.versionName
     }
 
+    androidResources {
+        // AGP's default pattern ignores dotfiles (".*"), which drops the flutter_dotenv ".env" asset.
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     buildTypes {
         release {
             // TODO: Add your own signing config for the release build.
