@@ -32,7 +32,9 @@ android {
     }
 
     androidResources {
+        // TEMPORARY workaround for a Flutter 3.50 regression (https://github.com/flutter/flutter/issues/196444):
         // AGP's default pattern ignores dotfiles (".*"), which drops the flutter_dotenv ".env" asset.
+        // Remove once CI runs a Flutter release with the fix. Tracked in wultra/mtoken-sdk-flutter#52.
         ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
     }
 
