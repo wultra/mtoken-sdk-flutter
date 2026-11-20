@@ -2,6 +2,15 @@
 
 This guide provides instructions for migrating from **Wultra Mobile Token SDK for Flutter** version `2.0.x` to version `3.0.x`.
 
+## PowerAuth Mobile Flutter SDK 3.0
+
+Version 3.0.x uses PowerAuth Mobile Flutter SDK `3.0.0`, which is built on the native PowerAuth Mobile SDK 2.1. The Flutter, Dart, and Android requirements are the same as in version 2.0.x.
+
+- The minimum supported iOS version is now 15.0. Set the Runner target's minimum deployment version to iOS 15.0 or newer in Xcode. If your application uses CocoaPods, also set `platform :ios, '15.0'` in `ios/Podfile`.
+- `PowerAuthPassword.addCharacter()`, `insertCharacter()`, `removeCharacterAt()`, and `removeLastCharacter()` are deprecated. Use `addCodePoints()`, `insertCodePoint()`, `removeCodePointAt()`, and `removeLastCodePoint()` instead.
+
+See the [PowerAuth Mobile Flutter SDK changelog](https://github.com/wultra/flutter-powerauth-mobile-sdk/blob/develop/docs/Changelog.md) for all changes.
+
 ## Mobile Token Configuration
 
 `WultraMobileToken.create()` and `PowerAuth.createMobileToken()` now take a single `WMTConfiguration` object. The `acceptLanguage` and `userAgent` arguments moved into it:
