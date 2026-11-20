@@ -1,4 +1,4 @@
-## TBA
+## 3.0.0
 
 - Updated to PowerAuth Mobile Flutter SDK 3.0, which uses the native PowerAuth Mobile SDK 2.1. The minimum supported iOS version is now 15.0. See [Migration](docs/Migration-3.0.md#powerauth-mobile-flutter-sdk-30). [(#54)](https://github.com/wultra/mtoken-sdk-flutter/issues/54)
 - `WultraMobileToken.create()` and `PowerAuth.createMobileToken()` now take a `WMTConfiguration` object. The `acceptLanguage` and `userAgent` arguments moved to `WMTConfiguration`. See [Migration](docs/Migration-3.0.md#mobile-token-configuration). [(#43)](https://github.com/wultra/mtoken-sdk-flutter/issues/43)
