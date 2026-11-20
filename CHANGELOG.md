@@ -5,7 +5,7 @@
 - Request interceptors in `WMTConfiguration.requestInterceptors` replace the `requestProcessor` argument of all service calls and operation polling. The `WMTRequestProcessor` type was removed. Interceptors apply to every request of `operations`, `push`, `inbox`, and `oidc`. [(#43)](https://github.com/wultra/mtoken-sdk-flutter/issues/43)
 - Made Swift Package Manager the recommended integration method for iOS, while retaining CocoaPods support [(#31)](https://github.com/wultra/mtoken-sdk-flutter/issues/31)
 
-## 2.0.0-beta.1
+## 2.0.0
 
 - Updated to PowerAuth Mobile Flutter SDK 2.0 and migrated request signing, offline signing, server signature verification, and end-to-end encryption to the new APIs.
 - Updated minimum requirements to Flutter 3.44, Dart 3.12, Android 6.0 (API 23), Android compile SDK 37, and Java 17.
