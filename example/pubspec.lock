@@ -95,10 +95,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_powerauth_mobile_sdk_plugin
-      sha256: "0f3be7a74eaf4bcdd61ac15a3c3f5b60ea1986d55121c346075fb3bcad818d72"
+      sha256: "2ac1757712479735f3467ef8662415f4092409f43768a62bf57146c97c778045"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0-beta.1"
+    version: "3.0.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter

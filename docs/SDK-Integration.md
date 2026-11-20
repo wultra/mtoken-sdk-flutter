@@ -9,7 +9,7 @@ The PowerAuth Flutter SDK is a required dependency that will be automatically in
 The library is available for the following __Flutter 3.44.0+__ platforms:
 
 - __Android 6.0 (API 23)__ and newer
-- __iOS 13.4__ and newer
+- __iOS 15.0__ and newer
 
 ## How To Install
 
@@ -62,7 +62,7 @@ The SDK supports both Swift Package Manager and CocoaPods. Swift Package Manager
 flutter config --enable-swift-package-manager
 ```
 
-Set the Runner target's minimum deployment version to iOS 13.4 or newer in Xcode. Resolve the Dart dependencies, then build the app; Flutter and Xcode resolve the Swift packages during the iOS build:
+Set the Runner target's minimum deployment version to iOS 15.0 or newer in Xcode. Resolve the Dart dependencies, then build the app; Flutter and Xcode resolve the Swift packages during the iOS build:
 
 ```bash
 flutter pub get
