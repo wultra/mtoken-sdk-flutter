@@ -31,8 +31,7 @@ SIM_ID=$(xcrun simctl list devices available | grep 'iPhone' | head -n 1 | grep 
 
 echo "Booting iOS Simulator with ID: $SIM_ID"
 
-# open the Simulator app and boot the simulator
-open -a Simulator
+# boot the simulator (the Simulator app is not needed and is not installed on every CI image)
 xcrun simctl boot "$SIM_ID"
 
 # wait until the simulator is actually booted/ready (to give more deterministic logs)
